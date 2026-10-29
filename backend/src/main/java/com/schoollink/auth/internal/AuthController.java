@@ -28,8 +28,8 @@ class AuthController {
 	}
 
 	/**
-	 * The client IP is the TCP peer address. Behind the pilot's Nginx, set
-	 * server.forward-headers-strategy so it is the real client, never a spoofable header (NFR-7).
+	 * The client IP for rate limiting (NFR-7) is the real client: Tomcat takes it from
+	 * X-Forwarded-For only when the request comes from a trusted proxy (TRUSTED_PROXIES).
 	 */
 	@PostMapping("/api/v1/auth/login")
 	TokenResponse login(@Valid @RequestBody LoginRequest request, HttpServletRequest http) {

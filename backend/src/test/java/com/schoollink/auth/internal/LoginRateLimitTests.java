@@ -73,12 +73,31 @@ class LoginRateLimitTests {
 	}
 
 	@Test
-	void theLimitFollowsTheLoginWhateverItsFormatAndWhateverTheIp() throws Exception {
+	void theLimitFollowsTheLoginWhateverItsFormat() throws Exception {
 		for (int i = 0; i < 5; i++) {
-			login("699 30 00 01", "wrong", "10.0.0." + i).andExpect(status().isUnauthorized());
+			login("699 30 00 01", "wrong", "10.0.0.1").andExpect(status().isUnauthorized());
 		}
 
-		login(PHONE, "Right-Pass1", "10.0.0.99").andExpect(status().isTooManyRequests());
+		login(PHONE, "Right-Pass1", "10.0.0.1").andExpect(status().isTooManyRequests());
+	}
+
+	@Test
+	void someoneFailingFromTheirDeviceCannotLockTheOwnerOutElsewhere() throws Exception {
+		for (int i = 0; i < 6; i++) {
+			login(PHONE, "wrong", "10.6.6.6");
+		}
+		login(PHONE, "Right-Pass1", "10.6.6.6").andExpect(status().isTooManyRequests());
+
+		login(PHONE, "Right-Pass1", "10.0.0.1").andExpect(status().isOk());
+	}
+
+	@Test
+	void guessesSpreadOverManyIpsHitTheLoginLimit() throws Exception {
+		for (int i = 0; i < 20; i++) {
+			login(PHONE, "wrong", "10.7.0." + i).andExpect(status().isUnauthorized());
+		}
+
+		login(PHONE, "wrong", "10.7.0.99").andExpect(status().isTooManyRequests());
 	}
 
 	@Test

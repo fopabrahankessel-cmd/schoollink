@@ -28,10 +28,20 @@ class AuthService {
 	private final AccessTokens accessTokens;
 
 	/**
-	 * NFR-7: 5 failed attempts per login, one more every 3 minutes; a success resets it. Only
-	 * failures count, so a teacher signing in on several devices is never blocked.
+	 * NFR-7: 5 failed attempts per login from one IP address, one more every 3 minutes; a success
+	 * resets it. Keyed on login + IP so that someone who knows a teacher's phone cannot lock the
+	 * teacher out everywhere by failing 5 times from their own device.
 	 */
-	static final RateLimitPolicy LOGIN_FAILURES = new RateLimitPolicy("login-failures", 5, Duration.ofMinutes(15));
+	static final RateLimitPolicy LOGIN_FAILURES_PER_SOURCE = new RateLimitPolicy("login-failures-source", 5,
+			Duration.ofMinutes(15));
+
+	/**
+	 * NFR-7: 20 failed attempts per login per hour across all IP addresses, so spreading guesses
+	 * over many addresses does not help. Looser than the per-source limit, so the owner is locked
+	 * out only by a sustained, distributed attack.
+	 */
+	static final RateLimitPolicy LOGIN_FAILURES_PER_LOGIN = new RateLimitPolicy("login-failures-login", 20,
+			Duration.ofHours(1));
 
 	/**
 	 * NFR-7: 30 login requests per minute per IP address, generous because a school's staff may
@@ -64,10 +74,18 @@ class AuthService {
 	@Transactional
 	TokenResponse login(UUID schoolId, String login, String password, String clientIp) {
 		Optional<String> normalized = normalizeLogin(login);
-		// NFR-7: the per-login key is the normalized login, so "699 20 00 01" and "+237699200001" share it
+		// NFR-7: keyed on the normalized login, so "699 20 00 01" and "+237699200001" share a bucket
 		String loginKey = normalized.orElse(login.strip().toLowerCase(Locale.ROOT));
+		String sourceKey = loginKey + "|" + clientIp;
 		checkRate(limiter.tryConsume(LOGIN_PER_IP, clientIp));
-		checkRate(limiter.retryAfter(LOGIN_FAILURES, loginKey));
+		// Reserve a failure before checking the password (atomic check-and-spend), so parallel
+		// requests cannot all slip past the limit; the reservation is given back on success.
+		checkRate(limiter.tryConsume(LOGIN_FAILURES_PER_SOURCE, sourceKey));
+		Duration loginWait = limiter.tryConsume(LOGIN_FAILURES_PER_LOGIN, loginKey);
+		if (!loginWait.isZero()) {
+			limiter.refund(LOGIN_FAILURES_PER_SOURCE, sourceKey);
+			throw new RateLimitedException(loginWait);
+		}
 
 		List<UserAccount> candidates = normalized.map(l -> accounts.findByLogin(l, schoolId))
 			.orElse(List.of())
@@ -76,15 +94,15 @@ class AuthService {
 			.toList();
 		if (candidates.isEmpty()) {
 			passwords.matches(password, dummyHash);
-			limiter.consume(LOGIN_FAILURES, loginKey);
 			throw invalidCredentials();
 		}
 		List<UserAccount> matches = candidates.stream().filter(a -> passwords.matches(password, a.passwordHash())).toList();
 		if (matches.isEmpty()) {
-			limiter.consume(LOGIN_FAILURES, loginKey);
 			throw invalidCredentials();
 		}
-		limiter.reset(LOGIN_FAILURES, loginKey);
+		// right password: not a failure
+		limiter.reset(LOGIN_FAILURES_PER_SOURCE, sourceKey);
+		limiter.refund(LOGIN_FAILURES_PER_LOGIN, loginKey);
 		if (matches.size() > 1) {
 			throw ApiException.invalid("auth.school_required", "schoolId");
 		}

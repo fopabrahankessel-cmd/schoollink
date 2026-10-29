@@ -5,6 +5,10 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -69,6 +73,39 @@ class RateLimiterTests {
 		assertThat(limiter.retryAfter(FIVE_PER_15_MIN, "a")).isPositive();
 		assertThat(limiter.retryAfter(FIVE_PER_15_MIN, "b")).isZero();
 		assertThat(limiter.retryAfter(other, "a")).isZero();
+	}
+
+	@Test
+	void concurrentRequestsNeverGetMoreAttemptsThanTheBucketHolds() throws Exception {
+		int threads = 50;
+		var start = new CountDownLatch(1);
+		var allowed = new AtomicInteger();
+		try (ExecutorService pool = Executors.newFixedThreadPool(threads)) {
+			for (int i = 0; i < threads; i++) {
+				pool.submit(() -> {
+					start.await();
+					if (limiter.tryConsume(FIVE_PER_15_MIN, "k").isZero()) {
+						allowed.incrementAndGet();
+					}
+					return null;
+				});
+			}
+			start.countDown();
+		}
+
+		assertThat(allowed).hasValue(5);
+	}
+
+	@Test
+	void refundGivesBackOneAttempt() {
+		for (int i = 0; i < 5; i++) {
+			limiter.tryConsume(FIVE_PER_15_MIN, "k");
+		}
+
+		limiter.refund(FIVE_PER_15_MIN, "k");
+
+		assertThat(limiter.tryConsume(FIVE_PER_15_MIN, "k")).isZero();
+		assertThat(limiter.tryConsume(FIVE_PER_15_MIN, "k")).isPositive();
 	}
 
 	@Test
