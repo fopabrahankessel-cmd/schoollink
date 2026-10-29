@@ -48,7 +48,7 @@ class SecurityErrorHandler implements AuthenticationEntryPoint, AccessDeniedHand
 		write(request, response, HttpServletResponse.SC_FORBIDDEN, "auth.forbidden");
 	}
 
-	private void write(HttpServletRequest request, HttpServletResponse response, int status, String code)
+	void write(HttpServletRequest request, HttpServletResponse response, int status, String code)
 			throws IOException {
 		Locale locale = localeResolver.resolveLocale(request);
 		response.setStatus(status);

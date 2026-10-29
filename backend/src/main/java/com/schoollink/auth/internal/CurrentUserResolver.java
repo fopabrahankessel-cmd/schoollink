@@ -50,7 +50,8 @@ class CurrentUserResolver implements Converter<Jwt, AbstractAuthenticationToken>
 		Set<Role> roles = account.roles().stream().map(Role::valueOf).collect(Collectors.toUnmodifiableSet());
 		if (account.schoolId() == null) {
 			// the researcher: no school, anonymised data only (SPEC §3)
-			return new CurrentUser(account.id(), null, account.language(), roles, Map.of(), Set.of());
+			return new CurrentUser(account.id(), null, account.language(), account.passwordChangeRequired(), roles,
+					Map.of(), Set.of());
 		}
 		ScopeAssignments assigned = accounts.assignmentsOf(account.id(), account.schoolId());
 		Map<Role, Set<UUID>> scope = new EnumMap<>(Role.class);
@@ -64,7 +65,8 @@ class CurrentUserResolver implements Converter<Jwt, AbstractAuthenticationToken>
 			scope.put(Role.ASSISTANT_DM, classes.idsInBlocks(account.schoolId(), assigned.assistantDmBlocks()));
 		}
 		Set<UUID> children = roles.contains(Role.PARENT) ? assigned.children() : Set.of();
-		return new CurrentUser(account.id(), account.schoolId(), account.language(), roles, scope, children);
+		return new CurrentUser(account.id(), account.schoolId(), account.language(), account.passwordChangeRequired(),
+				roles, scope, children);
 	}
 
 }

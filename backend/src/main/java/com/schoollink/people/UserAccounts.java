@@ -19,4 +19,10 @@ public interface UserAccounts {
 	/** The assignments behind a user's scope (NFR-8), all within {@code schoolId}. */
 	ScopeAssignments assignmentsOf(UUID userId, UUID schoolId);
 
+	/**
+	 * Replaces the user's password with one they chose, ending the temporary password (D18), and
+	 * audits it (NFR-11). Must be called inside a transaction.
+	 */
+	void changePassword(UUID userId, String passwordHash);
+
 }

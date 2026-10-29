@@ -18,9 +18,11 @@ import java.util.UUID;
  *
  * @param schoolId {@code null} only for the researcher
  * @param language {@code FR} or {@code EN}
+ * @param passwordChangeRequired the user still has a temporary password (D18); until it is
+ *        replaced, only {@code GET /me} and {@code POST /me/password} are allowed
  */
-public record CurrentUser(UUID userId, UUID schoolId, String language, Set<Role> roles,
-		Map<Role, Set<UUID>> classes, Set<UUID> children) {
+public record CurrentUser(UUID userId, UUID schoolId, String language, boolean passwordChangeRequired,
+		Set<Role> roles, Map<Role, Set<UUID>> classes, Set<UUID> children) {
 
 	public CurrentUser {
 		roles = Set.copyOf(roles);

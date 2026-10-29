@@ -82,6 +82,12 @@ class RefreshTokens {
 				Timestamp.from(now), familyId);
 	}
 
+	/** Signs the user out of every device: after a password change or an admin reset (D18). */
+	void revokeAll(UUID userId) {
+		jdbc.update("UPDATE refresh_token SET revoked_at = ? WHERE user_id = ? AND revoked_at IS NULL",
+				Timestamp.from(clock.instant()), userId);
+	}
+
 	static String hash(String raw) {
 		try {
 			byte[] digest = MessageDigest.getInstance("SHA-256").digest(raw.getBytes(StandardCharsets.UTF_8));

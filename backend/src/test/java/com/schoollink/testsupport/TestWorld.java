@@ -143,7 +143,9 @@ public final class TestWorld {
 		String email = actor.name().toLowerCase().replace('_', '-') + "-" + UUID.randomUUID() + "@example.test";
 		UUID id = id("""
 				INSERT INTO app_user (school_id, first_name, last_name, email, password_hash)
-				VALUES (?, 'Test', ?, ?, 'not-a-real-hash') RETURNING id""", school, actor.name(), email);
+				VALUES (?, 'Test', ?, ?, ?) RETURNING id""", school, actor.name(), email,
+				// parents sign in with an invitation code, never a password (UC-P1)
+				actor == Actor.PARENT_A ? null : "not-a-real-hash");
 		jdbc.update("INSERT INTO role_assignment (school_id, user_id, role, block_id) VALUES (?, ?, ?, ?)", school, id,
 				actor.role.name(), block);
 		users.put(actor, id);

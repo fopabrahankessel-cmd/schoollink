@@ -6,6 +6,7 @@ import com.schoollink.shared.security.CurrentUser;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -50,6 +51,17 @@ class AuthController {
 	@GetMapping("/api/v1/me")
 	UserInfo me(@AuthenticationPrincipal CurrentUser user) {
 		return UserInfo.of(user);
+	}
+
+	/** D18: allowed even while the password is temporary; returns a fresh token pair. */
+	@PostMapping("/api/v1/me/password")
+	TokenResponse changePassword(@AuthenticationPrincipal CurrentUser user,
+			@Valid @RequestBody ChangePasswordRequest request) {
+		return auth.changePassword(user.userId(), request.currentPassword(), request.newPassword());
+	}
+
+	/** NFR-7: BCrypt reads at most 72 bytes, so longer passwords are refused rather than truncated. */
+	record ChangePasswordRequest(@NotBlank String currentPassword, @NotBlank @Size(min = 8, max = 72) String newPassword) {
 	}
 
 	/** @param schoolId from the school picker (D16); may be omitted */

@@ -25,4 +25,35 @@ class JdbcSchoolClasses implements SchoolClasses {
 				Map.of("school", schoolId, "blocks", blockIds), UUID.class));
 	}
 
+	@Override
+	public Set<UUID> blocksOf(UUID schoolId, Set<UUID> classIds) {
+		if (classIds.isEmpty()) {
+			return Set.of();
+		}
+		return Set.copyOf(jdbc.queryForList(
+				"SELECT DISTINCT block_id FROM school_class WHERE school_id = :school AND id IN (:classes)",
+				Map.of("school", schoolId, "classes", classIds), UUID.class));
+	}
+
+	@Override
+	public boolean classExists(UUID schoolId, UUID classId) {
+		return exists("SELECT 1 FROM school_class WHERE id = :id AND school_id = :school", schoolId, classId);
+	}
+
+	@Override
+	public boolean blockExists(UUID schoolId, UUID blockId) {
+		return exists("SELECT 1 FROM block WHERE id = :id AND school_id = :school", schoolId, blockId);
+	}
+
+	@Override
+	public String language(UUID schoolId) {
+		return jdbc.queryForObject("SELECT language FROM school WHERE id = :school", Map.of("school", schoolId),
+				String.class);
+	}
+
+	private boolean exists(String sql, UUID schoolId, UUID id) {
+		return Boolean.TRUE.equals(jdbc.queryForObject("SELECT EXISTS (" + sql + ")",
+				Map.of("school", schoolId, "id", id), Boolean.class));
+	}
+
 }

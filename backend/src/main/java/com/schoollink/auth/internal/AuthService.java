@@ -49,6 +49,10 @@ class AuthService {
 	 */
 	static final RateLimitPolicy LOGIN_PER_IP = new RateLimitPolicy("login-ip", 30, Duration.ofMinutes(1));
 
+	/** NFR-7: 5 wrong current passwords per user, one more every 3 minutes. */
+	static final RateLimitPolicy PASSWORD_CHANGE_FAILURES = new RateLimitPolicy("password-change-failures", 5,
+			Duration.ofMinutes(15));
+
 	private final RefreshTokens refreshTokens;
 
 	private final RateLimiter limiter;
@@ -124,6 +128,29 @@ class AuthService {
 			.filter(UserAccount::isActive)
 			.orElseThrow(AuthService::invalidRefresh);
 		return tokens(account, refreshTokens.create(account.id(), consumed.familyId()));
+	}
+
+	/**
+	 * D18: the user replaces their (temporary) password. Every other session ends, and this device
+	 * gets a fresh token pair. Wrong current passwords are limited like logins (NFR-7), so a stolen
+	 * access token cannot be used to guess the password.
+	 */
+	@Transactional
+	TokenResponse changePassword(UUID userId, String currentPassword, String newPassword) {
+		String key = userId.toString();
+		checkRate(limiter.tryConsume(PASSWORD_CHANGE_FAILURES, key));
+		UserAccount account = accounts.findById(userId).orElseThrow(AuthService::invalidRefresh);
+		if (account.passwordHash() == null || !passwords.matches(currentPassword, account.passwordHash())) {
+			throw ApiException.invalid("auth.wrong_password", "currentPassword");
+		}
+		limiter.reset(PASSWORD_CHANGE_FAILURES, key);
+		if (newPassword.equals(currentPassword)) {
+			throw ApiException.invalid("auth.password_unchanged", "newPassword");
+		}
+		accounts.changePassword(userId, passwords.encode(newPassword));
+		refreshTokens.revokeAll(userId);
+		UserAccount changed = accounts.findById(userId).orElseThrow();
+		return tokens(changed, refreshTokens.create(userId, UUID.randomUUID()));
 	}
 
 	private TokenResponse tokens(UserAccount account, String refreshToken) {

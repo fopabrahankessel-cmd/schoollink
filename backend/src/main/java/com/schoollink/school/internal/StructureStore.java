@@ -4,24 +4,18 @@ import com.schoollink.audit.AuditAction;
 import com.schoollink.audit.AuditEntry;
 import com.schoollink.audit.AuditLog;
 import com.schoollink.shared.error.ApiException;
+import com.schoollink.shared.jdbc.ConstraintGuard;
 import com.schoollink.shared.security.CurrentUser;
 import com.schoollink.shared.security.Role;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Savepoint;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import javax.sql.DataSource;
-import org.springframework.core.NestedExceptionUtils;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.DataClassRowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.jdbc.datasource.DataSourceUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,7 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
  * the admin writes; admin and counsellor read the whole school; teacher, assistant DM and DM read
  * the calendar in full and classes, blocks and timetable within their scope; parent and researcher
  * get 403. Every query is filtered by the signed-in user's school (NFR-8), and every change is
- * audited in its own transaction (NFR-11).
+ * audited in the same transaction (NFR-11).
  */
 @Component
 class StructureStore {
@@ -43,12 +37,12 @@ class StructureStore {
 
 	private final AuditLog audit;
 
-	private final DataSource dataSource;
+	private final ConstraintGuard guard;
 
-	StructureStore(NamedParameterJdbcTemplate jdbc, AuditLog audit, DataSource dataSource) {
+	StructureStore(NamedParameterJdbcTemplate jdbc, AuditLog audit, ConstraintGuard guard) {
 		this.jdbc = jdbc;
 		this.audit = audit;
-		this.dataSource = dataSource;
+		this.guard = guard;
 	}
 
 	/** @param filters column -> value, ANDed; {@code null} values are ignored */
@@ -145,49 +139,14 @@ class StructureStore {
 		return user.schoolId();
 	}
 
-	/**
-	 * Database constraints are the last line of defence; their violations become 409s with a code.
-	 * The statement runs in a savepoint, so a violation does not abort an enclosing transaction.
-	 */
+	/** Database constraints are the last line of defence; their violations become 409s with a code. */
 	private <T> T translate(StructureTable<?> table, Supplier<T> statement) {
-		Connection connection = DataSourceUtils.getConnection(dataSource); // the transaction's connection
-		Savepoint savepoint = sql(connection::setSavepoint);
-		try {
-			T result = statement.get();
-			sql(() -> {
-				connection.releaseSavepoint(savepoint);
-				return null;
-			});
-			return result;
-		}
-		catch (DataIntegrityViolationException ex) {
-			sql(() -> {
-				connection.rollback(savepoint);
-				return null;
-			});
-			String state = NestedExceptionUtils.getMostSpecificCause(ex) instanceof SQLException sql ? sql.getSQLState() : "";
-			throw switch (state) {
-				case "23505" -> ApiException.conflict(table.duplicateCode());
-				case "23P01" -> ApiException.conflict("term.overlap"); // the only exclusion constraint (V1)
-				case "23503" -> ApiException.conflict("in_use");
-				default -> ex;
-			};
-		}
-	}
-
-	private interface SqlCall<T> {
-
-		T call() throws SQLException;
-
-	}
-
-	private static <T> T sql(SqlCall<T> call) {
-		try {
-			return call.call();
-		}
-		catch (SQLException ex) {
-			throw new IllegalStateException("Savepoint failed", ex);
-		}
+		return guard.run(statement, state -> switch (state) {
+			case ConstraintGuard.UNIQUE -> ApiException.conflict(table.duplicateCode());
+			case ConstraintGuard.EXCLUSION -> ApiException.conflict("term.overlap"); // the only one (V1)
+			case ConstraintGuard.FOREIGN_KEY -> ApiException.conflict("in_use");
+			default -> null;
+		});
 	}
 
 }
