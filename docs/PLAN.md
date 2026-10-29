@@ -23,7 +23,7 @@ Exit criterion: an admin can set up a school and import students.
 | # | Task | Refs | Acceptance check |
 | --- | --- | --- | --- |
 | 1.1 | Spring Boot 4 / Java 21 skeleton with the Maven wrapper and the module packages from CLAUDE.md. Spring Modulith enforces module boundaries. Actuator health | §8 | `ApplicationModules.verify()` test passes; `/actuator/health` returns UP |
-| 1.2 | Testcontainers base test class (PG16) + Flyway V1: `school`, `academic_year`, `term`, `period`, `school_class`, `block` (D5), `timetable_slot` (D1), `holiday` (F3) | §7 | Migration test applies cleanly on an empty container |
+| 1.2 | Flyway V1 (Testcontainers PG16 config already added in 1.1): `school`, `academic_year`, `term`, `period`, `school_class`, `block` (D5), `timetable_slot` (D1), `holiday` (F3) | §7 | Migration test applies cleanly on an empty container |
 | 1.3 | Shared error model `{code, message, field}`, localized through `messages_fr/en.properties` and `Accept-Language` / the user's language | §9, NFR-12 | Test: one validation error returns the French text for `fr` and the English text for `en` |
 | 1.4 | Flyway V2 people tables: `app_user`, `role_assignment`, `teaching_assignment`, `student`, `guardian`, `student_guardian`, `invitation_code`. Phone numbers normalized to E.164, birth year only | §7, NFR-10 | Migration and constraint tests (unique matricule per school, many-to-many guardians) |
 | 1.5 | `audit` module: append-only `audit_log`, an `AuditService` other modules call; the DB rejects UPDATE and DELETE | NFR-11 | Test: insert works, update and delete fail |
