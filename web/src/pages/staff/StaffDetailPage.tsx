@@ -163,7 +163,7 @@ export function StaffDetailPage() {
                 )}
                 <Stack direction="row" component="span" sx={{ alignItems: 'center', gap: 0.75 }}>
                   <TranslateIcon size={16} aria-hidden />
-                  {t('staff.language')}: {t(`language.${staff.language.toLowerCase()}`)}
+                  {t('staff.languageValue', { language: t(`language.${staff.language.toLowerCase()}`) })}
                 </Stack>
               </Stack>
             </Box>

@@ -201,7 +201,7 @@ export function TimetablePage() {
                             fullWidth
                             size="small"
                             color="inherit"
-                            aria-label={`${title}: ${slot ? `${slot.subject}, ${teacherName(slot.teacherId)}` : t('timetable.free')}`}
+                            aria-label={t('timetable.cellLabel', { cell: title, content: slot ? `${slot.subject}, ${teacherName(slot.teacherId)}` : t('timetable.free') })}
                             onClick={() => open({ weekday, period, slot })}
                             sx={{
                               justifyContent: 'flex-start',

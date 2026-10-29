@@ -4,3 +4,10 @@ Made-up students for a manual check of the import screen against **Lycée Démo 
 
 - `demo-a-with-errors.csv`: every row but the first has errors (empty name, unknown sex and class, a matricule already in the seed and one repeated in the file, a foreign phone, an implausible birth year, both guardians with the same phone). Nothing can be committed.
 - `demo-a-clean.csv`: five valid students. Two are siblings and share one guardian. Commit it once; a second upload is refused because the matricules then exist. Reset with `docker compose down -v`, then restart the backend.
+
+# Import samples for the Phase 1 walkthrough
+
+Made-up students for the README's Phase 1 walkthrough, against the empty **Lycée Pilote (fictif)** created by the startup bootstrap, with the classes `6e A` and `5e A`.
+
+- `pilote-with-errors.csv`: rows 4 to 6 have errors (unknown class « 6e B », sex X, an invalid phone and a repeated matricule). Nothing can be committed.
+- `pilote.csv`: five valid students in 6e A and 5e A. Awa and Junior are siblings and share one guardian; one guardian has no language and gets the school's.

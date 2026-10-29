@@ -133,6 +133,7 @@
     "noTeaching": "Aucun enseignant n'est affecté à cette classe. Les affectations se font dans la gestion du personnel.",
     "clear": "Libérer le créneau",
     "cellTitle": "{{day}}, période {{number}}",
+    "cellLabel": "{{cell}} : {{content}}",
     "intro": "Les cours de chaque classe, jour par jour et période par période.",
     "periodNumber": "Période {{number}}"
   },
@@ -164,6 +165,7 @@
     "email": "E-mail",
     "contactHint": "Un téléphone ou un e-mail est obligatoire ; il sert d'identifiant de connexion.",
     "language": "Langue",
+    "languageValue": "Langue : {{language}}",
     "languageHint": "Langue des messages envoyés à cette personne.",
     "languageSchool": "Langue de l'établissement",
     "create": "Créer le compte",

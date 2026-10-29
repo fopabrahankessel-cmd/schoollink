@@ -141,9 +141,9 @@ describe('school structure screens (UC-A1)', () => {
     const user = userEvent.setup()
     await waitFor(() => expect(screen.getByLabelText(/Année scolaire/)).toHaveValue('y1'))
     await user.selectOptions(await screen.findByLabelText(/Classe/), 'c1')
-    expect(await screen.findByRole('button', { name: 'Lundi, période 1: Mathématiques, Awa Fictive' })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'Lundi, période 1 : Mathématiques, Awa Fictive' })).toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: 'Mardi, période 2: Libre' }))
+    await user.click(screen.getByRole('button', { name: 'Mardi, période 2 : Libre' }))
     const dialog = await screen.findByRole('dialog', { name: 'Mardi, période 2' })
     const lesson = within(dialog).getByLabelText(/Cours/)
     // only this class's assignments
@@ -154,7 +154,7 @@ describe('school structure screens (UC-A1)', () => {
     await user.selectOptions(lesson, 'u1|Mathématiques')
     await user.click(within(dialog).getByRole('button', { name: 'Enregistrer' }))
 
-    expect(await screen.findByRole('button', { name: 'Mardi, période 2: Mathématiques, Awa Fictive' })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'Mardi, période 2 : Mathématiques, Awa Fictive' })).toBeInTheDocument()
     expect(api.calls.find((c) => c.method === 'POST')?.body).toEqual({
       classId: 'c1',
       weekday: 2,
@@ -183,13 +183,13 @@ describe('school structure screens (UC-A1)', () => {
     const user = userEvent.setup()
     await waitFor(() => expect(screen.getByLabelText(/Année scolaire/)).toHaveValue('y1'))
     await user.selectOptions(await screen.findByLabelText(/Classe/), 'c1')
-    await user.click(await screen.findByRole('button', { name: /Lundi, période 1: Mathématiques/ }))
+    await user.click(await screen.findByRole('button', { name: /Lundi, période 1 : Mathématiques/ }))
     const dialog = await screen.findByRole('dialog')
     await user.click(within(dialog).getByRole('button', { name: 'Enregistrer' }))
     expect(await within(dialog).findByText(/Cet enseignant a déjà cours/)).toBeInTheDocument()
 
     await user.click(within(dialog).getByRole('button', { name: 'Libérer le créneau' }))
-    expect(await screen.findByRole('button', { name: 'Lundi, période 1: Libre' })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'Lundi, période 1 : Libre' })).toBeInTheDocument()
     expect(api.calls.some((c) => c.method === 'DELETE' && c.path === '/timetable-slots/s1')).toBe(true)
   })
 

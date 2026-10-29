@@ -133,6 +133,7 @@
     "noTeaching": "No teacher is assigned to this class yet. Assignments are made in staff management.",
     "clear": "Clear the slot",
     "cellTitle": "{{day}}, period {{number}}",
+    "cellLabel": "{{cell}}: {{content}}",
     "intro": "Each class's lessons, day by day and period by period.",
     "periodNumber": "Period {{number}}"
   },
@@ -164,6 +165,7 @@
     "email": "Email",
     "contactHint": "A phone or an email is required; it is used to sign in.",
     "language": "Language",
+    "languageValue": "Language: {{language}}",
     "languageHint": "Language of the messages sent to this person.",
     "languageSchool": "School language",
     "create": "Create the account",
