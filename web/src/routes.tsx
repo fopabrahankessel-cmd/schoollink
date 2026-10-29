@@ -10,6 +10,8 @@ import { CalendarPage } from './pages/structure/CalendarPage'
 import { ClassesPage } from './pages/structure/ClassesPage'
 import { PeriodsPage } from './pages/structure/PeriodsPage'
 import { TimetablePage } from './pages/structure/TimetablePage'
+import { StaffDetailPage } from './pages/staff/StaffDetailPage'
+import { StaffListPage } from './pages/staff/StaffListPage'
 
 const admin = (page: ReactNode) => <RequireRole role="ADMIN">{page}</RequireRole>
 
@@ -29,6 +31,9 @@ export const routes: RouteObject[] = [
       { path: '/structure/periods', element: admin(<PeriodsPage />) },
       { path: '/structure/classes', element: admin(<ClassesPage />) },
       { path: '/structure/timetable', element: admin(<TimetablePage />) },
+      // UC-A2: staff accounts and assignments, admin only
+      { path: '/staff', element: admin(<StaffListPage />) },
+      { path: '/staff/:id', element: admin(<StaffDetailPage />) },
     ],
   },
   { path: '*', element: <Navigate to="/" replace /> },

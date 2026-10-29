@@ -11,6 +11,7 @@ const ADMIN_NAV = [
   { to: '/structure/periods', label: 'nav.periods' },
   { to: '/structure/classes', label: 'nav.classes' },
   { to: '/structure/timetable', label: 'nav.timetable' },
+  { to: '/staff', label: 'nav.staff' },
 ] as const
 
 export function AppLayout() {
@@ -18,7 +19,7 @@ export function AppLayout() {
   const { user, signOut } = useAuth()
   const { pathname } = useLocation()
   const nav = user?.roles.includes('ADMIN') && !user.passwordChangeRequired ? ADMIN_NAV : []
-  const current = nav.some((n) => n.to === pathname) ? pathname : false
+  const current = nav.find((n) => n.to === pathname || (n.to !== '/' && pathname.startsWith(`${n.to}/`)))?.to ?? false
 
   return (
     <Box sx={{ minHeight: '100vh' }}>
