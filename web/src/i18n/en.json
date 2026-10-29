@@ -37,7 +37,12 @@
     "submit": "Save"
   },
   "nav": {
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "home": "Home",
+    "calendar": "Calendar",
+    "periods": "Periods",
+    "classes": "Classes",
+    "timetable": "Timetable"
   },
   "home": {
     "welcome": "Welcome to SchoolLink",
@@ -52,5 +57,69 @@
     "COUNSELLOR": "Guidance counsellor",
     "PARENT": "Parent",
     "RESEARCHER": "Researcher"
+  },
+  "crud": {
+    "add": "Add",
+    "edit": "Edit",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "save": "Save",
+    "choose": "Choose…",
+    "actions": "Actions",
+    "addTitle": "Add: {{name}}",
+    "editTitle": "Edit: {{name}}",
+    "deleteTitle": "Delete this item?",
+    "deleteText": "Deleting is permanent. An item still in use (for example a class with students) cannot be deleted."
+  },
+  "structure": {
+    "calendarTitle": "School calendar",
+    "years": "Academic years",
+    "terms": "Terms",
+    "holidays": "Holidays",
+    "periods": "Lesson periods",
+    "blocks": "Blocks",
+    "classes": "Classes",
+    "label": "Label",
+    "startDate": "Start",
+    "endDate": "End",
+    "startTime": "Start time",
+    "endTime": "End time",
+    "number": "Number",
+    "name": "Name",
+    "level": "Level",
+    "block": "Block",
+    "year": "Academic year",
+    "noYears": "No academic year yet.",
+    "noTerms": "No term in this year.",
+    "noHolidays": "No holiday in this term.",
+    "noPeriods": "No lesson period yet.",
+    "noBlocks": "No block yet.",
+    "noClasses": "No class in this year.",
+    "pickYear": "Select an academic year to see its terms.",
+    "pickTerm": "Select a term to see its holidays.",
+    "pickYearForClasses": "Choose an academic year.",
+    "term": "Term",
+    "holiday": "Holiday",
+    "period": "Lesson period",
+    "schoolClass": "Class"
+  },
+  "timetable": {
+    "title": "Timetable",
+    "class": "Class",
+    "pickClass": "Choose a class.",
+    "needPeriods": "Add the lesson periods first.",
+    "free": "Free",
+    "lesson": "Lesson",
+    "lessonHint": "Only the teachers assigned to this class are listed.",
+    "noTeaching": "No teacher is assigned to this class yet. Assignments are made in staff management.",
+    "clear": "Clear the slot",
+    "cellTitle": "{{day}}, period {{number}}"
+  },
+  "weekdays": {
+    "1": "Monday",
+    "2": "Tuesday",
+    "3": "Wednesday",
+    "4": "Thursday",
+    "5": "Friday"
   }
 }

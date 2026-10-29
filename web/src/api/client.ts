@@ -81,6 +81,7 @@ export class ApiClient {
   private readonly storage: Storage
   private readonly language: () => string
   private accessToken: string | null = null
+  private user: UserInfo | null = null
   private refreshing: Promise<boolean> | null = null
   /** Bumped when the session ends, so a refresh that was under way cannot bring it back. */
   private generation = 0
@@ -101,6 +102,7 @@ export class ApiClient {
 
   startSession(tokens: TokenResponse): void {
     this.accessToken = tokens.accessToken
+    this.user = tokens.user
     this.writeRefreshToken(tokens.refreshToken)
     this.listeners.forEach((l) => l(tokens.user))
   }
@@ -108,6 +110,7 @@ export class ApiClient {
   endSession(): void {
     this.generation++
     this.accessToken = null
+    this.user = null
     this.writeRefreshToken(null)
     this.listeners.forEach((l) => l(null))
   }
@@ -122,6 +125,11 @@ export class ApiClient {
       // best effort: offline, the token still expires on its own
       await this.send('/auth/logout', { method: 'POST', body: { refreshToken } }, null).catch(() => undefined)
     }
+  }
+
+  /** The signed-in user, if the session is live in this page (not only a stored refresh token). */
+  currentUser(): UserInfo | null {
+    return this.user
   }
 
   hasSession(): boolean {

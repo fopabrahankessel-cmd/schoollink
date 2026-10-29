@@ -37,7 +37,12 @@
     "submit": "Enregistrer"
   },
   "nav": {
-    "signOut": "Se déconnecter"
+    "signOut": "Se déconnecter",
+    "home": "Accueil",
+    "calendar": "Calendrier",
+    "periods": "Périodes",
+    "classes": "Classes",
+    "timetable": "Emploi du temps"
   },
   "home": {
     "welcome": "Bienvenue sur SchoolLink",
@@ -52,5 +57,69 @@
     "COUNSELLOR": "Conseiller d'orientation",
     "PARENT": "Parent",
     "RESEARCHER": "Chercheur"
+  },
+  "crud": {
+    "add": "Ajouter",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "choose": "Choisir…",
+    "actions": "Actions",
+    "addTitle": "Ajouter : {{name}}",
+    "editTitle": "Modifier : {{name}}",
+    "deleteTitle": "Supprimer cet élément ?",
+    "deleteText": "La suppression est définitive. Un élément encore utilisé (par exemple une classe avec des élèves) ne peut pas être supprimé."
+  },
+  "structure": {
+    "calendarTitle": "Calendrier scolaire",
+    "years": "Années scolaires",
+    "terms": "Trimestres",
+    "holidays": "Congés",
+    "periods": "Périodes de cours",
+    "blocks": "Blocs",
+    "classes": "Classes",
+    "label": "Libellé",
+    "startDate": "Début",
+    "endDate": "Fin",
+    "startTime": "Heure de début",
+    "endTime": "Heure de fin",
+    "number": "Numéro",
+    "name": "Nom",
+    "level": "Niveau",
+    "block": "Bloc",
+    "year": "Année scolaire",
+    "noYears": "Aucune année scolaire pour l'instant.",
+    "noTerms": "Aucun trimestre dans cette année.",
+    "noHolidays": "Aucun congé dans ce trimestre.",
+    "noPeriods": "Aucune période de cours pour l'instant.",
+    "noBlocks": "Aucun bloc pour l'instant.",
+    "noClasses": "Aucune classe dans cette année.",
+    "pickYear": "Sélectionnez une année scolaire pour voir ses trimestres.",
+    "pickTerm": "Sélectionnez un trimestre pour voir ses congés.",
+    "pickYearForClasses": "Choisissez une année scolaire.",
+    "term": "Trimestre",
+    "holiday": "Congé",
+    "period": "Période de cours",
+    "schoolClass": "Classe"
+  },
+  "timetable": {
+    "title": "Emploi du temps",
+    "class": "Classe",
+    "pickClass": "Choisissez une classe.",
+    "needPeriods": "Ajoutez d'abord les périodes de cours.",
+    "free": "Libre",
+    "lesson": "Cours",
+    "lessonHint": "Seuls les enseignants affectés à cette classe apparaissent.",
+    "noTeaching": "Aucun enseignant n'est affecté à cette classe. Les affectations se font dans la gestion du personnel.",
+    "clear": "Libérer le créneau",
+    "cellTitle": "{{day}}, période {{number}}"
+  },
+  "weekdays": {
+    "1": "Lundi",
+    "2": "Mardi",
+    "3": "Mercredi",
+    "4": "Jeudi",
+    "5": "Vendredi"
   }
 }

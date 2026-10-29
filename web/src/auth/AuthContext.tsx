@@ -5,8 +5,10 @@ import { rememberSchool } from './schoolMemory'
 import { AuthContext, type AuthStatus, type AuthValue } from './useAuth'
 
 export function AuthProvider({ client, children }: { client: ApiClient; children: ReactNode }) {
-  const [user, setUser] = useState<UserInfo | null>(null)
-  const [status, setStatus] = useState<AuthStatus>(() => (client.hasSession() ? 'loading' : 'signedOut'))
+  const [user, setUser] = useState<UserInfo | null>(() => client.currentUser())
+  const [status, setStatus] = useState<AuthStatus>(() =>
+    client.currentUser() ? 'signedIn' : client.hasSession() ? 'loading' : 'signedOut',
+  )
 
   useEffect(() => {
     const unsubscribe = client.onSession((next) => {
@@ -14,7 +16,7 @@ export function AuthProvider({ client, children }: { client: ApiClient; children
       setStatus(next ? 'signedIn' : 'signedOut')
     })
     // A reload keeps the session: trade the stored refresh token for a new pair.
-    if (client.hasSession()) {
+    if (client.currentUser() === null && client.hasSession()) {
       client.refresh().catch(() => setStatus('signedOut'))
     }
     return () => {
