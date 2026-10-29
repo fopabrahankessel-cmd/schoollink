@@ -101,7 +101,7 @@ export function StaffDetailPage() {
   const className = (classId: string) => classes.items.find((c) => c.id === classId)?.name ?? ''
 
   return (
-    <Stack spacing={3}>
+    <Stack spacing={3} sx={{ maxWidth: 880 }}>
       <Box>
         <Link to="/staff">{t('staff.back')}</Link>
         <Stack direction="row" spacing={2} sx={{ alignItems: 'center', mt: 1 }}>
@@ -181,7 +181,7 @@ export function StaffDetailPage() {
                   <TableCell align="right">
                     <Button
                       size="small"
-                      color="error"
+                      sx={{ color: 'text.secondary' }}
                       aria-label={t('staff.removeRole', { role: roleLabel(role, blocks.items, t) })}
                       onClick={() =>
                         setConfirm({
@@ -234,7 +234,7 @@ export function StaffDetailPage() {
                       <TableCell align="right">
                         <Button
                           size="small"
-                          color="error"
+                          sx={{ color: 'text.secondary' }}
                           aria-label={t('staff.removeTeaching', { subject: a.subject, class: className(a.classId) })}
                           onClick={() =>
                             void change(() =>
@@ -331,7 +331,7 @@ function AddRoleForm({
   }
 
   return (
-    <Stack component="form" onSubmit={submit} direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ mt: 2, alignItems: { sm: 'center' } }}>
+    <Stack component="form" onSubmit={submit} direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ mt: 2, alignItems: { sm: 'flex-end' } }}>
       <TextField
         select
         label={t('staff.newRole')}
@@ -370,7 +370,7 @@ function AddRoleForm({
           ))}
         </TextField>
       )}
-      <Button type="submit" variant="contained" loading={saving} sx={{ flexShrink: 0, whiteSpace: 'nowrap' }} disabled={!role || (needsBlock && !blockId)}>
+      <Button type="submit" variant="outlined" loading={saving} sx={{ flexShrink: 0, whiteSpace: 'nowrap' }} disabled={!role || (needsBlock && !blockId)}>
         {t('staff.addRole')}
       </Button>
     </Stack>
@@ -412,7 +412,7 @@ function AddTeachingForm({
   const subjectError = error instanceof ApiError ? error.messageFor('subject') : undefined
 
   return (
-    <Stack component="form" onSubmit={submit} direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ mt: 2, alignItems: { sm: 'flex-start' } }}>
+    <Stack component="form" onSubmit={submit} direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ mt: 2, alignItems: { sm: 'flex-end' } }}>
       <YearPicker years={years.items} value={yearId} onChange={(id) => { setYearId(id); setClassId('') }} />
       <TextField
         select
@@ -446,7 +446,7 @@ function AddTeachingForm({
           <option key={s} value={s} />
         ))}
       </datalist>
-      <Button type="submit" variant="contained" loading={saving} disabled={!classId || !subject.trim()} sx={{ mt: { sm: 1 }, flexShrink: 0, whiteSpace: 'nowrap' }}>
+      <Button type="submit" variant="outlined" loading={saving} disabled={!classId || !subject.trim()} sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}>
         {t('staff.addTeaching')}
       </Button>
     </Stack>

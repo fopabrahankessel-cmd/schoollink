@@ -2,7 +2,6 @@ import {
   Alert,
   Button,
   Chip,
-  Paper,
   Stack,
   Table,
   TableBody,
@@ -52,18 +51,25 @@ export function StaffListPage() {
         </Button>
       </Stack>
       {staff.error !== null && <Alert severity="error">{errorMessage(staff.error, t)}</Alert>}
-      <TextField
-        label={t('staff.search')}
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        margin="none"
-        sx={{ maxWidth: 360 }}
-        type="search"
-      />
+      <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'flex-end', gap: 2 }}>
+        <TextField
+          label={t('staff.search')}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          margin="none"
+          sx={{ maxWidth: 320 }}
+          type="search"
+        />
+        {!staff.loading && (
+          <Typography color="text.secondary" sx={{ flex: 'none', pb: 1 }}>
+            {t('staff.count', { count: shown.length })}
+          </Typography>
+        )}
+      </Stack>
       {!staff.loading && shown.length === 0 ? (
         <Typography color="text.secondary">{t('staff.empty')}</Typography>
       ) : (
-        <TableContainer component={Paper} variant="outlined">
+        <TableContainer>
           <Table size="small">
             <TableHead>
               <TableRow>
@@ -76,11 +82,11 @@ export function StaffListPage() {
             <TableBody>
               {shown.map((s) => (
                 <TableRow key={s.id} hover>
-                  <TableCell>
+                  <TableCell sx={{ fontWeight: 500 }}>
                     {/* the id, never the phone, goes in the URL (NFR-9) */}
                     <Link to={`/staff/${s.id}`}>{fullName(s)}</Link>
                   </TableCell>
-                  <TableCell>{[s.phone, s.email].filter(Boolean).join(' · ')}</TableCell>
+                  <TableCell sx={{ color: 'text.secondary' }}>{[s.phone, s.email].filter(Boolean).join(' · ')}</TableCell>
                   <TableCell>
                     <RoleChips roles={s.roles} blocks={blocks.items} />
                   </TableCell>
@@ -121,7 +127,12 @@ export function StaffListPage() {
 
 export function StatusChip({ staff }: { staff: StaffMember }) {
   const { t } = useTranslation()
-  if (staff.status === 'DISABLED') return <Chip size="small" color="default" label={t('staff.disabled')} />
+  // Colour only where something is pending; an active account is the normal case.
+  if (staff.status === 'DISABLED') return <Chip size="small" label={t('staff.disabled')} />
   if (staff.passwordChangeRequired) return <Chip size="small" color="warning" label={t('staff.pending')} />
-  return <Chip size="small" color="success" variant="outlined" label={t('staff.active')} />
+  return (
+    <Typography component="span" color="text.secondary">
+      {t('staff.active')}
+    </Typography>
+  )
 }

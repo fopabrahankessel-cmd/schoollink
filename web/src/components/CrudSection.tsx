@@ -24,6 +24,7 @@ import { ApiError } from '../api/client'
 import { errorMessage } from '../api/errors'
 import { useAuth } from '../auth/useAuth'
 import { useList } from '../hooks/useList'
+import { tokens } from '../theme'
 
 export interface Column<T> {
   label: string
@@ -129,12 +130,12 @@ export function CrudSection<T extends { id: string }>(props: Props<T>) {
   const shownError = listError ?? list.error
 
   return (
-    <Paper variant="outlined" sx={{ p: 2 }} component="section" aria-label={props.title}>
+    <Paper variant="outlined" sx={{ p: 2.5 }} component="section" aria-label={props.title}>
       <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
         <Typography variant="h6" component="h2">
           {props.title}
         </Typography>
-        <Button variant="contained" size="small" onClick={() => open(null)} disabled={props.listPath === null}>
+        <Button variant="outlined" size="small" onClick={() => open(null)} disabled={props.listPath === null}>
           {t('crud.add')}
         </Button>
       </Stack>
@@ -144,9 +145,9 @@ export function CrudSection<T extends { id: string }>(props: Props<T>) {
         </Alert>
       )}
       {props.listPath === null ? (
-        <Typography color="text.secondary">{props.waitingText}</Typography>
+        <EmptyNote>{props.waitingText}</EmptyNote>
       ) : !list.loading && list.items.length === 0 ? (
-        <Typography color="text.secondary">{props.emptyText}</Typography>
+        <EmptyNote>{props.emptyText}</EmptyNote>
       ) : (
         <TableContainer>
           <Table size="small">
@@ -176,10 +177,11 @@ export function CrudSection<T extends { id: string }>(props: Props<T>) {
                     <TableCell key={c.label}>{c.render(item)}</TableCell>
                   ))}
                   <TableCell align="right" sx={{ whiteSpace: 'nowrap' }} onClick={(e) => e.stopPropagation()}>
-                    <Button size="small" onClick={() => open(item)}>
+                    {/* quiet on every row; the red is kept for the confirmation */}
+                    <Button size="small" color="inherit" onClick={() => open(item)}>
                       {t('crud.edit')}
                     </Button>
-                    <Button size="small" color="error" onClick={() => setDeleting(item)}>
+                    <Button size="small" sx={{ color: 'text.secondary' }} onClick={() => setDeleting(item)}>
                       {t('crud.delete')}
                     </Button>
                   </TableCell>
@@ -273,3 +275,15 @@ const visuallyHidden = {
   whiteSpace: 'nowrap',
   width: '1px',
 } as const
+
+/** An empty section keeps its frame and says what to do in one sentence. */
+function EmptyNote({ children }: { children: ReactNode }) {
+  return (
+    <Typography
+      color="text.secondary"
+      sx={{ border: `1px dashed ${tokens.control}`, borderRadius: `${tokens.radius.card}px`, px: 1.5, py: 1 }}
+    >
+      {children}
+    </Typography>
+  )
+}

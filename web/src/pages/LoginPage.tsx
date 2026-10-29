@@ -1,4 +1,4 @@
-import { Alert, Box, Button, Card, CardContent, TextField, Typography } from '@mui/material'
+import { Alert, Box, Button, Stack, TextField, Typography } from '@mui/material'
 import { useEffect, useState, type FormEvent } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Navigate, useLocation, useNavigate } from 'react-router'
@@ -8,6 +8,8 @@ import { errorMessage } from '../api/errors'
 import { rememberedSchool } from '../auth/schoolMemory'
 import { useAuth } from '../auth/useAuth'
 import { LanguageSwitch } from '../components/LanguageSwitch'
+import { Mark } from '../components/Mark'
+import { tokens } from '../theme'
 
 /**
  * Sign-in with a phone or email (D15). D16: the school picker appears when the server needs it
@@ -59,22 +61,32 @@ export function LoginPage() {
   const general = error !== null && !schoolError && !loginError && !passwordError
 
   return (
-    <Box sx={{ minHeight: '100vh', display: 'grid', placeItems: 'center', px: 2 }}>
-      <Card sx={{ width: '100%', maxWidth: 420 }} variant="outlined">
-        <CardContent sx={{ p: 4 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', mb: 2 }}>
-            <Box>
-              <Typography variant="h5" component="p" sx={{ fontWeight: 700, color: 'primary.main' }}>
-                {t('app.name')}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {t('app.tagline')}
-              </Typography>
-            </Box>
-            <LanguageSwitch />
-          </Box>
-          <Typography variant="h6" component="h1">
+    <Box sx={{ minHeight: '100vh', bgcolor: tokens.ground, display: 'flex', flexDirection: 'column', px: 2 }}>
+      <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', py: 2, maxWidth: 1152, width: '100%', mx: 'auto' }}>
+        <Stack direction="row" spacing={1.25} sx={{ alignItems: 'center' }}>
+          <Mark size={28} />
+          <Typography component="p" sx={{ fontSize: 16, fontWeight: 600 }}>
+            {t('app.name')}
+          </Typography>
+        </Stack>
+        <LanguageSwitch />
+      </Stack>
+      <Box sx={{ flex: 1, display: 'grid', placeItems: { xs: 'start center', sm: 'center' }, pt: { xs: 2, sm: 0 }, pb: { xs: 4, sm: 10 } }}>
+        <Box
+          sx={{
+            width: '100%',
+            maxWidth: 400,
+            bgcolor: tokens.surface,
+            border: `1px solid ${tokens.border}`,
+            borderRadius: `${tokens.radius.sheet}px`,
+            p: { xs: 3, sm: 4 },
+          }}
+        >
+          <Typography variant="h5" component="h1">
             {t('login.title')}
+          </Typography>
+          <Typography color="text.secondary" sx={{ mt: 0.5 }}>
+            {t('app.tagline')}
           </Typography>
           <Box component="form" onSubmit={submit} noValidate>
             {general && (
@@ -132,8 +144,8 @@ export function LoginPage() {
               {t('login.submit')}
             </Button>
           </Box>
-        </CardContent>
-      </Card>
+        </Box>
+      </Box>
     </Box>
   )
 }

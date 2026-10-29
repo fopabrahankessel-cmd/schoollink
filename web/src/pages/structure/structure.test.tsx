@@ -198,13 +198,14 @@ describe('school structure screens (UC-A1)', () => {
     renderApp(client, '/structure/periods')
 
     expect(await screen.findByRole('heading', { name: 'Bienvenue sur SchoolLink' })).toBeInTheDocument()
-    expect(screen.queryByRole('tab', { name: 'Périodes' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Périodes' })).not.toBeInTheDocument()
   })
 
-  it('shows the admin the structure tabs', async () => {
+  it('shows the admin the structure screens in the navigation', async () => {
     const { client } = signedIn({})
     renderApp(client, '/')
 
-    expect(await screen.findByRole('tab', { name: 'Emploi du temps' })).toHaveAttribute('href', '/structure/timetable')
+    const nav = await screen.findByRole('navigation', { name: 'Navigation principale' })
+    expect(within(nav).getByRole('link', { name: 'Emploi du temps' })).toHaveAttribute('href', '/structure/timetable')
   })
 })

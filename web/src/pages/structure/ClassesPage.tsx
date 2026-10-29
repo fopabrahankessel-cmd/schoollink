@@ -15,7 +15,7 @@ export function ClassesPage() {
   const blockName = (id: string) => blocks.items.find((b) => b.id === id)?.name ?? ''
 
   return (
-    <Stack spacing={3}>
+    <Stack spacing={3} sx={{ maxWidth: 880 }}>
       <Typography variant="h5" component="h1">
         {t('structure.classes')}
       </Typography>

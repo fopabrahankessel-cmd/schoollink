@@ -71,7 +71,7 @@ describe('staff screens (UC-A2)', () => {
     expect(await screen.findByRole('heading', { name: 'Awa Fictive' })).toBeInTheDocument()
     expect(router.state.location.pathname).toBe('/staff/u1') // the id, never the phone (NFR-9)
     expect(screen.queryByText('kT7-mQ2x-Pw9')).not.toBeInTheDocument()
-  })
+  }, 15_000) // types a whole form: slow under a loaded test run
 
   it("shows the server's message on the field it concerns", async () => {
     const { client } = signedIn({
@@ -206,15 +206,16 @@ describe('staff screens (UC-A2)', () => {
     renderApp(client, '/staff/u1')
 
     expect(await screen.findByRole('heading', { name: 'Bienvenue sur SchoolLink' })).toBeInTheDocument()
-    expect(screen.queryByRole('tab', { name: 'Personnel' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Personnel' })).not.toBeInTheDocument()
   })
 
-  it('shows the admin the staff tab, selected on a detail page', async () => {
+  it('shows the admin the staff screen in the navigation, current on a detail page', async () => {
     const { client } = signedIn({ ...detail, 'GET /staff/u1': json(200, PERSON) })
     renderApp(client, '/staff/u1')
 
-    const tab = await screen.findByRole('tab', { name: 'Personnel' })
-    expect(tab).toHaveAttribute('href', '/staff')
-    expect(tab).toHaveAttribute('aria-selected', 'true')
+    const nav = await screen.findByRole('navigation', { name: 'Navigation principale' })
+    const link = within(nav).getByRole('link', { name: 'Personnel' })
+    expect(link).toHaveAttribute('href', '/staff')
+    expect(link).toHaveAttribute('aria-current', 'page')
   })
 })

@@ -33,7 +33,7 @@ export function CalendarPage() {
   })
 
   return (
-    <Stack spacing={3}>
+    <Stack spacing={3} sx={{ maxWidth: 880 }}>
       <Typography variant="h5" component="h1">
         {t('structure.calendarTitle')}
       </Typography>

@@ -7,7 +7,7 @@ import { CrudSection } from '../../components/CrudSection'
 export function PeriodsPage() {
   const { t } = useTranslation()
   return (
-    <Stack spacing={3}>
+    <Stack spacing={3} sx={{ maxWidth: 880 }}>
       <Typography variant="h5" component="h1">
         {t('structure.periods')}
       </Typography>

@@ -2,12 +2,14 @@ import { Alert, Box, Chip, Stack, Typography } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { WEB_ROLES } from '../auth/roles'
 import { useAuth } from '../auth/useAuth'
+import { SetupOverview } from './SetupOverview'
 
-/** Placeholder until the admin screens (tasks 1.16–1.19). */
+/** The admin sees how far the school year is set up; other web roles get theirs in later tasks. */
 export function HomePage() {
   const { t } = useTranslation()
   const { user } = useAuth()
   const roles = user?.roles ?? []
+  if (roles.includes('ADMIN')) return <SetupOverview />
   const onWeb = roles.some((r) => WEB_ROLES.includes(r))
 
   return (
@@ -16,11 +18,11 @@ export function HomePage() {
         {t('home.welcome')}
       </Typography>
       {!onWeb && (
-        <Alert severity="info" sx={{ mb: 2 }}>
+        <Alert severity="info" sx={{ mb: 2, maxWidth: 640 }}>
           {t('home.mobileOnly')}
         </Alert>
       )}
-      <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+      <Typography color="text.secondary" gutterBottom>
         {t('home.roles')}
       </Typography>
       <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap' }}>

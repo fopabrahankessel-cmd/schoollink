@@ -37,7 +37,7 @@ describe('LoginPage', () => {
 
     await fillAndSubmit()
 
-    expect(await screen.findByRole('heading', { name: 'Bienvenue sur SchoolLink' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: "Préparation de l'année" })).toBeInTheDocument()
     expect(screen.getByText('Administrateur')).toBeInTheDocument()
     expect(api.calls[0].body).toEqual({ login: 'admin@lycee-demo-a.test', password: 'schoollink-dev' })
     expect(api.calls[0].headers['Accept-Language']).toBe('fr')
@@ -79,7 +79,7 @@ describe('LoginPage', () => {
     await user.selectOptions(picker, SCHOOL_B.id)
     await user.click(screen.getByRole('button', { name: 'Se connecter' }))
 
-    expect(await screen.findByRole('heading', { name: 'Bienvenue sur SchoolLink' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: "Préparation de l'année" })).toBeInTheDocument()
     const logins = api.calls.filter((c) => c.path === '/auth/login')
     expect(logins[1].body).toEqual({ login: 'enseignant.partage@demo.test', password: 'schoollink-dev', schoolId: SCHOOL_B.id })
     expect(localStorage.getItem(SCHOOL_KEY)).toBe(SCHOOL_B.id)
@@ -93,7 +93,7 @@ describe('LoginPage', () => {
     await waitFor(() => expect(screen.getByLabelText(/Établissement/)).toHaveValue(SCHOOL_A.id))
     await fillAndSubmit()
 
-    await screen.findByRole('heading', { name: 'Bienvenue sur SchoolLink' })
+    await screen.findByRole('heading', { name: "Préparation de l'année" })
     expect(api.calls.find((c) => c.path === '/auth/login')?.body).toMatchObject({ schoolId: SCHOOL_A.id })
   })
 
@@ -116,7 +116,7 @@ describe('LoginPage', () => {
     expect(save).toBeEnabled()
     await user.click(save)
 
-    expect(await screen.findByRole('heading', { name: 'Bienvenue sur SchoolLink' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: "Préparation de l'année" })).toBeInTheDocument()
     expect(api.calls.find((c) => c.path === '/me/password')).toMatchObject({
       body: { currentPassword: 'Temporary-123', newPassword: 'short-but-long-now' },
       headers: { Authorization: 'Bearer access-1' },
@@ -139,7 +139,7 @@ describe('LoginPage', () => {
     })
     renderApp(newClient(api.fetch), '/')
 
-    expect(await screen.findByRole('heading', { name: 'Bienvenue sur SchoolLink' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: "Préparation de l'année" })).toBeInTheDocument()
 
     await userEvent.click(screen.getByRole('button', { name: 'Se déconnecter' }))
     expect(await screen.findByRole('heading', { name: 'Connexion' })).toBeInTheDocument()
