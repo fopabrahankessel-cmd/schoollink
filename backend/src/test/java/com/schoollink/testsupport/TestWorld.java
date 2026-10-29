@@ -18,8 +18,10 @@ import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
  * Generated data only.
  *
  * <pre>
- * School X: block 1 -> class A (student SA, guardian = PARENT_A), block 2 -> class B
- *           ADMIN_X, TEACHER_A (teaches A), ASSISTANT_DM_1, DM_1, DM_2, COUNSELLOR_X, PARENT_A
+ * School X: year 2026-2027, term 1 (7 Sep - 18 Dec 2026), period 1 (07:30-08:25)
+ *           block 1 -> class A (student SA, guardian = PARENT_A), block 2 -> class B
+ *           ADMIN_X, TEACHER_A (teaches Maths in A, Monday period 1), ASSISTANT_DM_1, DM_1, DM_2,
+ *           COUNSELLOR_X, PARENT_A
  * School Y: class C, ADMIN_Y
  * RESEARCHER: no school
  * </pre>
@@ -31,6 +33,14 @@ public final class TestWorld {
 	public final UUID schoolX;
 
 	public final UUID schoolY;
+
+	public final UUID yearX;
+
+	public final UUID termX;
+
+	public final UUID period1;
+
+	public final UUID slotA;
 
 	public final UUID block1;
 
@@ -55,7 +65,13 @@ public final class TestWorld {
 		this.encoder = encoder;
 		schoolX = id("INSERT INTO school (name) VALUES ('Lycée Fictif X') RETURNING id");
 		schoolY = id("INSERT INTO school (name, language) VALUES ('Fictional High School Y', 'EN') RETURNING id");
-		UUID yearX = year(schoolX);
+		yearX = year(schoolX);
+		termX = id("""
+				INSERT INTO term (school_id, academic_year_id, label, start_date, end_date)
+				VALUES (?, ?, 'Trimestre 1', '2026-09-07', '2026-12-18') RETURNING id""", schoolX, yearX);
+		period1 = id("""
+				INSERT INTO period (school_id, number, start_time, end_time)
+				VALUES (?, 1, '07:30', '08:25') RETURNING id""", schoolX);
 		UUID yearY = year(schoolY);
 		block1 = id("INSERT INTO block (school_id, name) VALUES (?, 'Bloc 1') RETURNING id", schoolX);
 		block2 = id("INSERT INTO block (school_id, name) VALUES (?, 'Bloc 2') RETURNING id", schoolX);
@@ -68,6 +84,9 @@ public final class TestWorld {
 		user(Actor.TEACHER_A, schoolX, null);
 		jdbc.update("INSERT INTO teaching_assignment (school_id, teacher_id, class_id, subject) VALUES (?, ?, ?, 'Maths')",
 				schoolX, users.get(Actor.TEACHER_A), classA);
+		slotA = id("""
+				INSERT INTO timetable_slot (school_id, class_id, weekday, period_id, teacher_id, subject)
+				VALUES (?, ?, 1, ?, ?, 'Maths') RETURNING id""", schoolX, classA, period1, users.get(Actor.TEACHER_A));
 		user(Actor.ASSISTANT_DM_1, schoolX, block1);
 		user(Actor.DM_1, schoolX, block1);
 		user(Actor.DM_2, schoolX, block2);
