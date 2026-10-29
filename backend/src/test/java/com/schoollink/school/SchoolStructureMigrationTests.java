@@ -165,10 +165,17 @@ class SchoolStructureMigrationTests {
 				UUID.class, school, number, start, end);
 	}
 
+	/** Since V2 a slot must name a teacher assigned to that class and subject (BR-1). */
 	private void slot(UUID school, UUID schoolClass, int weekday, UUID period) {
+		UUID teacher = jdbc.queryForObject(
+				"INSERT INTO app_user (school_id, first_name, last_name, email) VALUES (?, 'Prof', 'Test', ?) RETURNING id",
+				UUID.class, school, "prof-" + UUID.randomUUID() + "@example.test");
+		jdbc.update(
+				"INSERT INTO teaching_assignment (school_id, teacher_id, class_id, subject) VALUES (?, ?, ?, 'Mathématiques')",
+				school, teacher, schoolClass);
 		jdbc.update(
 				"INSERT INTO timetable_slot (school_id, class_id, weekday, period_id, teacher_id, subject) VALUES (?, ?, ?, ?, ?, 'Mathématiques')",
-				school, schoolClass, weekday, period, UUID.randomUUID());
+				school, schoolClass, weekday, period, teacher);
 	}
 
 }
