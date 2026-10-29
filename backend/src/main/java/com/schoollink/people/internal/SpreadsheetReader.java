@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import org.apache.poi.openxml4j.util.ZipSecureFile;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.DataFormatter;
@@ -25,6 +26,7 @@ import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.util.IOUtils;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Component;
 
@@ -32,13 +34,39 @@ import org.springframework.stereotype.Component;
  * Reads an import file into text cells (UC-A3): CSV (separator ";" or ",", UTF-8 or the
  * Windows-1252 that Excel writes) or the first sheet of an .xlsx workbook. Dates in Excel become
  * ISO text (yyyy-MM-dd). The file is read in memory and never stored.
+ *
+ * <p>Limits are enforced while reading, not after: at most {@link #MAX_ROWS} non-blank data rows
+ * and {@link #MAX_COLUMNS} columns, and an .xlsx may not expand to more than {@link #MAX_XLSX_ENTRY}
+ * bytes per part, so a small upload cannot exhaust memory (zip bombs, sparse sheets with a huge
+ * last row or column).
  */
 @Component
 class SpreadsheetReader {
 
+	/** One school has at most a few thousand students. */
+	static final int MAX_ROWS = 5000;
+
+	/** The template has 14 columns; anything beyond this is ignored. */
+	static final int MAX_COLUMNS = 64;
+
+	/** A legitimate 5,000-row sheet is a few MB of XML once decompressed. */
+	static final int MAX_XLSX_ENTRY = 20 * 1024 * 1024;
+
 	private static final DataFormatter TEXT = new DataFormatter(Locale.ROOT);
 
-	record Table(List<String> headers, List<List<String>> rows) {
+	static {
+		// process-wide POI limits; nothing else in the application reads Office files
+		ZipSecureFile.setMinInflateRatio(0.02);
+		ZipSecureFile.setMaxEntrySize(MAX_XLSX_ENTRY);
+		IOUtils.setByteArrayMaxOverride(MAX_XLSX_ENTRY);
+	}
+
+	/** @param number the row number as the spreadsheet shows it (the header is row 1) */
+	record Line(int number, List<String> cells) {
+	}
+
+	/** @param rows the non-blank data rows, in order */
+	record Table(List<String> headers, List<Line> rows) {
 	}
 
 	Table read(String fileName, byte[] content) {
@@ -62,12 +90,17 @@ class SpreadsheetReader {
 		try (CSVReader reader = new CSVReaderBuilder(new StringReader(text))
 			.withCSVParser(new CSVParserBuilder().withSeparator(separator).build())
 			.build()) {
-			List<String[]> lines = reader.readAll();
-			if (lines.isEmpty()) {
+			String[] header = reader.readNext();
+			if (header == null) {
 				throw ApiException.invalid("import.file_empty", "file");
 			}
-			return new Table(Arrays.asList(lines.getFirst()),
-					lines.stream().skip(1).map(cells -> Arrays.asList(cells)).toList());
+			Rows rows = new Rows();
+			int number = 1;
+			for (String[] cells = reader.readNext(); cells != null; cells = reader.readNext()) {
+				number++;
+				rows.add(number, Arrays.asList(cells).subList(0, Math.min(cells.length, MAX_COLUMNS)));
+			}
+			return new Table(cap(Arrays.asList(header)), rows.lines);
 		}
 		catch (IOException | CsvException ex) {
 			throw ApiException.invalid("import.file_unreadable", "file");
@@ -94,33 +127,54 @@ class SpreadsheetReader {
 				throw ApiException.invalid("import.file_empty", "file");
 			}
 			Sheet sheet = workbook.getSheetAt(0);
-			List<List<String>> lines = new ArrayList<>();
-			int width = 0;
-			for (int r = sheet.getFirstRowNum(); r <= sheet.getLastRowNum() && r >= 0; r++) {
-				Row row = sheet.getRow(r);
-				List<String> cells = new ArrayList<>();
-				if (row != null) {
-					for (int c = 0; c < Math.max(row.getLastCellNum(), width); c++) {
-						cells.add(text(row.getCell(c)));
+			List<String> header = null;
+			Rows rows = new Rows();
+			// only the rows that exist in the file, however large the last row number is
+			for (Row row : sheet) {
+				int width = Math.min(Math.max(row.getLastCellNum(), 0), MAX_COLUMNS);
+				List<String> cells = new ArrayList<>(width);
+				for (int c = 0; c < width; c++) {
+					cells.add(text(row.getCell(c)));
+				}
+				if (header == null) {
+					if (cells.stream().allMatch(String::isBlank)) {
+						continue;
 					}
+					header = cells;
 				}
-				if (lines.isEmpty()) {
-					width = cells.size();
+				else {
+					rows.add(row.getRowNum() + 1, cells);
 				}
-				lines.add(cells);
 			}
-			if (lines.isEmpty()) {
+			if (header == null) {
 				throw ApiException.invalid("import.file_empty", "file");
 			}
-			return new Table(lines.getFirst(), lines.subList(1, lines.size()));
+			return new Table(header, rows.lines);
 		}
 		catch (IOException | RuntimeException ex) {
 			if (ex instanceof ApiException api) {
 				throw api;
 			}
-			// corrupt, encrypted or not really a workbook (POI throws runtime exceptions too)
+			// corrupt, encrypted, over the size limits or not really a workbook
 			throw ApiException.invalid("import.file_unreadable", "file");
 		}
+	}
+
+	/** Collects non-blank rows and stops as soon as there are too many. */
+	private static final class Rows {
+
+		final List<Line> lines = new ArrayList<>();
+
+		void add(int number, List<String> cells) {
+			if (cells.stream().allMatch(String::isBlank)) {
+				return;
+			}
+			if (lines.size() == MAX_ROWS) {
+				throw ApiException.invalid("import.too_many_rows", "file", MAX_ROWS);
+			}
+			lines.add(new Line(number, cells));
+		}
+
 	}
 
 	private static String text(Cell cell) {
@@ -132,6 +186,10 @@ class SpreadsheetReader {
 			return cell.getLocalDateTimeCellValue().toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE);
 		}
 		return TEXT.formatCellValue(cell);
+	}
+
+	private static List<String> cap(List<String> cells) {
+		return cells.subList(0, Math.min(cells.size(), MAX_COLUMNS));
 	}
 
 	private static long count(String line, char c) {

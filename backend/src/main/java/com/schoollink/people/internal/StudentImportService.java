@@ -39,9 +39,6 @@ import tools.jackson.databind.json.JsonMapper;
 @Service
 class StudentImportService {
 
-	/** One school has at most a few thousand students. */
-	static final int MAX_ROWS = 5000;
-
 	private final NamedParameterJdbcTemplate jdbc;
 
 	private final SpreadsheetReader reader;
@@ -86,21 +83,18 @@ class StudentImportService {
 		Map<ImportColumn, String> headers = new EnumMap<>(ImportColumn.class);
 		positions.forEach((column, index) -> headers.put(column, table.headers().get(index).strip()));
 
-		// header row = 1; blank rows are skipped but keep their number
+		// rows keep their spreadsheet number; rows with nothing in the known columns are skipped
 		Map<Integer, Map<ImportColumn, String>> rows = new LinkedHashMap<>();
-		for (int i = 0; i < table.rows().size(); i++) {
-			List<String> line = table.rows().get(i);
+		for (SpreadsheetReader.Line line : table.rows()) {
 			Map<ImportColumn, String> cells = new EnumMap<>(ImportColumn.class);
-			positions.forEach((column, index) -> cells.put(column, index < line.size() ? line.get(index).strip() : ""));
+			positions.forEach((column, index) -> cells.put(column,
+					index < line.cells().size() ? line.cells().get(index).strip() : ""));
 			if (cells.values().stream().anyMatch(v -> !v.isEmpty())) {
-				rows.put(i + 2, cells);
+				rows.put(line.number(), cells);
 			}
 		}
 		if (rows.isEmpty()) {
 			throw ApiException.invalid("import.file_empty", "file");
-		}
-		if (rows.size() > MAX_ROWS) {
-			throw ApiException.invalid("import.too_many_rows", "file", MAX_ROWS);
 		}
 
 		Map<String, UUID> classes = schoolClasses.classesInYear(school, academicYearId)
