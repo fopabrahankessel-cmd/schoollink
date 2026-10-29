@@ -98,6 +98,12 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		<!-- Task 1.14: fake names for the dev profile seed only; left out of the packaged jar below -->
+		<dependency>
+			<groupId>net.datafaker</groupId>
+			<artifactId>datafaker</artifactId>
+			<version>2.4.2</version>
+		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
@@ -150,6 +156,28 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<executions>
+					<!-- the dev seed's faker stays on the spring-boot:run classpath, out of the jar -->
+					<execution>
+						<id>repackage</id>
+						<configuration>
+							<excludes>
+								<exclude>
+									<groupId>net.datafaker</groupId>
+									<artifactId>datafaker</artifactId>
+								</exclude>
+								<exclude>
+									<groupId>com.github.curious-odd-man</groupId>
+									<artifactId>rgxgen</artifactId>
+								</exclude>
+								<exclude>
+									<groupId>com.googlecode.libphonenumber</groupId>
+									<artifactId>libphonenumber</artifactId>
+								</exclude>
+							</excludes>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
