@@ -122,7 +122,11 @@ public final class TestWorld {
 		if (actor == Actor.ANONYMOUS) {
 			return null;
 		}
-		UUID id = users.get(actor);
+		return tokenFor(users.get(actor), actor.role.name());
+	}
+
+	/** A valid access token for a user the test created itself, with that role. */
+	public String tokenFor(UUID id, String role) {
 		UUID school = jdbc.queryForObject("SELECT school_id FROM app_user WHERE id = ?", UUID.class, id);
 		Instant now = Instant.now();
 		JwtClaimsSet.Builder claims = JwtClaimsSet.builder()
@@ -130,7 +134,7 @@ public final class TestWorld {
 			.subject(id.toString())
 			.issuedAt(now)
 			.expiresAt(now.plus(15, ChronoUnit.MINUTES))
-			.claim("roles", List.of(actor.role.name()))
+			.claim("roles", List.of(role))
 			.claim("lang", "FR");
 		if (school != null) {
 			claims.claim("school", school.toString());

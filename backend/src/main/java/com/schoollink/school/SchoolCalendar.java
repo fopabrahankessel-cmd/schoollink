@@ -12,6 +12,8 @@ public interface SchoolCalendar {
 	/** The school's time zone: "today" and "the current period" are read in it. */
 	ZoneId zone(UUID schoolId);
 
+	boolean periodExists(UUID schoolId, UUID periodId);
+
 	/** D3, D10: Monday to Friday, inside a term, outside that term's holidays. */
 	boolean isSchoolDay(UUID schoolId, LocalDate date);
 
