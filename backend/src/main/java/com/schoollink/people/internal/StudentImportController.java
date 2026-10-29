@@ -1,5 +1,6 @@
 package com.schoollink.people.internal;
 
+import com.schoollink.people.internal.StudentImportCommitter.CommitView;
 import com.schoollink.people.internal.StudentImportService.ImportView;
 import com.schoollink.shared.error.ApiException;
 import com.schoollink.shared.security.CurrentUser;
@@ -15,14 +16,17 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-/** UC-A3 import, step 1: upload and preview (SPEC §9 {@code POST /students/import}). */
+/** UC-A3 import: upload and preview, then commit (SPEC §9 {@code POST /students/import}, {@code .../commit}). */
 @RestController
 class StudentImportController {
 
 	private final StudentImportService imports;
 
-	StudentImportController(StudentImportService imports) {
+	private final StudentImportCommitter committer;
+
+	StudentImportController(StudentImportService imports, StudentImportCommitter committer) {
 		this.imports = imports;
+		this.committer = committer;
 	}
 
 	@PostMapping("/api/v1/students/import")
@@ -33,6 +37,12 @@ class StudentImportController {
 			throw ApiException.invalid("import.file_empty", "file");
 		}
 		return imports.preview(user, academicYearId, file.getOriginalFilename(), file.getBytes());
+	}
+
+	/** UC-A3 step 2 (D19): all or nothing, once. */
+	@PostMapping("/api/v1/students/import/{id}/commit")
+	CommitView commit(@AuthenticationPrincipal CurrentUser user, @PathVariable UUID id) {
+		return committer.commit(user, id);
 	}
 
 	@GetMapping("/api/v1/students/import/{id}")

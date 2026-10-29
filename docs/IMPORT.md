@@ -3,7 +3,11 @@
 The admin imports the students of one academic year from a CSV or Excel file, in two steps:
 
 1. **Preview**: `POST /api/v1/students/import` (multipart: `file`, `academicYearId`). Every row is checked, and the import is stored with its list of errors. Nothing reaches the student list yet.
-2. **Commit** (task 1.12): `POST /api/v1/students/import/{id}/commit` creates the students, guardians and links.
+2. **Commit**: `POST /api/v1/students/import/{id}/commit` creates the students, guardians and links in one transaction (D19):
+   - only an import **without errors**, and only once; otherwise correct the file and upload it again;
+   - refused if the school changed since the preview (a matricule now exists, a class was removed): upload the file again;
+   - guardians are matched by phone: brothers and sisters share one guardian, and a guardian already in the school is linked as is;
+   - the staged rows are then deleted. A preview never committed expires after 7 days.
 
 `GET /api/v1/students/import/{id}` shows an import again with its errors, in the reader's language.
 
