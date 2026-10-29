@@ -270,6 +270,21 @@ class AuthTests {
 	}
 
 	@Test
+	void theGraceDoesNotDependOnTimestampsBeingDistinct() throws Exception { // NFR-7: a coarse clock
+		String r1 = tokens(null, PHONE, "Secret-A1!").get("refreshToken").asString();
+		String lost = rotate(r1);
+		// login, refresh and the lost replacement all within one tick of the system clock
+		jdbc.update("""
+				UPDATE refresh_token t SET created_at = r1.used_at FROM refresh_token r1
+				WHERE r1.token_hash = ? AND t.family_id = r1.family_id""", RefreshTokens.hash(r1));
+
+		String r3 = rotate(r1);
+
+		refresh(lost).andExpect(status().isUnauthorized());
+		refresh(r3).andExpect(status().isUnauthorized());
+	}
+
+	@Test
 	void aRetiredTokenNeverRidesTheGrace() throws Exception { // security review of d2063ba
 		String r1 = tokens(null, PHONE, "Secret-A1!").get("refreshToken").asString();
 		String lost = rotate(r1);

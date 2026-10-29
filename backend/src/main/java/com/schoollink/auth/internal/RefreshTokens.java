@@ -74,12 +74,12 @@ class RefreshTokens {
 	Optional<Consumed> consume(String raw) {
 		Instant now = clock.instant();
 		var rows = jdbc.query("""
-				SELECT id, user_id, family_id, expires_at, used_at, retired_at, revoked_at,
+				SELECT id, seq, user_id, family_id, expires_at, used_at, retired_at, revoked_at,
 				       EXISTS (SELECT 1 FROM refresh_token f WHERE f.family_id = t.family_id AND f.revoked_at IS NOT NULL) AS family_revoked
 				FROM refresh_token t WHERE token_hash = ? FOR UPDATE""",
 				// After waiting for the lock, PostgreSQL rereads the locked row but not the subquery,
 				// so the row's own revoked_at must be checked too.
-				(rs, n) -> new Row(rs.getObject("id", UUID.class), rs.getObject("user_id", UUID.class),
+				(rs, n) -> new Row(rs.getObject("id", UUID.class), rs.getLong("seq"), rs.getObject("user_id", UUID.class),
 						rs.getObject("family_id", UUID.class), rs.getTimestamp("expires_at").toInstant(),
 						rs.getTimestamp("used_at") == null ? null : rs.getTimestamp("used_at").toInstant(),
 						rs.getTimestamp("retired_at") != null,
@@ -109,17 +109,17 @@ class RefreshTokens {
 
 	/**
 	 * Retires the token that replaced {@code row}, if no one has used it yet. Tokens rotate one at
-	 * a time, so the replacement is the family's only live token, created after {@code row}'s use;
-	 * and no token created since may have been used, or the client did get the replacement.
+	 * a time, so the replacement is the family's only live token created after {@code row}; and no
+	 * token created since may have been used, or the client did get the replacement. "After" is the
+	 * creation order ({@code seq}), not the clock: two tokens may share a timestamp.
 	 */
 	private boolean retireReplacement(Row row, Instant now) {
-		Timestamp replacedAt = Timestamp.from(row.usedAt());
 		return jdbc.update("""
 				UPDATE refresh_token SET used_at = ?, retired_at = ?
-				WHERE family_id = ? AND created_at >= ? AND used_at IS NULL AND revoked_at IS NULL
+				WHERE family_id = ? AND seq > ? AND used_at IS NULL AND revoked_at IS NULL
 				  AND NOT EXISTS (SELECT 1 FROM refresh_token u
-				                  WHERE u.family_id = ? AND u.created_at >= ? AND u.used_at IS NOT NULL)""",
-				Timestamp.from(now), Timestamp.from(now), row.familyId(), replacedAt, row.familyId(), replacedAt) == 1;
+				                  WHERE u.family_id = ? AND u.seq > ? AND u.used_at IS NOT NULL)""",
+				Timestamp.from(now), Timestamp.from(now), row.familyId(), row.seq(), row.familyId(), row.seq()) == 1;
 	}
 
 	void revokeFamily(UUID familyId, Instant now) {
@@ -154,7 +154,7 @@ class RefreshTokens {
 	record Consumed(UUID userId, UUID familyId) {
 	}
 
-	private record Row(UUID id, UUID userId, UUID familyId, Instant expiresAt, Instant usedAt, boolean retired,
+	private record Row(UUID id, long seq, UUID userId, UUID familyId, Instant expiresAt, Instant usedAt, boolean retired,
 			boolean revoked) {
 	}
 
