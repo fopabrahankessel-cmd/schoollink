@@ -1,6 +1,7 @@
 package com.schoollink.school.internal;
 
 import com.schoollink.school.SchoolClasses;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -38,6 +39,22 @@ class JdbcSchoolClasses implements SchoolClasses {
 	@Override
 	public boolean classExists(UUID schoolId, UUID classId) {
 		return exists("SELECT 1 FROM school_class WHERE id = :id AND school_id = :school", schoolId, classId);
+	}
+
+	@Override
+	public boolean yearExists(UUID schoolId, UUID academicYearId) {
+		return exists("SELECT 1 FROM academic_year WHERE id = :id AND school_id = :school", schoolId, academicYearId);
+	}
+
+	@Override
+	public Map<String, UUID> classesInYear(UUID schoolId, UUID academicYearId) {
+		Map<String, UUID> classes = new HashMap<>();
+		jdbc.query("SELECT id, name FROM school_class WHERE school_id = :school AND academic_year_id = :year",
+				Map.of("school", schoolId, "year", academicYearId),
+				rs -> {
+					classes.put(rs.getString("name"), rs.getObject("id", UUID.class));
+				});
+		return Map.copyOf(classes);
 	}
 
 	@Override

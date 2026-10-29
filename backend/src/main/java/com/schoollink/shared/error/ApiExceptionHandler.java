@@ -64,6 +64,7 @@ class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 			case 400 -> "request.malformed";
 			case 404 -> "not_found";
 			case 405 -> "method_not_allowed";
+			case 413 -> "request.too_large";
 			case 415 -> "media_type_unsupported";
 			default -> statusCode.is5xxServerError() ? "internal" : "request.invalid";
 		};

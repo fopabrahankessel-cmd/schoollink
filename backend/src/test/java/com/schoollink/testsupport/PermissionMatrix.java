@@ -8,7 +8,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.DynamicTest;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.AbstractMockHttpServletRequestBuilder;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -36,17 +36,17 @@ public final class PermissionMatrix {
 
 	private final String name;
 
-	private final Function<TestWorld, MockHttpServletRequestBuilder> request;
+	private final Function<TestWorld, ? extends AbstractMockHttpServletRequestBuilder<?>> request;
 
 	private final Map<Actor, Integer> expected = new EnumMap<>(Actor.class);
 
-	private PermissionMatrix(String name, Function<TestWorld, MockHttpServletRequestBuilder> request) {
+	private PermissionMatrix(String name, Function<TestWorld, ? extends AbstractMockHttpServletRequestBuilder<?>> request) {
 		this.name = name;
 		this.request = request;
 	}
 
 	/** {@code request} builds a fresh request for each actor. */
-	public static PermissionMatrix row(String name, Function<TestWorld, MockHttpServletRequestBuilder> request) {
+	public static PermissionMatrix row(String name, Function<TestWorld, ? extends AbstractMockHttpServletRequestBuilder<?>> request) {
 		return new PermissionMatrix(name, request);
 	}
 
@@ -64,7 +64,7 @@ public final class PermissionMatrix {
 		Set<Actor> missing = EnumSet.complementOf(EnumSet.copyOf(expected.keySet()));
 		assertThat(missing).as(name + ": every actor needs an expected status").isEmpty();
 		return expected.entrySet().stream().map(e -> DynamicTest.dynamicTest(e.getKey() + " -> " + e.getValue(), () -> {
-			MockHttpServletRequestBuilder builder = request.apply(world);
+			AbstractMockHttpServletRequestBuilder<?> builder = request.apply(world);
 			String token = world.token(e.getKey());
 			if (token != null) {
 				builder.header("Authorization", "Bearer " + token);

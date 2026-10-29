@@ -80,6 +80,24 @@
 			<scope>runtime</scope>
 		</dependency>
 
+		<!-- UC-A3: student and guardian import from CSV and Excel -->
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
+			<version>5.4.1</version>
+		</dependency>
+		<dependency>
+			<groupId>com.opencsv</groupId>
+			<artifactId>opencsv</artifactId>
+			<version>5.9</version>
+			<exclusions>
+				<!-- only CSVReader is used, never bean binding; beanutils 1.9.4 has CVE-2025-48734 -->
+				<exclusion>
+					<groupId>commons-beanutils</groupId>
+					<artifactId>commons-beanutils</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>

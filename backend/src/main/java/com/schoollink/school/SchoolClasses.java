@@ -1,5 +1,6 @@
 package com.schoollink.school;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -13,6 +14,11 @@ public interface SchoolClasses {
 	Set<UUID> blocksOf(UUID schoolId, Set<UUID> classIds);
 
 	boolean classExists(UUID schoolId, UUID classId);
+
+	boolean yearExists(UUID schoolId, UUID academicYearId);
+
+	/** The classes of an academic year: name -> id (UC-A3 import). */
+	Map<String, UUID> classesInYear(UUID schoolId, UUID academicYearId);
 
 	boolean blockExists(UUID schoolId, UUID blockId);
 
