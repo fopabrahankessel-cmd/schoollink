@@ -59,12 +59,15 @@ class RefreshTokens {
 	Optional<Consumed> consume(String raw) {
 		Instant now = clock.instant();
 		var rows = jdbc.query("""
-				SELECT id, user_id, family_id, expires_at, used_at,
-				       EXISTS (SELECT 1 FROM refresh_token f WHERE f.family_id = t.family_id AND f.revoked_at IS NOT NULL) AS revoked
+				SELECT id, user_id, family_id, expires_at, used_at, revoked_at,
+				       EXISTS (SELECT 1 FROM refresh_token f WHERE f.family_id = t.family_id AND f.revoked_at IS NOT NULL) AS family_revoked
 				FROM refresh_token t WHERE token_hash = ? FOR UPDATE""",
+				// After waiting for the lock, PostgreSQL rereads the locked row but not the subquery,
+				// so the row's own revoked_at must be checked too.
 				(rs, n) -> new Row(rs.getObject("id", UUID.class), rs.getObject("user_id", UUID.class),
 						rs.getObject("family_id", UUID.class), rs.getTimestamp("expires_at").toInstant(),
-						rs.getTimestamp("used_at") != null, rs.getBoolean("revoked")),
+						rs.getTimestamp("used_at") != null,
+						rs.getTimestamp("revoked_at") != null || rs.getBoolean("family_revoked")),
 				hash(raw));
 		if (rows.isEmpty()) {
 			return Optional.empty();
