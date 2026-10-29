@@ -1,7 +1,7 @@
 import 'package:animated_splash_screen/animated_splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
-import 'package:my_flutter_app/HomeScreen.dart';
+import 'package:schoollink/home_screen.dart';
 
 class SplashScreen extends StatefulWidget{
   const SplashScreen({super.key});
