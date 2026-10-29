@@ -26,6 +26,7 @@ class JdbcUserAccounts implements UserAccounts {
 
 	private static final String SELECT = """
 			SELECT u.id, u.school_id, u.password_hash, u.language, u.status, u.password_change_required,
+			       u.credentials_version,
 			       array_remove(array_agg(DISTINCT r.role), NULL) AS roles
 			FROM app_user u
 			LEFT JOIN role_assignment r ON r.user_id = u.id
@@ -70,7 +71,10 @@ class JdbcUserAccounts implements UserAccounts {
 	@Transactional(propagation = Propagation.MANDATORY)
 	public void changePassword(UUID userId, String passwordHash) {
 		UUID school = jdbc.queryForObject(
-				"UPDATE app_user SET password_hash = ?, password_change_required = false WHERE id = ? RETURNING school_id",
+				"""
+				UPDATE app_user
+				SET password_hash = ?, password_change_required = false, credentials_version = credentials_version + 1
+				WHERE id = ? RETURNING school_id""",
 				UUID.class, passwordHash, userId);
 		audit.record(new AuditEntry(school, userId, AuditAction.UPDATE, "app_user", userId.toString(), null,
 				Map.of("passwordChanged", true)));
@@ -85,7 +89,7 @@ class JdbcUserAccounts implements UserAccounts {
 		Set<String> roleSet = Arrays.stream(roles).filter(Objects::nonNull).collect(Collectors.toUnmodifiableSet());
 		return new UserAccount(rs.getObject("id", UUID.class), rs.getObject("school_id", UUID.class),
 				rs.getString("password_hash"), rs.getString("language"), rs.getString("status"),
-				rs.getBoolean("password_change_required"), roleSet);
+				rs.getBoolean("password_change_required"), rs.getInt("credentials_version"), roleSet);
 	}
 
 }

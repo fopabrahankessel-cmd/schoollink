@@ -183,7 +183,8 @@ class StaffApiTests {
 		mockMvc.perform(get("/api/v1/classes").header("Authorization", "Bearer " + fresh.get("accessToken").asString()))
 			.andExpect(status().isForbidden())
 			.andExpect(jsonPath("$.code").value("auth.forbidden"));
-		// every older session ends
+		// every older session ends, access token included
+		mockMvc.perform(get("/api/v1/me").header("Authorization", "Bearer " + access)).andExpect(status().isUnauthorized());
 		refresh(tokens.get("refreshToken").asString()).andExpect(status().isUnauthorized());
 		refresh(fresh.get("refreshToken").asString()).andExpect(status().isOk());
 		login("699112233", temporary).andExpect(status().isUnauthorized());
@@ -205,10 +206,13 @@ class StaffApiTests {
 
 		assertThat(again).isNotEqualTo(temporary);
 		refresh(signedIn.get("refreshToken").asString()).andExpect(status().isUnauthorized());
-		mockMvc.perform(get("/api/v1/classes").header("Authorization", "Bearer " + signedIn.get("accessToken").asString()))
+		mockMvc.perform(get("/api/v1/me").header("Authorization", "Bearer " + signedIn.get("accessToken").asString()))
+			.andExpect(status().isUnauthorized());
+		login("699445566", "Bruno-Pass1").andExpect(status().isUnauthorized());
+		mockMvc.perform(get("/api/v1/classes")
+			.header("Authorization", "Bearer " + body(login("699445566", again)).get("accessToken").asString()))
 			.andExpect(status().isForbidden())
 			.andExpect(jsonPath("$.code").value("auth.password_change_required"));
-		login("699445566", "Bruno-Pass1").andExpect(status().isUnauthorized());
 	}
 
 	@Test

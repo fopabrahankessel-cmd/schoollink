@@ -21,7 +21,8 @@ import org.springframework.stereotype.Component;
 
 /**
  * Turns a valid access token into the {@link CurrentUser} (NFR-8, SPEC §3). Only the token's
- * subject and school are trusted; roles, language and scope are read from the database on every
+ * subject, school and credentials version are trusted; a token issued before the last password
+ * change, reset or disabling is rejected (D18); roles, language and scope are read from the database on every
  * request, so a disabled account or a removed assignment stops working at once instead of when the
  * 15-minute token expires.
  */
@@ -42,8 +43,15 @@ class CurrentUserResolver implements Converter<Jwt, AbstractAuthenticationToken>
 		UserAccount account = accounts.findById(UUID.fromString(jwt.getSubject()))
 			.filter(UserAccount::isActive)
 			.filter(a -> Objects.equals(Objects.toString(a.schoolId(), null), jwt.getClaimAsString("school")))
+			.filter(a -> a.credentialsVersion() == credentialsVersion(jwt))
 			.orElseThrow(() -> new InvalidBearerTokenException("Unknown or inactive account"));
 		return new CurrentUserAuthentication(resolve(account), jwt);
+	}
+
+	/** D18: tokens issued before the "cv" claim existed count as version 0. */
+	private static long credentialsVersion(Jwt jwt) {
+		Object cv = jwt.getClaim("cv");
+		return cv instanceof Number n ? n.longValue() : 0;
 	}
 
 	CurrentUser resolve(UserAccount account) {

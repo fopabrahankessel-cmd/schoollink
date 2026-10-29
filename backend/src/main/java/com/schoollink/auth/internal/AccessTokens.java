@@ -38,7 +38,9 @@ class AccessTokens {
 			.issuedAt(now)
 			.expiresAt(now.plus(properties.accessTokenTtl()))
 			.claim("roles", List.copyOf(account.roles()))
-			.claim("lang", account.language());
+			.claim("lang", account.language())
+			// D18: rejected once the password changes, is reset, or the account is disabled
+			.claim("cv", account.credentialsVersion());
 		if (account.schoolId() != null) {
 			claims.claim("school", account.schoolId().toString());
 		}

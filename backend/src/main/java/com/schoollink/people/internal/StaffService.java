@@ -167,7 +167,10 @@ class StaffService {
 	StaffView setStatus(CurrentUser user, UUID id, String status) {
 		UUID school = requireAdmin(user);
 		StaffView before = view(school, id);
-		jdbc.update("UPDATE app_user SET status = :status WHERE id = :id AND school_id = :school",
+		jdbc.update("""
+				UPDATE app_user SET status = :status,
+				    credentials_version = credentials_version + CASE WHEN :status = 'DISABLED' THEN 1 ELSE 0 END
+				WHERE id = :id AND school_id = :school""",
 				school(school).addValue("id", id).addValue("status", status));
 		if ("DISABLED".equals(status)) {
 			events.publishEvent(new StaffCredentialsReset(id));
@@ -184,7 +187,8 @@ class StaffService {
 		view(school, id);
 		String temporary = temporaryPasswords.generate();
 		jdbc.update("""
-				UPDATE app_user SET password_hash = :hash, password_change_required = true
+				UPDATE app_user SET password_hash = :hash, password_change_required = true,
+				    credentials_version = credentials_version + 1
 				WHERE id = :id AND school_id = :school""",
 				school(school).addValue("id", id).addValue("hash", passwords.encode(temporary)));
 		events.publishEvent(new StaffCredentialsReset(id));
