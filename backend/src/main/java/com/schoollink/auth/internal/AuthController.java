@@ -2,13 +2,13 @@ package com.schoollink.auth.internal;
 
 import com.schoollink.school.SchoolSummary;
 import com.schoollink.school.Schools;
+import com.schoollink.shared.security.CurrentUser;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -48,8 +48,8 @@ class AuthController {
 	}
 
 	@GetMapping("/api/v1/me")
-	UserInfo me(@AuthenticationPrincipal Jwt jwt) {
-		return UserInfo.of(jwt);
+	UserInfo me(@AuthenticationPrincipal CurrentUser user) {
+		return UserInfo.of(user);
 	}
 
 	/** @param schoolId from the school picker (D16); may be omitted */

@@ -16,4 +16,7 @@ public interface UserAccounts {
 
 	Optional<UserAccount> findById(UUID id);
 
+	/** The assignments behind a user's scope (NFR-8), all within {@code schoolId}. */
+	ScopeAssignments assignmentsOf(UUID userId, UUID schoolId);
+
 }

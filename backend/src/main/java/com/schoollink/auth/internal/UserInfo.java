@@ -1,9 +1,9 @@
 package com.schoollink.auth.internal;
 
 import com.schoollink.people.UserAccount;
+import com.schoollink.shared.security.CurrentUser;
 import java.util.List;
 import java.util.UUID;
-import org.springframework.security.oauth2.jwt.Jwt;
 
 /** The signed-in user as the clients see it: enough to pick the role-based screens and the language. */
 record UserInfo(UUID id, UUID schoolId, List<String> roles, String language) {
@@ -13,10 +13,9 @@ record UserInfo(UUID id, UUID schoolId, List<String> roles, String language) {
 				account.language());
 	}
 
-	static UserInfo of(Jwt jwt) {
-		String school = jwt.getClaimAsString("school");
-		return new UserInfo(UUID.fromString(jwt.getSubject()), school == null ? null : UUID.fromString(school),
-				jwt.getClaimAsStringList("roles").stream().sorted().toList(), jwt.getClaimAsString("lang"));
+	static UserInfo of(CurrentUser user) {
+		return new UserInfo(user.userId(), user.schoolId(), user.roles().stream().map(Enum::name).sorted().toList(),
+				user.language());
 	}
 
 }

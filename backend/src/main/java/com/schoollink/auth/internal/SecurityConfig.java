@@ -18,8 +18,6 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
-import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 
 /**
@@ -33,7 +31,8 @@ class SecurityConfig {
 	static final String ISSUER = "schoollink";
 
 	@Bean
-	SecurityFilterChain apiSecurity(HttpSecurity http, SecurityErrorHandler errors) throws Exception {
+	SecurityFilterChain apiSecurity(HttpSecurity http, SecurityErrorHandler errors, CurrentUserResolver currentUser)
+			throws Exception {
 		http.csrf(AbstractHttpConfigurer::disable)
 			.sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.authorizeHttpRequests(auth -> auth
@@ -41,7 +40,7 @@ class SecurityConfig {
 				.requestMatchers(HttpMethod.POST, "/api/v1/auth/login", "/api/v1/auth/refresh").permitAll()
 				.requestMatchers(HttpMethod.GET, "/api/v1/auth/schools").permitAll()
 				.anyRequest().authenticated())
-			.oauth2ResourceServer(o -> o.jwt(jwt -> jwt.jwtAuthenticationConverter(authenticationConverter()))
+			.oauth2ResourceServer(o -> o.jwt(jwt -> jwt.jwtAuthenticationConverter(currentUser))
 				.authenticationEntryPoint(errors)
 				.accessDeniedHandler(errors))
 			.exceptionHandling(e -> e.authenticationEntryPoint(errors).accessDeniedHandler(errors));
@@ -78,16 +77,6 @@ class SecurityConfig {
 					"The development JWT secret is only allowed with the dev or test profile; set JWT_SECRET");
 		}
 		return new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
-	}
-
-	/** The "roles" claim becomes ROLE_ADMIN, ROLE_DM, ... authorities. */
-	private static JwtAuthenticationConverter authenticationConverter() {
-		JwtGrantedAuthoritiesConverter authorities = new JwtGrantedAuthoritiesConverter();
-		authorities.setAuthoritiesClaimName("roles");
-		authorities.setAuthorityPrefix("ROLE_");
-		JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-		converter.setJwtGrantedAuthoritiesConverter(authorities);
-		return converter;
 	}
 
 }
