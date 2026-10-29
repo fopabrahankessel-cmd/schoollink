@@ -34,7 +34,11 @@ class ApiExceptionHandler extends ResponseEntityExceptionHandler {
 
 	@ExceptionHandler(ApiException.class)
 	ResponseEntity<ApiError> handleApiException(ApiException ex) {
-		return ResponseEntity.status(ex.status()).body(error(ex.code(), ex.field(), ex.args()));
+		var response = ResponseEntity.status(ex.status());
+		if (ex instanceof RateLimitedException limited) {
+			response.header(HttpHeaders.RETRY_AFTER, String.valueOf(limited.retryAfterSeconds()));
+		}
+		return response.body(error(ex.code(), ex.field(), ex.args()));
 	}
 
 	@ExceptionHandler(Exception.class)

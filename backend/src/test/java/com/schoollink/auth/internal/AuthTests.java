@@ -1,6 +1,7 @@
 package com.schoollink.auth.internal;
 
 import com.schoollink.TestcontainersConfiguration;
+import com.schoollink.shared.ratelimit.RateLimiter;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
@@ -66,6 +67,9 @@ class AuthTests {
 	@Autowired
 	JsonMapper json;
 
+	@Autowired
+	RateLimiter limiter;
+
 	UUID schoolA;
 
 	UUID schoolB;
@@ -74,6 +78,7 @@ class AuthTests {
 
 	@BeforeEach
 	void createAccounts() {
+		limiter.clear(); // the limiter is shared by every test in the Spring context
 		schoolA = school("Collège Test A");
 		schoolB = school("Collège Test B");
 		// D15: the same phone in two schools, with different passwords

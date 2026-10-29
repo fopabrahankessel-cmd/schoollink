@@ -2,6 +2,7 @@ package com.schoollink.auth.internal;
 
 import com.schoollink.school.SchoolSummary;
 import com.schoollink.school.Schools;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import java.util.List;
@@ -26,9 +27,13 @@ class AuthController {
 		this.schools = schools;
 	}
 
+	/**
+	 * The client IP is the TCP peer address. Behind the pilot's Nginx, set
+	 * server.forward-headers-strategy so it is the real client, never a spoofable header (NFR-7).
+	 */
 	@PostMapping("/api/v1/auth/login")
-	TokenResponse login(@Valid @RequestBody LoginRequest request) {
-		return auth.login(request.schoolId(), request.login(), request.password());
+	TokenResponse login(@Valid @RequestBody LoginRequest request, HttpServletRequest http) {
+		return auth.login(request.schoolId(), request.login(), request.password(), http.getRemoteAddr());
 	}
 
 	@PostMapping("/api/v1/auth/refresh")

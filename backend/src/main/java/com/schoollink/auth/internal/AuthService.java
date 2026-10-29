@@ -3,7 +3,11 @@ package com.schoollink.auth.internal;
 import com.schoollink.people.UserAccount;
 import com.schoollink.people.UserAccounts;
 import com.schoollink.shared.error.ApiException;
+import com.schoollink.shared.error.RateLimitedException;
 import com.schoollink.shared.phone.PhoneNumbers;
+import com.schoollink.shared.ratelimit.RateLimitPolicy;
+import com.schoollink.shared.ratelimit.RateLimiter;
+import java.time.Duration;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -23,17 +27,32 @@ class AuthService {
 
 	private final AccessTokens accessTokens;
 
+	/**
+	 * NFR-7: 5 failed attempts per login, one more every 3 minutes; a success resets it. Only
+	 * failures count, so a teacher signing in on several devices is never blocked.
+	 */
+	static final RateLimitPolicy LOGIN_FAILURES = new RateLimitPolicy("login-failures", 5, Duration.ofMinutes(15));
+
+	/**
+	 * NFR-7: 30 login requests per minute per IP address, generous because a school's staff may
+	 * share one public address.
+	 */
+	static final RateLimitPolicy LOGIN_PER_IP = new RateLimitPolicy("login-ip", 30, Duration.ofMinutes(1));
+
 	private final RefreshTokens refreshTokens;
+
+	private final RateLimiter limiter;
 
 	/** Checked when no account matches, so a wrong login takes as long as a wrong password. */
 	private final String dummyHash;
 
 	AuthService(UserAccounts accounts, PasswordEncoder passwords, AccessTokens accessTokens,
-			RefreshTokens refreshTokens) {
+			RefreshTokens refreshTokens, RateLimiter limiter) {
 		this.accounts = accounts;
 		this.passwords = passwords;
 		this.accessTokens = accessTokens;
 		this.refreshTokens = refreshTokens;
+		this.limiter = limiter;
 		this.dummyHash = passwords.encode(UUID.randomUUID().toString());
 	}
 
@@ -43,25 +62,40 @@ class AuthService {
 	 * accounts in several schools.
 	 */
 	@Transactional
-	TokenResponse login(UUID schoolId, String login, String password) {
-		List<UserAccount> candidates = normalizeLogin(login).map(l -> accounts.findByLogin(l, schoolId))
+	TokenResponse login(UUID schoolId, String login, String password, String clientIp) {
+		Optional<String> normalized = normalizeLogin(login);
+		// NFR-7: the per-login key is the normalized login, so "699 20 00 01" and "+237699200001" share it
+		String loginKey = normalized.orElse(login.strip().toLowerCase(Locale.ROOT));
+		checkRate(limiter.tryConsume(LOGIN_PER_IP, clientIp));
+		checkRate(limiter.retryAfter(LOGIN_FAILURES, loginKey));
+
+		List<UserAccount> candidates = normalized.map(l -> accounts.findByLogin(l, schoolId))
 			.orElse(List.of())
 			.stream()
 			.filter(a -> a.isActive() && a.passwordHash() != null)
 			.toList();
 		if (candidates.isEmpty()) {
 			passwords.matches(password, dummyHash);
+			limiter.consume(LOGIN_FAILURES, loginKey);
 			throw invalidCredentials();
 		}
 		List<UserAccount> matches = candidates.stream().filter(a -> passwords.matches(password, a.passwordHash())).toList();
 		if (matches.isEmpty()) {
+			limiter.consume(LOGIN_FAILURES, loginKey);
 			throw invalidCredentials();
 		}
+		limiter.reset(LOGIN_FAILURES, loginKey);
 		if (matches.size() > 1) {
 			throw ApiException.invalid("auth.school_required", "schoolId");
 		}
 		UserAccount account = matches.getFirst();
 		return tokens(account, refreshTokens.create(account.id(), UUID.randomUUID()));
+	}
+
+	private static void checkRate(Duration wait) {
+		if (!wait.isZero()) {
+			throw new RateLimitedException(wait);
+		}
 	}
 
 	/** Rotation: the presented token is used up and a new one is issued in the same family. */
