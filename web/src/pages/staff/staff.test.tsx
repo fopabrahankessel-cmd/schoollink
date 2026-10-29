@@ -71,7 +71,7 @@ describe('staff screens (UC-A2)', () => {
     expect(await screen.findByRole('heading', { name: 'Awa Fictive' })).toBeInTheDocument()
     expect(router.state.location.pathname).toBe('/staff/u1') // the id, never the phone (NFR-9)
     expect(screen.queryByText('kT7-mQ2x-Pw9')).not.toBeInTheDocument()
-  }, 15_000) // types a whole form: slow under a loaded test run
+  })
 
   it("shows the server's message on the field it concerns", async () => {
     const { client } = signedIn({

@@ -18,6 +18,9 @@ import {
   Typography,
 } from '@mui/material'
 import { useMemo, useState, type FormEvent } from 'react'
+import { PageHeader } from '../../components/PageHeader'
+import { TableIcon } from '../../icons'
+import { hover, tintFor, tokens } from '../../theme'
 import { useTranslation } from 'react-i18next'
 import { ApiError } from '../../api/client'
 import { errorMessage } from '../../api/errors'
@@ -127,10 +130,9 @@ export function TimetablePage() {
   const fieldError = error instanceof ApiError ? error.messageFor('teacherId') : undefined
 
   return (
-    <Stack spacing={3}>
-      <Typography variant="h5" component="h1">
-        {t('timetable.title')}
-      </Typography>
+    <Stack>
+      <PageHeader icon={TableIcon} title={t('timetable.title')} description={t('timetable.intro')} />
+      <Stack spacing={3}>
       {loadError !== null && <Alert severity="error">{errorMessage(loadError, t)}</Alert>}
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
         <YearPicker
@@ -162,9 +164,9 @@ export function TimetablePage() {
       </Stack>
 
       {!classId ? (
-        <Typography color="text.secondary">{t('timetable.pickClass')}</Typography>
+        <Notice>{t('timetable.pickClass')}</Notice>
       ) : periods.items.length === 0 && !periods.loading ? (
-        <Typography color="text.secondary">{t('timetable.needPeriods')}</Typography>
+        <Notice>{t('timetable.needPeriods')}</Notice>
       ) : (
         <>
           {!staff.loading && lessons.length === 0 && <Alert severity="info">{t('timetable.noTeaching')}</Alert>}
@@ -172,39 +174,61 @@ export function TimetablePage() {
             <Table size="small" aria-label={t('timetable.title')}>
               <TableHead>
                 <TableRow>
-                  <TableCell />
+                  <TableCell sx={{ width: 120, ...pinned, bgcolor: tokens.raised }} />
                   {WEEKDAYS.map((d) => (
-                    <TableCell key={d}>{t(`weekdays.${d}`)}</TableCell>
+                    <TableCell key={d} sx={{ minWidth: 132 }}>
+                      {t(`weekdays.${d}`)}
+                    </TableCell>
                   ))}
                 </TableRow>
               </TableHead>
               <TableBody>
                 {periods.items.map((period) => (
                   <TableRow key={period.id}>
-                    <TableCell component="th" scope="row" sx={{ whiteSpace: 'nowrap' }}>
-                      {period.number}. {shortTime(period.startTime)}–{shortTime(period.endTime)}
+                    <TableCell component="th" scope="row" sx={{ whiteSpace: 'nowrap', verticalAlign: 'top', ...pinned }}>
+                      <Box sx={{ fontWeight: 700 }}>{t('timetable.periodNumber', { number: period.number })}</Box>
+                      <Box sx={{ fontSize: 12, color: 'text.secondary' }}>
+                        {shortTime(period.startTime)}–{shortTime(period.endTime)}
+                      </Box>
                     </TableCell>
                     {WEEKDAYS.map((weekday) => {
                       const slot = slots.items.find((s) => s.weekday === weekday && s.periodId === period.id)
                       const title = t('timetable.cellTitle', { day: t(`weekdays.${weekday}`), number: period.number })
+                      const tint = slot ? tintFor(slot.subject.toLowerCase()) : null
                       return (
                         <TableCell key={weekday} sx={{ p: 0.5 }}>
                           <Button
                             fullWidth
                             size="small"
-                            color={slot ? 'primary' : 'inherit'}
-                            variant={slot ? 'outlined' : 'text'}
+                            color="inherit"
                             aria-label={`${title}: ${slot ? `${slot.subject}, ${teacherName(slot.teacherId)}` : t('timetable.free')}`}
                             onClick={() => open({ weekday, period, slot })}
-                            sx={{ justifyContent: 'flex-start', textAlign: 'left', textTransform: 'none', minHeight: 48 }}
+                            sx={{
+                              justifyContent: 'flex-start',
+                              textAlign: 'left',
+                              minHeight: 52,
+                              borderRadius: `${tokens.radius.control}px`,
+                              ...(tint
+                                ? {
+                                    bgcolor: tint.bg,
+                                    color: tint.ink,
+                                    boxShadow: `inset 3px 0 0 ${tint.ink}`,
+                                    [hover]: { '&:hover': { bgcolor: tint.bg, filter: 'brightness(0.97)' } },
+                                  }
+                                : {
+                                    border: `1px dashed ${tokens.border}`,
+                                    color: tokens.muted,
+                                    [hover]: { '&:hover': { borderColor: tokens.brand, bgcolor: tokens.brandTint, color: tokens.brandDark } },
+                                  }),
+                            }}
                           >
                             {slot ? (
-                              <Box>
-                                <Box sx={{ fontWeight: 600 }}>{slot.subject}</Box>
-                                <Box sx={{ fontSize: 12, color: 'text.secondary' }}>{teacherName(slot.teacherId)}</Box>
+                              <Box sx={{ minWidth: 0 }}>
+                                <Box sx={{ fontWeight: 700, lineHeight: 1.3 }}>{slot.subject}</Box>
+                                <Box sx={{ fontSize: 12, fontWeight: 500, opacity: 0.85 }}>{teacherName(slot.teacherId)}</Box>
                               </Box>
                             ) : (
-                              <Box sx={{ color: 'text.disabled' }}>{t('timetable.free')}</Box>
+                              <Box sx={{ fontWeight: 500 }}>{t('timetable.free')}</Box>
                             )}
                           </Button>
                         </TableCell>
@@ -217,6 +241,7 @@ export function TimetablePage() {
           </TableContainer>
         </>
       )}
+      </Stack>
 
       <Dialog open={cell !== null} onClose={() => setCell(null)} fullWidth maxWidth="xs">
         <Box component="form" onSubmit={save} noValidate>
@@ -270,5 +295,20 @@ export function TimetablePage() {
         </Box>
       </Dialog>
     </Stack>
+  )
+}
+
+// The period column stays in view while a narrow screen scrolls the week sideways.
+const pinned = { position: 'sticky', left: 0, zIndex: 1, bgcolor: tokens.surface, boxShadow: `inset -1px 0 0 ${tokens.rule}` } as const
+
+/** A centred instruction in place of the grid. */
+function Notice({ children }: { children: string }) {
+  return (
+    <Typography
+      color="text.secondary"
+      sx={{ border: `1px dashed ${tokens.control}`, borderRadius: `${tokens.radius.card}px`, bgcolor: tokens.raised, px: 2, py: 4, textAlign: 'center' }}
+    >
+      {children}
+    </Typography>
   )
 }

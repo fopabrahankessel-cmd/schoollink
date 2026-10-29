@@ -7,6 +7,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  IconButton,
   Paper,
   Stack,
   Table,
@@ -16,6 +17,7 @@ import {
   TableHead,
   TableRow,
   TextField,
+  Tooltip,
   Typography,
 } from '@mui/material'
 import { useState, type FormEvent, type ReactNode } from 'react'
@@ -24,6 +26,7 @@ import { ApiError } from '../api/client'
 import { errorMessage } from '../api/errors'
 import { useAuth } from '../auth/useAuth'
 import { useList } from '../hooks/useList'
+import { PencilSimpleIcon, PlusIcon, TrashIcon, type Icon } from '../icons'
 import { tokens } from '../theme'
 
 export interface Column<T> {
@@ -45,6 +48,9 @@ type Values = Record<string, string>
 
 interface Props<T extends { id: string }> {
   title: string
+  icon?: Icon
+  /** A line under the title saying what the list is for. */
+  hint?: string
   /** One item, for the dialog titles ("Add: Term"). */
   itemName: string
   /** The resource: POST here, PUT and DELETE at path/{id}. */
@@ -128,19 +134,44 @@ export function CrudSection<T extends { id: string }>(props: Props<T>) {
   const fieldNames = props.fields.map((f) => f.name)
   const unplaced = formError !== null && !fieldNames.some((name) => apiError?.messageFor(name))
   const shownError = listError ?? list.error
+  const SectionIcon = props.icon
+  const counted = props.listPath !== null && !list.loading && list.items.length > 0
 
   return (
-    <Paper variant="outlined" sx={{ p: 2.5 }} component="section" aria-label={props.title}>
-      <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-        <Typography variant="h6" component="h2">
-          {props.title}
-        </Typography>
-        <Button variant="outlined" size="small" onClick={() => open(null)} disabled={props.listPath === null}>
+    <Paper variant="outlined" sx={{ overflow: 'hidden' }} component="section" aria-label={props.title}>
+      <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', gap: 2, px: 2.5, py: 2 }}>
+        <Stack direction="row" sx={{ alignItems: 'center', gap: 1.5, minWidth: 0 }}>
+          {SectionIcon && (
+            <Box aria-hidden sx={iconTile}>
+              <SectionIcon size={20} />
+            </Box>
+          )}
+          <Box sx={{ minWidth: 0 }}>
+            <Stack direction="row" sx={{ alignItems: 'center', gap: 1 }}>
+              <Typography variant="h6" component="h2" noWrap>
+                {props.title}
+              </Typography>
+              {counted && <Box component="span" sx={countBadge}>{list.items.length}</Box>}
+            </Stack>
+            {props.hint && (
+              <Typography variant="caption" color="text.secondary" component="p">
+                {props.hint}
+              </Typography>
+            )}
+          </Box>
+        </Stack>
+        <Button
+          variant="outlined"
+          size="small"
+          startIcon={<PlusIcon weight="bold" aria-hidden />}
+          onClick={() => open(null)}
+          disabled={props.listPath === null}
+        >
           {t('crud.add')}
         </Button>
       </Stack>
       {shownError !== null && (
-        <Alert severity="error" sx={{ mb: 1 }}>
+        <Alert severity="error" sx={{ mx: 2.5, mb: 2 }}>
           {errorMessage(shownError, t)}
         </Alert>
       )}
@@ -149,7 +180,7 @@ export function CrudSection<T extends { id: string }>(props: Props<T>) {
       ) : !list.loading && list.items.length === 0 ? (
         <EmptyNote>{props.emptyText}</EmptyNote>
       ) : (
-        <TableContainer>
+        <TableContainer sx={{ borderTop: `1px solid ${tokens.border}`, '& .MuiTableCell-root:first-of-type': { pl: 2.5 }, '& .MuiTableCell-root:last-of-type': { pr: 2 } }}>
           <Table size="small">
             <TableHead>
               <TableRow>
@@ -171,19 +202,34 @@ export function CrudSection<T extends { id: string }>(props: Props<T>) {
                   selected={props.selectedId === item.id}
                   aria-selected={props.onSelect ? props.selectedId === item.id : undefined}
                   onClick={props.onSelect ? () => props.onSelect?.(item) : undefined}
-                  sx={props.onSelect ? { cursor: 'pointer' } : undefined}
+                  sx={
+                    props.onSelect
+                      ? {
+                          cursor: 'pointer',
+                          '&.Mui-selected > .MuiTableCell-root:first-of-type': { boxShadow: `inset 3px 0 0 ${tokens.brand}`, fontWeight: 700 },
+                        }
+                      : undefined
+                  }
                 >
                   {props.columns.map((c) => (
                     <TableCell key={c.label}>{c.render(item)}</TableCell>
                   ))}
-                  <TableCell align="right" sx={{ whiteSpace: 'nowrap' }} onClick={(e) => e.stopPropagation()}>
+                  <TableCell align="right" sx={{ whiteSpace: 'nowrap', py: 0.5 }} onClick={(e) => e.stopPropagation()}>
                     {/* quiet on every row; the red is kept for the confirmation */}
-                    <Button size="small" color="inherit" onClick={() => open(item)}>
-                      {t('crud.edit')}
-                    </Button>
-                    <Button size="small" sx={{ color: 'text.secondary' }} onClick={() => setDeleting(item)}>
-                      {t('crud.delete')}
-                    </Button>
+                    <Tooltip title={t('crud.edit')}>
+                      <IconButton aria-label={t('crud.edit')} onClick={() => open(item)} sx={rowAction}>
+                        <PencilSimpleIcon size={18} aria-hidden />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title={t('crud.delete')}>
+                      <IconButton
+                        aria-label={t('crud.delete')}
+                        onClick={() => setDeleting(item)}
+                        sx={{ ...rowAction, '@media (hover: hover) and (pointer: fine)': { '&:hover': { color: tokens.negative, bgcolor: tokens.pill.negative.bg } } }}
+                      >
+                        <TrashIcon size={18} aria-hidden />
+                      </IconButton>
+                    </Tooltip>
                   </TableCell>
                 </TableRow>
               ))}
@@ -276,14 +322,50 @@ const visuallyHidden = {
   width: '1px',
 } as const
 
+const iconTile = {
+  width: 36,
+  height: 36,
+  flex: 'none',
+  display: 'grid',
+  placeItems: 'center',
+  borderRadius: `${tokens.radius.control}px`,
+  bgcolor: tokens.brandSoft,
+  color: tokens.brandDark,
+} as const
+
+const countBadge = {
+  px: 0.875,
+  minWidth: 22,
+  height: 20,
+  display: 'inline-grid',
+  placeItems: 'center',
+  borderRadius: 999,
+  bgcolor: tokens.pill.neutral.bg,
+  color: tokens.pill.neutral.ink,
+  fontSize: 12,
+  fontWeight: 700,
+} as const
+
+// 40px targets on a pointer screen, 44px on touch
+const rowAction = { width: 40, height: 40, '@media (pointer: coarse)': { width: 44, height: 44 } } as const
+
 /** An empty section keeps its frame and says what to do in one sentence. */
 function EmptyNote({ children }: { children: ReactNode }) {
   return (
-    <Typography
-      color="text.secondary"
-      sx={{ border: `1px dashed ${tokens.control}`, borderRadius: `${tokens.radius.card}px`, px: 1.5, py: 1 }}
-    >
-      {children}
-    </Typography>
+    <Box sx={{ px: 2.5, pb: 2.5 }}>
+      <Typography
+        color="text.secondary"
+        sx={{
+          border: `1px dashed ${tokens.control}`,
+          borderRadius: `${tokens.radius.control}px`,
+          bgcolor: tokens.raised,
+          px: 2,
+          py: 2.5,
+          textAlign: 'center',
+        }}
+      >
+        {children}
+      </Typography>
+    </Box>
   )
 }

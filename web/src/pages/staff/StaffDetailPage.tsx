@@ -30,8 +30,23 @@ import {
 import { PATHS, query, type AcademicYear, type Block, type SchoolClass } from '../../api/structure'
 import { useAuth } from '../../auth/useAuth'
 import { ConfirmDialog } from '../../components/ConfirmDialog'
+import { PersonAvatar } from '../../components/PersonAvatar'
 import { YearPicker } from '../../components/YearPicker'
 import { useList } from '../../hooks/useList'
+import {
+  ArrowCounterClockwiseIcon,
+  ArrowLeftIcon,
+  BooksIcon,
+  EnvelopeSimpleIcon,
+  IdentificationCardIcon,
+  KeyIcon,
+  PencilSimpleIcon,
+  PhoneIcon,
+  ProhibitIcon,
+  TranslateIcon,
+  type Icon,
+} from '../../icons'
+import { tokens } from '../../theme'
 import { StaffFormDialog } from './StaffFormDialog'
 import { StatusChip } from './StaffListPage'
 import { TemporaryPasswordDialog } from './TemporaryPasswordDialog'
@@ -101,75 +116,120 @@ export function StaffDetailPage() {
   const className = (classId: string) => classes.items.find((c) => c.id === classId)?.name ?? ''
 
   return (
-    <Stack spacing={3} sx={{ maxWidth: 880 }}>
+    <Stack spacing={3} sx={{ maxWidth: 1040, pt: { xs: 2, sm: 3.5 } }}>
       <Box>
-        <Link to="/staff">{t('staff.back')}</Link>
-        <Stack direction="row" spacing={2} sx={{ alignItems: 'center', mt: 1 }}>
-          <Typography variant="h5" component="h1">
-            {fullName(staff)}
-          </Typography>
-          <StatusChip staff={staff} />
-        </Stack>
+        <Box
+          component={Link}
+          to="/staff"
+          sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75, fontSize: 13, color: tokens.muted, minHeight: 24 }}
+        >
+          <ArrowLeftIcon size={16} aria-hidden />
+          {t('staff.back')}
+        </Box>
       </Box>
+
+      <Paper variant="outlined" component="section" aria-label={t('staff.identity')} sx={{ overflow: 'hidden' }}>
+        <Stack
+          direction={{ xs: 'column', xl: 'row' }}
+          sx={{
+            p: 2.5,
+            gap: 2,
+            alignItems: { xl: 'center' },
+            justifyContent: 'space-between',
+            borderTop: `4px solid ${tokens.brand}`,
+          }}
+        >
+          <Stack direction="row" sx={{ gap: 2, alignItems: 'center', minWidth: 0, flex: 1 }}>
+            <PersonAvatar id={staff.id} firstName={staff.firstName} lastName={staff.lastName} size={64} />
+            <Box sx={{ minWidth: 0, flex: 1 }}>
+              <Stack direction="row" sx={{ alignItems: 'center', gap: 1.5, flexWrap: 'wrap' }}>
+                <Typography variant="h5" component="h1">
+                  {fullName(staff)}
+                </Typography>
+                <StatusChip staff={staff} />
+              </Stack>
+              <Stack direction="row" sx={{ mt: 0.75, gap: 2, flexWrap: 'wrap', color: tokens.muted, fontSize: 13 }}>
+                {staff.phone && (
+                  <Stack direction="row" component="span" sx={{ alignItems: 'center', gap: 0.75 }}>
+                    <PhoneIcon size={16} aria-hidden />
+                    {staff.phone}
+                  </Stack>
+                )}
+                {staff.email && (
+                  <Stack direction="row" component="span" sx={{ alignItems: 'center', gap: 0.75 }}>
+                    <EnvelopeSimpleIcon size={16} aria-hidden />
+                    {staff.email}
+                  </Stack>
+                )}
+                <Stack direction="row" component="span" sx={{ alignItems: 'center', gap: 0.75 }}>
+                  <TranslateIcon size={16} aria-hidden />
+                  {t('staff.language')}: {t(`language.${staff.language.toLowerCase()}`)}
+                </Stack>
+              </Stack>
+            </Box>
+          </Stack>
+          <Stack direction="row" spacing={1} useFlexGap sx={{ flexWrap: 'wrap', flex: 'none' }}>
+            <Button variant="outlined" startIcon={<PencilSimpleIcon aria-hidden />} onClick={() => setEditing(true)}>
+              {t('crud.edit')}
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<KeyIcon aria-hidden />}
+              onClick={() =>
+                setConfirm({
+                  title: t('staff.resetTitle'),
+                  text: t('staff.resetText'),
+                  label: t('staff.reset'),
+                  run: () =>
+                    change(async () => {
+                      const result = await client.request<{ temporaryPassword: string }>(`${base}/password-reset`, {
+                        method: 'POST',
+                      })
+                      setPassword(result.temporaryPassword)
+                    }),
+                })
+              }
+            >
+              {t('staff.reset')}
+            </Button>
+            {staff.status === 'DISABLED' ? (
+              <Button
+                variant="outlined"
+                color="success"
+                startIcon={<ArrowCounterClockwiseIcon aria-hidden />}
+                onClick={() => void change(() => setStatus('ACTIVE'))}
+              >
+                {t('staff.enable')}
+              </Button>
+            ) : (
+              <Button
+                variant="outlined"
+                color="error"
+                startIcon={<ProhibitIcon aria-hidden />}
+                onClick={() =>
+                  setConfirm({
+                    title: t('staff.disableTitle'),
+                    text: t('staff.disableText'),
+                    label: t('staff.disable'),
+                    danger: true,
+                    run: () => change(() => setStatus('DISABLED')),
+                  })
+                }
+              >
+                {t('staff.disable')}
+              </Button>
+            )}
+          </Stack>
+        </Stack>
+      </Paper>
       {actionError !== null && (
         <Alert severity="error" onClose={() => setActionError(null)}>
           {errorMessage(actionError, t)}
         </Alert>
       )}
 
-      <Section title={t('staff.identity')}>
-        <Typography>{[staff.phone, staff.email].filter(Boolean).join(' · ')}</Typography>
-        <Typography color="text.secondary">
-          {t('staff.language')}: {t(`language.${staff.language.toLowerCase()}`)}
-        </Typography>
-        <Stack direction="row" spacing={1} useFlexGap sx={{ mt: 2, flexWrap: 'wrap' }}>
-          <Button variant="outlined" onClick={() => setEditing(true)}>
-            {t('crud.edit')}
-          </Button>
-          <Button
-            variant="outlined"
-            onClick={() =>
-              setConfirm({
-                title: t('staff.resetTitle'),
-                text: t('staff.resetText'),
-                label: t('staff.reset'),
-                run: () =>
-                  change(async () => {
-                    const result = await client.request<{ temporaryPassword: string }>(`${base}/password-reset`, {
-                      method: 'POST',
-                    })
-                    setPassword(result.temporaryPassword)
-                  }),
-              })
-            }
-          >
-            {t('staff.reset')}
-          </Button>
-          {staff.status === 'DISABLED' ? (
-            <Button variant="outlined" color="success" onClick={() => void change(() => setStatus('ACTIVE'))}>
-              {t('staff.enable')}
-            </Button>
-          ) : (
-            <Button
-              variant="outlined"
-              color="error"
-              onClick={() =>
-                setConfirm({
-                  title: t('staff.disableTitle'),
-                  text: t('staff.disableText'),
-                  label: t('staff.disable'),
-                  danger: true,
-                  run: () => change(() => setStatus('DISABLED')),
-                })
-              }
-            >
-              {t('staff.disable')}
-            </Button>
-          )}
-        </Stack>
-      </Section>
-
-      <Section title={t('staff.roles')}>
+      <Box sx={{ display: 'grid', gap: 3, gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 1fr) minmax(0, 1fr)' }, alignItems: 'start' }}>
+      <Section title={t('staff.roles')} icon={IdentificationCardIcon}>
         {staff.roles.length === 0 ? (
           <Typography color="text.secondary">{t('staff.noRoles')}</Typography>
         ) : (
@@ -210,7 +270,7 @@ export function StaffDetailPage() {
         />
       </Section>
 
-      <Section title={t('staff.teaching')}>
+      <Section title={t('staff.teaching')} icon={BooksIcon}>
         {!isTeacher ? (
           <Typography color="text.secondary">{t('staff.teachingNeedsRole')}</Typography>
         ) : (
@@ -259,6 +319,7 @@ export function StaffDetailPage() {
           </>
         )}
       </Section>
+      </Box>
 
       <StaffFormDialog
         open={editing}
@@ -288,12 +349,28 @@ export function StaffDetailPage() {
   }
 }
 
-function Section({ title, children }: { title: string; children: ReactNode }) {
+function Section({ title, icon: SectionIcon, children }: { title: string; icon: Icon; children: ReactNode }) {
   return (
-    <Paper variant="outlined" sx={{ p: 2 }} component="section" aria-label={title}>
-      <Typography variant="h6" component="h2" gutterBottom>
-        {title}
-      </Typography>
+    <Paper variant="outlined" sx={{ p: 2.5 }} component="section" aria-label={title}>
+      <Stack direction="row" sx={{ alignItems: 'center', gap: 1.5, mb: 1.5 }}>
+        <Box
+          aria-hidden
+          sx={{
+            width: 36,
+            height: 36,
+            display: 'grid',
+            placeItems: 'center',
+            borderRadius: `${tokens.radius.control}px`,
+            bgcolor: tokens.brandSoft,
+            color: tokens.brandDark,
+          }}
+        >
+          <SectionIcon size={20} />
+        </Box>
+        <Typography variant="h6" component="h2">
+          {title}
+        </Typography>
+      </Stack>
       {children}
     </Paper>
   )

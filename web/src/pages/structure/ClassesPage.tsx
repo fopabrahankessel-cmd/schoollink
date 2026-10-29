@@ -1,8 +1,10 @@
-import { Stack, Typography } from '@mui/material'
+import { Stack } from '@mui/material'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { PATHS, query, type AcademicYear, type Block, type SchoolClass } from '../../api/structure'
 import { CrudSection } from '../../components/CrudSection'
+import { PageHeader } from '../../components/PageHeader'
+import { BuildingsIcon, ChalkboardTeacherIcon, StudentIcon } from '../../icons'
 import { YearPicker } from '../../components/YearPicker'
 import { useList } from '../../hooks/useList'
 
@@ -15,11 +17,12 @@ export function ClassesPage() {
   const blockName = (id: string) => blocks.items.find((b) => b.id === id)?.name ?? ''
 
   return (
-    <Stack spacing={3} sx={{ maxWidth: 880 }}>
-      <Typography variant="h5" component="h1">
-        {t('structure.classes')}
-      </Typography>
+    <Stack sx={{ maxWidth: 880 }}>
+      <PageHeader icon={ChalkboardTeacherIcon} title={t('structure.classes')} description={t('structure.classesIntro')} />
+      <Stack spacing={3}>
       <CrudSection<Block>
+        icon={BuildingsIcon}
+        hint={t('structure.blocksHint')}
         title={t('structure.blocks')}
         itemName={t('structure.block')}
         path={PATHS.blocks}
@@ -33,6 +36,7 @@ export function ClassesPage() {
       <YearPicker years={years.items} value={yearId} onChange={setYearId} />
       <CrudSection<SchoolClass>
         key={`classes-${yearId}`}
+        icon={StudentIcon}
         title={t('structure.classes')}
         itemName={t('structure.schoolClass')}
         path={PATHS.classes}
@@ -57,6 +61,7 @@ export function ClassesPage() {
         toValues={(c) => ({ name: c.name, level: c.level, blockId: c.blockId })}
         fixed={yearId ? { academicYearId: yearId } : undefined}
       />
+      </Stack>
     </Stack>
   )
 }

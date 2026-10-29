@@ -22,7 +22,11 @@
     "school": "Établissement",
     "schoolChoose": "Choisissez votre établissement",
     "schoolHint": "Ce compte existe dans plusieurs établissements.",
-    "submit": "Se connecter"
+    "submit": "Se connecter",
+    "panelTitle": "L'assiduité de chaque élève, connue des familles le jour même.",
+    "featureAttendance": "L'appel à chaque période, même sans réseau.",
+    "featureLateness": "Les retards notés au portail par les surveillants.",
+    "featureFamilies": "Les parents prévenus le jour même, par notification ou SMS."
   },
   "password": {
     "title": "Choisissez votre mot de passe",
@@ -47,7 +51,8 @@
     "school": "Établissement",
     "people": "Équipe",
     "label": "Navigation principale",
-    "menu": "Menu"
+    "menu": "Menu",
+    "signedIn": "Connecté"
   },
   "home": {
     "welcome": "Bienvenue sur SchoolLink",
@@ -106,7 +111,14 @@
     "term": "Trimestre",
     "holiday": "Congé",
     "period": "Période de cours",
-    "schoolClass": "Classe"
+    "schoolClass": "Classe",
+    "calendarIntro": "L'année scolaire, ses trimestres et les congés de chaque trimestre.",
+    "yearsHint": "Choisissez une année pour voir ses trimestres.",
+    "termsHint": "Choisissez un trimestre pour voir ses congés.",
+    "periodsIntro": "Les créneaux horaires des cours, du premier au dernier de la journée.",
+    "periodsHint": "Deux périodes ne peuvent pas se chevaucher.",
+    "classesIntro": "Les blocs, chacun suivi par un Surveillant Général, et les classes de chaque année.",
+    "blocksHint": "Chaque classe appartient à un bloc."
   },
   "timetable": {
     "title": "Emploi du temps",
@@ -118,7 +130,9 @@
     "lessonHint": "Seuls les enseignants affectés à cette classe apparaissent.",
     "noTeaching": "Aucun enseignant n'est affecté à cette classe. Les affectations se font dans la gestion du personnel.",
     "clear": "Libérer le créneau",
-    "cellTitle": "{{day}}, période {{number}}"
+    "cellTitle": "{{day}}, période {{number}}",
+    "intro": "Les cours de chaque classe, jour par jour et période par période.",
+    "periodNumber": "Période {{number}}"
   },
   "weekdays": {
     "1": "Lundi",
@@ -158,7 +172,7 @@
     "copy": "Copier",
     "copied": "Copié",
     "passwordDone": "C'est noté",
-    "back": "← Retour au personnel",
+    "back": "Retour au personnel",
     "identity": "Identité",
     "reset": "Réinitialiser le mot de passe",
     "resetTitle": "Réinitialiser le mot de passe ?",
@@ -180,7 +194,10 @@
     "addTeaching": "Affecter la classe",
     "removeTeaching": "Retirer {{subject}} en {{class}}",
     "count_one": "{{count}} personne",
-    "count_other": "{{count}} personnes"
+    "count_other": "{{count}} personnes",
+    "intro": "Les comptes du personnel, leurs rôles et les classes de chaque enseignant.",
+    "allRoles": "Tous",
+    "filterLabel": "Filtrer par rôle"
   },
   "setup": {
     "title": "Préparation de l'année",
@@ -220,6 +237,15 @@
     "yearTitle": "Année scolaire",
     "noYear": "Créez l'année scolaire dans le calendrier.",
     "noTerms": "Aucun trimestre pour cette année.",
-    "termWeek": "{{term}} : semaine {{week}} sur {{weeks}}"
+    "termWeek": "{{term}} : semaine {{week}} sur {{weeks}}",
+    "statsLabel": "Chiffres clés de l'année",
+    "statClasses": "Classes",
+    "statTeachers": "Enseignants",
+    "statLessons": "Cours placés",
+    "statLessonsOf_one": "sur {{count}} créneau de la semaine",
+    "statLessonsOf_other": "sur {{count}} créneaux de la semaine",
+    "statPeriods": "Périodes par jour",
+    "stepsTitle": "Mise en place",
+    "progress": "{{ready}} étapes prêtes sur {{total}}"
   }
 }

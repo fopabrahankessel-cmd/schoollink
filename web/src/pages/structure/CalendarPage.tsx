@@ -1,8 +1,10 @@
-import { Stack, Typography } from '@mui/material'
+import { Stack } from '@mui/material'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { PATHS, query, type AcademicYear, type Holiday, type Term } from '../../api/structure'
 import { CrudSection, type Field } from '../../components/CrudSection'
+import { PageHeader } from '../../components/PageHeader'
+import { CalendarBlankIcon, CalendarCheckIcon, GraduationCapIcon, SquaresFourIcon } from '../../icons'
 import { formatDate } from '../../format'
 
 /**
@@ -33,11 +35,12 @@ export function CalendarPage() {
   })
 
   return (
-    <Stack spacing={3} sx={{ maxWidth: 880 }}>
-      <Typography variant="h5" component="h1">
-        {t('structure.calendarTitle')}
-      </Typography>
+    <Stack sx={{ maxWidth: 880 }}>
+      <PageHeader icon={CalendarBlankIcon} title={t('structure.calendarTitle')} description={t('structure.calendarIntro')} />
+      <Stack spacing={3}>
       <CrudSection<AcademicYear>
+        icon={GraduationCapIcon}
+        hint={t('structure.yearsHint')}
         title={t('structure.years')}
         itemName={t('structure.year')}
         path={PATHS.years}
@@ -54,6 +57,8 @@ export function CalendarPage() {
       />
       <CrudSection<Term>
         key={`terms-${year?.id ?? ''}`}
+        icon={SquaresFourIcon}
+        hint={year ? t('structure.termsHint') : undefined}
         title={year ? `${t('structure.terms')} · ${year.label}` : t('structure.terms')}
         itemName={t('structure.term')}
         path={PATHS.terms}
@@ -69,6 +74,7 @@ export function CalendarPage() {
       />
       <CrudSection<Holiday>
         key={`holidays-${term?.id ?? ''}`}
+        icon={CalendarCheckIcon}
         title={term ? `${t('structure.holidays')} · ${term.label}` : t('structure.holidays')}
         itemName={t('structure.holiday')}
         path={PATHS.holidays}
@@ -80,6 +86,7 @@ export function CalendarPage() {
         toValues={datedValues}
         fixed={term ? { termId: term.id } : undefined}
       />
+      </Stack>
     </Stack>
   )
 }

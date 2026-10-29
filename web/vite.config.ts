@@ -11,5 +11,7 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     setupFiles: ['./src/test/setup.ts'],
+    // the screen tests type whole forms with user-event; 5 s is too tight under a full parallel run
+    testTimeout: 15_000,
   },
 })

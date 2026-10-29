@@ -22,7 +22,11 @@
     "school": "School",
     "schoolChoose": "Choose your school",
     "schoolHint": "This account exists in several schools.",
-    "submit": "Sign in"
+    "submit": "Sign in",
+    "panelTitle": "Every student's attendance, known to their family the same day.",
+    "featureAttendance": "Attendance taken every period, even offline.",
+    "featureLateness": "Lateness recorded at the gate by the assistant DMs.",
+    "featureFamilies": "Parents told the same day, by notification or SMS."
   },
   "password": {
     "title": "Choose your password",
@@ -47,7 +51,8 @@
     "school": "School",
     "people": "People",
     "label": "Main navigation",
-    "menu": "Menu"
+    "menu": "Menu",
+    "signedIn": "Signed in"
   },
   "home": {
     "welcome": "Welcome to SchoolLink",
@@ -106,7 +111,14 @@
     "term": "Term",
     "holiday": "Holiday",
     "period": "Lesson period",
-    "schoolClass": "Class"
+    "schoolClass": "Class",
+    "calendarIntro": "The school year, its terms and the holidays in each term.",
+    "yearsHint": "Pick a year to see its terms.",
+    "termsHint": "Pick a term to see its holidays.",
+    "periodsIntro": "The lesson time slots, from the first to the last of the day.",
+    "periodsHint": "Two periods cannot overlap.",
+    "classesIntro": "Blocks, each followed by a Discipline Master, and the classes of each year.",
+    "blocksHint": "Every class belongs to a block."
   },
   "timetable": {
     "title": "Timetable",
@@ -118,7 +130,9 @@
     "lessonHint": "Only the teachers assigned to this class are listed.",
     "noTeaching": "No teacher is assigned to this class yet. Assignments are made in staff management.",
     "clear": "Clear the slot",
-    "cellTitle": "{{day}}, period {{number}}"
+    "cellTitle": "{{day}}, period {{number}}",
+    "intro": "Each class's lessons, day by day and period by period.",
+    "periodNumber": "Period {{number}}"
   },
   "weekdays": {
     "1": "Monday",
@@ -158,7 +172,7 @@
     "copy": "Copy",
     "copied": "Copied",
     "passwordDone": "Done",
-    "back": "← Back to staff",
+    "back": "Back to staff",
     "identity": "Identity",
     "reset": "Reset the password",
     "resetTitle": "Reset the password?",
@@ -180,7 +194,10 @@
     "addTeaching": "Assign the class",
     "removeTeaching": "Remove {{subject}} in {{class}}",
     "count_one": "{{count}} person",
-    "count_other": "{{count}} people"
+    "count_other": "{{count}} people",
+    "intro": "Staff accounts, their roles and the classes each teacher takes.",
+    "allRoles": "All",
+    "filterLabel": "Filter by role"
   },
   "setup": {
     "title": "Year setup",
@@ -220,6 +237,15 @@
     "yearTitle": "School year",
     "noYear": "Create the school year in the calendar.",
     "noTerms": "No terms for this year.",
-    "termWeek": "{{term}}: week {{week}} of {{weeks}}"
+    "termWeek": "{{term}}: week {{week}} of {{weeks}}",
+    "statsLabel": "Key figures for the year",
+    "statClasses": "Classes",
+    "statTeachers": "Teachers",
+    "statLessons": "Lessons placed",
+    "statLessonsOf_one": "of {{count}} weekly slot",
+    "statLessonsOf_other": "of {{count}} weekly slots",
+    "statPeriods": "Periods a day",
+    "stepsTitle": "Setup",
+    "progress": "{{ready}} of {{total}} steps ready"
   }
 }
