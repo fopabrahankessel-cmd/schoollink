@@ -10,6 +10,11 @@ export function currentYear<T extends { startDate: string; endDate: string }>(ye
   return years.find((y) => y.startDate <= iso && iso <= y.endDate) ?? [...years].sort((a, b) => b.startDate.localeCompare(a.startDate))[0]
 }
 
+/** A moment from the API (ISO with a zone) as a date in the reader's language. */
+export function formatInstant(iso: string, language: string): string {
+  return new Intl.DateTimeFormat(language, { dateStyle: 'medium' }).format(new Date(iso))
+}
+
 /** A file size in the reader's language: "12 ko", "1.4 MB". */
 export function formatFileSize(bytes: number, language: string): string {
   const mega = bytes >= 1024 * 1024

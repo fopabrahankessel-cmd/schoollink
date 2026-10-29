@@ -49,11 +49,12 @@
     "timetable": "Emploi du temps",
     "staff": "Personnel",
     "school": "Établissement",
-    "people": "Équipe",
+    "people": "Personnes",
     "label": "Navigation principale",
     "menu": "Menu",
     "signedIn": "Connecté",
-    "import": "Importer des élèves"
+    "import": "Importer des élèves",
+    "guardians": "Tuteurs"
   },
   "home": {
     "welcome": "Bienvenue sur SchoolLink",
@@ -311,5 +312,54 @@
     "backHome": "Retour à l'accueil",
     "templateFileName": "modele-import-eleves.csv",
     "uploadFresh": "Envoyer de nouveau le fichier"
+  },
+  "guardians": {
+    "title": "Tuteurs et invitations",
+    "intro": "Les tuteurs d'une classe et leur code d'invitation. Le code part par SMS ; le parent l'utilise pour activer l'application.",
+    "class": "Classe",
+    "pickClass": "Choisissez une classe pour voir ses tuteurs.",
+    "summary": "Tuteurs par statut",
+    "count": {
+      "ACCOUNT_one": "{{count}} avec compte",
+      "ACCOUNT_other": "{{count}} avec compte",
+      "INVITED_one": "{{count}} invité",
+      "INVITED_other": "{{count}} invités",
+      "EXPIRED_one": "{{count}} code expiré",
+      "EXPIRED_other": "{{count}} codes expirés",
+      "NOT_INVITED_one": "{{count}} pas encore invité",
+      "NOT_INVITED_other": "{{count}} pas encore invités"
+    },
+    "state": {
+      "ACCOUNT": "Compte actif",
+      "INVITED": "Invité",
+      "EXPIRED": "Code expiré",
+      "NOT_INVITED": "Pas encore invité"
+    },
+    "relation": {
+      "MOTHER": "mère",
+      "FATHER": "père",
+      "GUARDIAN": "tuteur",
+      "OTHER": "autre lien"
+    },
+    "empty": "Aucun tuteur dans cette classe. Importez d'abord les élèves avec leurs tuteurs.",
+    "guardian": "Tuteur",
+    "children": "Enfants",
+    "status": "Statut",
+    "smsIn": "SMS : {{language}}",
+    "child": "{{name}} ({{relation}})",
+    "inClass": "en {{name}}",
+    "expires": "Valable jusqu'au {{date}}",
+    "invite": "Inviter",
+    "resend": "Envoyer un nouveau code",
+    "resendTitle": "Envoyer un nouveau code ?",
+    "resendText": "{{name}} a déjà un code valable. Le nouveau code le remplace : l'ancien ne fonctionnera plus.",
+    "inviteClass": "Inviter la classe",
+    "classTitle": "Inviter les tuteurs de {{name}} ?",
+    "classText_one": "Un code part par SMS au tuteur qui n'a pas encore de compte. S'il avait déjà un code, le nouveau le remplace.",
+    "classText_other": "Un code part par SMS à chacun des {{count}} tuteurs qui n'ont pas encore de compte. Ceux qui avaient déjà un code en reçoivent un nouveau, qui remplace l'ancien.",
+    "classConfirm": "Envoyer les codes",
+    "classSent_one": "1 code envoyé par SMS. Tuteurs déjà inscrits, sans code : {{skipped}}.",
+    "classSent_other": "{{count}} codes envoyés par SMS. Tuteurs déjà inscrits, sans code : {{skipped}}.",
+    "sent": "Code envoyé par SMS à {{name}}."
   }
 }

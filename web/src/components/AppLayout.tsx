@@ -15,6 +15,7 @@ import {
   ListIcon,
   SignOutIcon,
   TableIcon,
+  UsersFourIcon,
   UsersThreeIcon,
   type Icon,
 } from '../icons'
@@ -45,6 +46,7 @@ const ADMIN_NAV: { group?: string; items: NavItem[] }[] = [
     items: [
       { to: '/staff', label: 'nav.staff', icon: UsersThreeIcon },
       { to: '/students/import', label: 'nav.import', icon: FileArrowUpIcon },
+      { to: '/guardians', label: 'nav.guardians', icon: UsersFourIcon },
     ],
   },
 ]

@@ -294,7 +294,9 @@ One REST API under `/api/v1`, secured by JWT; the server derives the school and 
 | Auth | `POST /auth/refresh` | All | New access token |
 | School | `GET/POST /classes`, `/periods`, `/terms` | Admin | School structure |
 | People | `POST /students/import` (preview), `POST /students/import/{id}/commit` | Admin | CSV/Excel import in two steps |
+| People | `GET /guardians?classId=` | Admin | A class's guardians, their children and account or invitation status |
 | People | `POST /guardians/{id}/invitations` | Admin | Generate an invitation code |
+| People | `POST /classes/{id}/invitations` | Admin | Invitation codes for every guardian of a class without an account (D7) |
 | Attendance | `GET /me/sessions?date=` | Teacher | Today's sessions to record |
 | Attendance | `PUT /sessions/{uuid}` | Teacher | Create or sync a confirmed session (idempotent by device UUID) |
 | Attendance | `POST /records/{id}/cancel` | DM | Cancel an erroneous absence with a reason |

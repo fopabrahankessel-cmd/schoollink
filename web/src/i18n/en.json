@@ -53,7 +53,8 @@
     "label": "Main navigation",
     "menu": "Menu",
     "signedIn": "Signed in",
-    "import": "Import students"
+    "import": "Import students",
+    "guardians": "Guardians"
   },
   "home": {
     "welcome": "Welcome to SchoolLink",
@@ -311,5 +312,54 @@
     "backHome": "Back to home",
     "templateFileName": "student-import-template.csv",
     "uploadFresh": "Upload the file again"
+  },
+  "guardians": {
+    "title": "Guardians and invitations",
+    "intro": "A class's guardians and their invitation code. The code goes by SMS; the parent uses it to activate the app.",
+    "class": "Class",
+    "pickClass": "Choose a class to see its guardians.",
+    "summary": "Guardians by status",
+    "count": {
+      "ACCOUNT_one": "{{count}} with an account",
+      "ACCOUNT_other": "{{count}} with an account",
+      "INVITED_one": "{{count}} invited",
+      "INVITED_other": "{{count}} invited",
+      "EXPIRED_one": "{{count}} expired code",
+      "EXPIRED_other": "{{count}} expired codes",
+      "NOT_INVITED_one": "{{count}} not invited yet",
+      "NOT_INVITED_other": "{{count}} not invited yet"
+    },
+    "state": {
+      "ACCOUNT": "Active account",
+      "INVITED": "Invited",
+      "EXPIRED": "Code expired",
+      "NOT_INVITED": "Not invited yet"
+    },
+    "relation": {
+      "MOTHER": "mother",
+      "FATHER": "father",
+      "GUARDIAN": "guardian",
+      "OTHER": "other"
+    },
+    "empty": "No guardians in this class. Import the students with their guardians first.",
+    "guardian": "Guardian",
+    "children": "Children",
+    "status": "Status",
+    "smsIn": "SMS: {{language}}",
+    "child": "{{name}} ({{relation}})",
+    "inClass": "in {{name}}",
+    "expires": "Valid until {{date}}",
+    "invite": "Invite",
+    "resend": "Send a new code",
+    "resendTitle": "Send a new code?",
+    "resendText": "{{name}} already has a valid code. The new code replaces it: the old one will stop working.",
+    "inviteClass": "Invite the class",
+    "classTitle": "Invite the guardians of {{name}}?",
+    "classText_one": "A code goes by SMS to the guardian who has no account yet. If they already had a code, the new one replaces it.",
+    "classText_other": "A code goes by SMS to each of the {{count}} guardians who have no account yet. Those who already had a code get a new one, which replaces the old one.",
+    "classConfirm": "Send the codes",
+    "classSent_one": "1 code sent by SMS. Guardians already signed up, no code: {{skipped}}.",
+    "classSent_other": "{{count}} codes sent by SMS. Guardians already signed up, no code: {{skipped}}.",
+    "sent": "Code sent by SMS to {{name}}."
   }
 }

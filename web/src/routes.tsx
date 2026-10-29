@@ -4,6 +4,7 @@ import { CHANGE_PASSWORD_PATH, RequireAuth } from './auth/RequireAuth'
 import { RequireRole } from './auth/RequireRole'
 import { AppLayout } from './components/AppLayout'
 import { ChangePasswordPage } from './pages/ChangePasswordPage'
+import { GuardiansPage } from './pages/guardians/GuardiansPage'
 import { ImportPreviewPage } from './pages/import/ImportPreviewPage'
 import { ImportUploadPage } from './pages/import/ImportUploadPage'
 import { HomePage } from './pages/HomePage'
@@ -39,6 +40,8 @@ export const routes: RouteObject[] = [
       // UC-A3: student and guardian import, admin only
       { path: '/students/import', element: admin(<ImportUploadPage />) },
       { path: '/students/import/:id', element: admin(<ImportPreviewPage />) },
+      // UC-A4: guardians and invitation codes, admin only
+      { path: '/guardians', element: admin(<GuardiansPage />) },
     ],
   },
   { path: '*', element: <Navigate to="/" replace /> },
