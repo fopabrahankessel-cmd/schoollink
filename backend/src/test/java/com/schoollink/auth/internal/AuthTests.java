@@ -241,6 +241,7 @@ class AuthTests {
 			.getContentAsString());
 
 		assertThat(second.get("refreshToken").asString()).isNotEqualTo(oldRefresh);
+		usedLongAgo(oldRefresh);
 		refresh(oldRefresh).andExpect(status().isUnauthorized())
 			.andExpect(jsonPath("$.code").value("auth.invalid_refresh_token"));
 	}
@@ -248,12 +249,43 @@ class AuthTests {
 	@Test
 	void reusingAnOldRefreshTokenRevokesTheWholeFamily() throws Exception {
 		String r1 = tokens(null, PHONE, "Secret-A1!").get("refreshToken").asString();
-		String r2 = json.readTree(refresh(r1).andReturn().getResponse().getContentAsString())
-			.get("refreshToken")
-			.asString();
+		String r2 = rotate(r1);
+		usedLongAgo(r1);
 
 		refresh(r1).andExpect(status().isUnauthorized()); // reuse: likely stolen
 		refresh(r2).andExpect(status().isUnauthorized()); // so the newest token is revoked too
+	}
+
+	@Test
+	void aReloadDuringARefreshKeepsTheSession() throws Exception { // NFR-7
+		String r1 = tokens(null, PHONE, "Secret-A1!").get("refreshToken").asString();
+		String lost = rotate(r1); // the page reloaded before storing it
+
+		String r3 = rotate(r1); // the reloaded page still has r1: within the grace, a new token
+		String r4 = rotate(r3); // and the session goes on
+
+		// the lost token was retired: whoever presents it now is treated as a thief
+		refresh(lost).andExpect(status().isUnauthorized());
+		refresh(r4).andExpect(status().isUnauthorized());
+	}
+
+	@Test
+	void aReplacedTokenIsTheftOnceItsReplacementWasUsed() throws Exception {
+		String r1 = tokens(null, PHONE, "Secret-A1!").get("refreshToken").asString();
+		String r2 = rotate(r1);
+		String r3 = rotate(r2); // the client did get r2: r1 has no reason to come back
+
+		refresh(r1).andExpect(status().isUnauthorized());
+		refresh(r3).andExpect(status().isUnauthorized());
+	}
+
+	@Test
+	void theGraceNeverRevivesASessionThatWasSignedOut() throws Exception {
+		String r1 = tokens(null, PHONE, "Secret-A1!").get("refreshToken").asString();
+		String r2 = rotate(r1);
+		logout(r2).andExpect(status().isNoContent());
+
+		refresh(r1).andExpect(status().isUnauthorized());
 	}
 
 	@Test
@@ -344,6 +376,19 @@ class AuthTests {
 	private ResultActions logout(String refreshToken) throws Exception {
 		return mockMvc.perform(post("/api/v1/auth/logout").contentType(MediaType.APPLICATION_JSON)
 			.content(json.createObjectNode().put("refreshToken", refreshToken).toString()));
+	}
+
+	/** Refreshes and returns the new refresh token. */
+	private String rotate(String refreshToken) throws Exception {
+		return json.readTree(refresh(refreshToken).andExpect(status().isOk()).andReturn().getResponse().getContentAsString())
+			.get("refreshToken")
+			.asString();
+	}
+
+	/** Moves a token's use out of {@link RefreshTokens#REPLACED_GRACE}. */
+	private void usedLongAgo(String refreshToken) {
+		jdbc.update("UPDATE refresh_token SET used_at = used_at - interval '1 minute' WHERE token_hash = ?",
+				RefreshTokens.hash(refreshToken));
 	}
 
 	private ResultActions refresh(String refreshToken) throws Exception {

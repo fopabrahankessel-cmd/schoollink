@@ -6,6 +6,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.sql.Timestamp;
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.HexFormat;
@@ -16,10 +17,19 @@ import org.springframework.stereotype.Component;
 
 /**
  * Opaque 30-day refresh tokens, rotated on every use (NFR-7). Only the SHA-256 hash is stored.
- * Reusing an already-used token revokes its whole family.
+ * Reusing an already-used token revokes its whole family, except within {@link #REPLACED_GRACE}
+ * of its use when its replacement was never used: the client then most likely lost the answer
+ * (a page reloaded while the refresh was under way), not its token.
  */
 @Component
 class RefreshTokens {
+
+	/**
+	 * How long a replaced token may still be presented, while its replacement is unused. The
+	 * replacement is then retired (marked used), so if it had in fact been stolen, presenting it
+	 * later still revokes the family: the theft is detected one refresh later instead of at once.
+	 */
+	static final Duration REPLACED_GRACE = Duration.ofSeconds(30);
 
 	private static final SecureRandom random = new SecureRandom();
 
@@ -50,8 +60,9 @@ class RefreshTokens {
 
 	/**
 	 * Consumes a token: returns its user and family if it is valid, and marks it used. A token
-	 * that was already used revokes its family. Must run in a transaction that commits even when
-	 * the result is empty, so the revocation sticks.
+	 * that was already used revokes its family, unless it was replaced moments ago by a token that
+	 * never reached the client (see {@link #REPLACED_GRACE}). Must run in a transaction that commits
+	 * even when the result is empty, so the revocation sticks.
 	 *
 	 * <p>A family with any revoked member is over: a sign-out or password change running at the
 	 * same time as a refresh can miss the token that refresh creates, but never the older ones.
@@ -66,14 +77,17 @@ class RefreshTokens {
 				// so the row's own revoked_at must be checked too.
 				(rs, n) -> new Row(rs.getObject("id", UUID.class), rs.getObject("user_id", UUID.class),
 						rs.getObject("family_id", UUID.class), rs.getTimestamp("expires_at").toInstant(),
-						rs.getTimestamp("used_at") != null,
+						rs.getTimestamp("used_at") == null ? null : rs.getTimestamp("used_at").toInstant(),
 						rs.getTimestamp("revoked_at") != null || rs.getBoolean("family_revoked")),
 				hash(raw));
 		if (rows.isEmpty()) {
 			return Optional.empty();
 		}
 		Row row = rows.getFirst();
-		if (row.used()) {
+		if (row.usedAt() != null) {
+			if (!row.revoked() && row.usedAt().isAfter(now.minus(REPLACED_GRACE)) && retireReplacement(row, now)) {
+				return Optional.of(new Consumed(row.userId(), row.familyId()));
+			}
 			revokeFamily(row.familyId(), now);
 			return Optional.empty();
 		}
@@ -82,6 +96,21 @@ class RefreshTokens {
 		}
 		jdbc.update("UPDATE refresh_token SET used_at = ? WHERE id = ?", Timestamp.from(now), row.id());
 		return Optional.of(new Consumed(row.userId(), row.familyId()));
+	}
+
+	/**
+	 * Marks used the token that replaced {@code row}, if no one has used it yet. Tokens rotate one
+	 * at a time, so the replacement is the family's only live token, created after {@code row}'s
+	 * use; and no token created since may have been used, or the client did get the replacement.
+	 */
+	private boolean retireReplacement(Row row, Instant now) {
+		Timestamp replacedAt = Timestamp.from(row.usedAt());
+		return jdbc.update("""
+				UPDATE refresh_token SET used_at = ?
+				WHERE family_id = ? AND created_at >= ? AND used_at IS NULL AND revoked_at IS NULL
+				  AND NOT EXISTS (SELECT 1 FROM refresh_token u
+				                  WHERE u.family_id = ? AND u.created_at >= ? AND u.used_at IS NOT NULL)""",
+				Timestamp.from(now), row.familyId(), replacedAt, row.familyId(), replacedAt) == 1;
 	}
 
 	void revokeFamily(UUID familyId, Instant now) {
@@ -116,7 +145,7 @@ class RefreshTokens {
 	record Consumed(UUID userId, UUID familyId) {
 	}
 
-	private record Row(UUID id, UUID userId, UUID familyId, Instant expiresAt, boolean used, boolean revoked) {
+	private record Row(UUID id, UUID userId, UUID familyId, Instant expiresAt, Instant usedAt, boolean revoked) {
 	}
 
 }
