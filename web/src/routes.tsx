@@ -4,6 +4,8 @@ import { CHANGE_PASSWORD_PATH, RequireAuth } from './auth/RequireAuth'
 import { RequireRole } from './auth/RequireRole'
 import { AppLayout } from './components/AppLayout'
 import { ChangePasswordPage } from './pages/ChangePasswordPage'
+import { ImportPreviewPage } from './pages/import/ImportPreviewPage'
+import { ImportUploadPage } from './pages/import/ImportUploadPage'
 import { HomePage } from './pages/HomePage'
 import { LoginPage } from './pages/LoginPage'
 import { CalendarPage } from './pages/structure/CalendarPage'
@@ -34,6 +36,9 @@ export const routes: RouteObject[] = [
       // UC-A2: staff accounts and assignments, admin only
       { path: '/staff', element: admin(<StaffListPage />) },
       { path: '/staff/:id', element: admin(<StaffDetailPage />) },
+      // UC-A3: student and guardian import, admin only
+      { path: '/students/import', element: admin(<ImportUploadPage />) },
+      { path: '/students/import/:id', element: admin(<ImportPreviewPage />) },
     ],
   },
   { path: '*', element: <Navigate to="/" replace /> },

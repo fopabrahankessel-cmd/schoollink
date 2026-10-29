@@ -85,6 +85,20 @@ describe('ApiClient', () => {
     expect(api.calls[0].headers['Accept-Language']).toBe('fr')
   })
 
+  it('sends a FormData as multipart, leaving the Content-Type to fetch', async () => {
+    const api = fakeFetch({ 'POST /upload': json(201, { ok: true }) })
+    const client = newClient(api.fetch)
+    client.startSession(tokens())
+    const form = new FormData()
+    form.append('file', new File(['matricule;nom'], 'eleves.csv', { type: 'text/csv' }))
+
+    await client.request('/upload', { method: 'POST', body: form })
+
+    expect(api.calls[0].headers['Content-Type']).toBeUndefined()
+    expect(api.calls[0].headers.Authorization).toBe('Bearer access-1')
+    expect(api.calls[0].body).toEqual({ file: 'eleves.csv' })
+  })
+
   it('reports network failures and non-API answers with their own codes', async () => {
     const offline = newClient(fakeFetch({ 'GET /auth/schools': new TypeError('Failed to fetch') }).fetch)
     await expect(offline.request('/auth/schools', { auth: false })).rejects.toMatchObject({ code: NETWORK_ERROR })

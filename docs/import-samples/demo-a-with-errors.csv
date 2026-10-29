@@ -1,0 +1,7 @@
+matricule;nom;prenom;sexe;annee_naissance;classe;tuteur1_nom;tuteur1_telephone;tuteur1_lien;tuteur1_langue;tuteur2_nom;tuteur2_telephone;tuteur2_lien;tuteur2_langue
+IMP-0001;Exemple;Awa;F;2014;6e A;Mama Exemple;699 55 00 01;MERE;FR;;;;
+IMP-0002;;Junior;X;2013;6e Z;Papa Inventé;699 55 00 02;PERE;;;;;
+DA-0001;Déjà;Connu;M;2013;6e A;Parent Connu;699 55 00 03;;;;;;
+IMP-0001;Double;Bruno;M;2013;5e A;Parent Double;699 55 00 04;;;;;;
+IMP-0003;Fictif;Chloé;F;1950;5e A;Tantine Fictive;+33612345678;ONCLE;DE;;;;
+IMP-0004;Modèle;Denis;M;2012;4e A;Mère Modèle;699 55 00 05;;;Père Modèle;699550005;;

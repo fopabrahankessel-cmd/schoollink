@@ -9,3 +9,13 @@ export function currentYear<T extends { startDate: string; endDate: string }>(ye
   const iso = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
   return years.find((y) => y.startDate <= iso && iso <= y.endDate) ?? [...years].sort((a, b) => b.startDate.localeCompare(a.startDate))[0]
 }
+
+/** A file size in the reader's language: "12 ko", "1.4 MB". */
+export function formatFileSize(bytes: number, language: string): string {
+  const mega = bytes >= 1024 * 1024
+  return new Intl.NumberFormat(language, {
+    style: 'unit',
+    unit: mega ? 'megabyte' : 'kilobyte',
+    maximumFractionDigits: mega ? 1 : 0,
+  }).format(mega ? bytes / 1024 / 1024 : Math.max(1, bytes / 1024))
+}

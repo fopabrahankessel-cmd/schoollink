@@ -30,7 +30,7 @@ export function fakeFetch(script: Record<string, Reply | Reply[]>) {
       method,
       path,
       headers: (init?.headers ?? {}) as Record<string, string>,
-      body: init?.body ? JSON.parse(String(init.body)) : undefined,
+      body: init?.body ? readBody(init.body) : undefined,
     })
     const key = `${method} ${path}`
     const replies = script[key]
@@ -43,6 +43,16 @@ export function fakeFetch(script: Record<string, Reply | Reply[]>) {
     return typeof reply === 'function' ? reply() : reply.clone()
   }
   return { fetch: fetchFn as typeof fetch, calls }
+}
+
+/** JSON as an object; a multipart form as {field: value}, with a file given by its name. */
+function readBody(body: BodyInit): unknown {
+  if (!(body instanceof FormData)) return JSON.parse(String(body))
+  const fields: Record<string, string> = {}
+  body.forEach((value, key) => {
+    fields[key] = typeof value === 'string' ? value : value.name
+  })
+  return fields
 }
 
 export function json(status: number, body: unknown): () => Response {

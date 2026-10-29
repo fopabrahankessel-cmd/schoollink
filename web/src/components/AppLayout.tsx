@@ -9,6 +9,7 @@ import {
   CalendarBlankIcon,
   ChalkboardTeacherIcon,
   ClockIcon,
+  FileArrowUpIcon,
   HouseIcon,
   IdentificationCardIcon,
   ListIcon,
@@ -39,7 +40,13 @@ const ADMIN_NAV: { group?: string; items: NavItem[] }[] = [
       { to: '/structure/timetable', label: 'nav.timetable', icon: TableIcon },
     ],
   },
-  { group: 'nav.people', items: [{ to: '/staff', label: 'nav.staff', icon: UsersThreeIcon }] },
+  {
+    group: 'nav.people',
+    items: [
+      { to: '/staff', label: 'nav.staff', icon: UsersThreeIcon },
+      { to: '/students/import', label: 'nav.import', icon: FileArrowUpIcon },
+    ],
+  },
 ]
 
 const phone = theme.breakpoints.down('md')

@@ -18,7 +18,7 @@ The admin imports the students of one academic year from a CSV or Excel file, in
 - **Row 1** holds the headers. Rows that are completely empty are skipped. Columns the template does not know are ignored.
 - **Headers** are matched without case, accents, spaces or punctuation: `Année naissance`, `annee_naissance` and `ANNEE NAISSANCE` are the same column.
 
-Template: [import-template.csv](import-template.csv). It contains made-up students only.
+Template: [import-template.csv](../web/public/import-template.csv), also offered for download on the import screen. It contains made-up students only, and starts with a UTF-8 byte order mark so Excel shows the accents. For a manual check against the dev seed, see [import-samples](import-samples/README.md).
 
 ## Columns
 

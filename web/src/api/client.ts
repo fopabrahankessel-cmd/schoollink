@@ -60,6 +60,7 @@ export const REFRESH_TOKEN_KEY = 'schoollink.refreshToken'
 
 export interface RequestOptions {
   method?: string
+  /** Sent as JSON, or as multipart when it is a FormData. */
   body?: unknown
   /** false for the sign-in endpoints: no token, and a 401 is an answer, not an expired session. */
   auth?: boolean
@@ -183,13 +184,15 @@ export class ApiClient {
 
   private async send(path: string, options: RequestOptions, token: string | null): Promise<Response> {
     const headers: Record<string, string> = { Accept: 'application/json', 'Accept-Language': this.language() }
-    if (options.body !== undefined) headers['Content-Type'] = 'application/json'
+    // a file upload goes as multipart: fetch sets the Content-Type with its boundary
+    const multipart = options.body instanceof FormData
+    if (options.body !== undefined && !multipart) headers['Content-Type'] = 'application/json'
     if (token !== null) headers.Authorization = `Bearer ${token}`
     try {
       return await this.fetchFn(this.baseUrl + path, {
         method: options.method ?? 'GET',
         headers,
-        body: options.body === undefined ? undefined : JSON.stringify(options.body),
+        body: options.body === undefined ? undefined : multipart ? (options.body as FormData) : JSON.stringify(options.body),
       })
     } catch {
       throw new ApiError(0, { code: NETWORK_ERROR, message: '' })
