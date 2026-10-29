@@ -65,6 +65,8 @@ cd backend
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev      # API on :8080, fake seed data
 ```
 
+The backend fails closed without a JWT signing secret: outside the `dev` and `test` profiles it refuses to start unless `JWT_SECRET` (32+ bytes) is set. Tests get the `test` profile from `src/test/resources/config/application.properties`.
+
 ### web/
 
 ```bash

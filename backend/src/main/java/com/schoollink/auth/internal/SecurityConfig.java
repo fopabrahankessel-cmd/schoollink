@@ -60,14 +60,22 @@ class SecurityConfig {
 		return decoder;
 	}
 
+	/**
+	 * Fails closed: there is no default secret, and a development secret ("dev-only-...") is
+	 * accepted only when the dev or test profile is explicitly active.
+	 */
 	@Bean
 	SecretKey jwtKey(JwtProperties properties, Environment environment) {
 		String secret = properties.secret();
-		if (secret == null || secret.getBytes(StandardCharsets.UTF_8).length < 32) {
-			throw new IllegalStateException("schoollink.jwt.secret must be at least 32 bytes");
+		if (secret == null || secret.isBlank()) {
+			throw new IllegalStateException("Set JWT_SECRET (at least 32 bytes) to sign access tokens");
 		}
-		if (secret.startsWith(JwtProperties.DEV_SECRET_PREFIX) && environment.acceptsProfiles(Profiles.of("prod"))) {
-			throw new IllegalStateException("Set JWT_SECRET: the development JWT secret must not be used in prod");
+		if (secret.getBytes(StandardCharsets.UTF_8).length < 32) {
+			throw new IllegalStateException("JWT_SECRET must be at least 32 bytes");
+		}
+		if (secret.startsWith(JwtProperties.DEV_SECRET_PREFIX) && !environment.acceptsProfiles(Profiles.of("dev | test"))) {
+			throw new IllegalStateException(
+					"The development JWT secret is only allowed with the dev or test profile; set JWT_SECRET");
 		}
 		return new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
 	}
