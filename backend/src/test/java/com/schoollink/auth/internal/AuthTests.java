@@ -270,6 +270,20 @@ class AuthTests {
 	}
 
 	@Test
+	void aRetiredTokenNeverRidesTheGrace() throws Exception { // security review of d2063ba
+		String r1 = tokens(null, PHONE, "Secret-A1!").get("refreshToken").asString();
+		String lost = rotate(r1);
+		String r3 = rotate(r1); // grace: the lost replacement is retired
+
+		// presented at once, while r3 is still unused, the retired token is theft all the same
+		refresh(lost).andExpect(status().isUnauthorized());
+		refresh(r3).andExpect(status().isUnauthorized());
+		assertThat(jdbc.queryForObject("SELECT retired_at IS NOT NULL FROM refresh_token WHERE token_hash = ?",
+				Boolean.class, RefreshTokens.hash(lost)))
+			.isTrue();
+	}
+
+	@Test
 	void aReplacedTokenIsTheftOnceItsReplacementWasUsed() throws Exception {
 		String r1 = tokens(null, PHONE, "Secret-A1!").get("refreshToken").asString();
 		String r2 = rotate(r1);

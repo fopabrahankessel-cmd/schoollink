@@ -12,6 +12,8 @@ import java.util.Base64;
 import java.util.HexFormat;
 import java.util.Optional;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
@@ -30,6 +32,8 @@ class RefreshTokens {
 	 * later still revokes the family: the theft is detected one refresh later instead of at once.
 	 */
 	static final Duration REPLACED_GRACE = Duration.ofSeconds(30);
+
+	private static final Logger log = LoggerFactory.getLogger(RefreshTokens.class);
 
 	private static final SecureRandom random = new SecureRandom();
 
@@ -70,7 +74,7 @@ class RefreshTokens {
 	Optional<Consumed> consume(String raw) {
 		Instant now = clock.instant();
 		var rows = jdbc.query("""
-				SELECT id, user_id, family_id, expires_at, used_at, revoked_at,
+				SELECT id, user_id, family_id, expires_at, used_at, retired_at, revoked_at,
 				       EXISTS (SELECT 1 FROM refresh_token f WHERE f.family_id = t.family_id AND f.revoked_at IS NOT NULL) AS family_revoked
 				FROM refresh_token t WHERE token_hash = ? FOR UPDATE""",
 				// After waiting for the lock, PostgreSQL rereads the locked row but not the subquery,
@@ -78,6 +82,7 @@ class RefreshTokens {
 				(rs, n) -> new Row(rs.getObject("id", UUID.class), rs.getObject("user_id", UUID.class),
 						rs.getObject("family_id", UUID.class), rs.getTimestamp("expires_at").toInstant(),
 						rs.getTimestamp("used_at") == null ? null : rs.getTimestamp("used_at").toInstant(),
+						rs.getTimestamp("retired_at") != null,
 						rs.getTimestamp("revoked_at") != null || rs.getBoolean("family_revoked")),
 				hash(raw));
 		if (rows.isEmpty()) {
@@ -85,7 +90,11 @@ class RefreshTokens {
 		}
 		Row row = rows.getFirst();
 		if (row.usedAt() != null) {
-			if (!row.revoked() && row.usedAt().isAfter(now.minus(REPLACED_GRACE)) && retireReplacement(row, now)) {
+			// a retired token never reached its client: presenting it is always theft
+			if (!row.retired() && !row.revoked() && row.usedAt().isAfter(now.minus(REPLACED_GRACE))
+					&& retireReplacement(row, now)) {
+				// never the token itself (NFR-9)
+				log.info("Refresh grace used: user {}, family {}, lost replacement retired", row.userId(), row.familyId());
 				return Optional.of(new Consumed(row.userId(), row.familyId()));
 			}
 			revokeFamily(row.familyId(), now);
@@ -99,18 +108,18 @@ class RefreshTokens {
 	}
 
 	/**
-	 * Marks used the token that replaced {@code row}, if no one has used it yet. Tokens rotate one
-	 * at a time, so the replacement is the family's only live token, created after {@code row}'s
-	 * use; and no token created since may have been used, or the client did get the replacement.
+	 * Retires the token that replaced {@code row}, if no one has used it yet. Tokens rotate one at
+	 * a time, so the replacement is the family's only live token, created after {@code row}'s use;
+	 * and no token created since may have been used, or the client did get the replacement.
 	 */
 	private boolean retireReplacement(Row row, Instant now) {
 		Timestamp replacedAt = Timestamp.from(row.usedAt());
 		return jdbc.update("""
-				UPDATE refresh_token SET used_at = ?
+				UPDATE refresh_token SET used_at = ?, retired_at = ?
 				WHERE family_id = ? AND created_at >= ? AND used_at IS NULL AND revoked_at IS NULL
 				  AND NOT EXISTS (SELECT 1 FROM refresh_token u
 				                  WHERE u.family_id = ? AND u.created_at >= ? AND u.used_at IS NOT NULL)""",
-				Timestamp.from(now), row.familyId(), replacedAt, row.familyId(), replacedAt) == 1;
+				Timestamp.from(now), Timestamp.from(now), row.familyId(), replacedAt, row.familyId(), replacedAt) == 1;
 	}
 
 	void revokeFamily(UUID familyId, Instant now) {
@@ -145,7 +154,8 @@ class RefreshTokens {
 	record Consumed(UUID userId, UUID familyId) {
 	}
 
-	private record Row(UUID id, UUID userId, UUID familyId, Instant expiresAt, Instant usedAt, boolean revoked) {
+	private record Row(UUID id, UUID userId, UUID familyId, Instant expiresAt, Instant usedAt, boolean retired,
+			boolean revoked) {
 	}
 
 }
