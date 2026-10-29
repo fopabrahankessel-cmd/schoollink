@@ -87,4 +87,4 @@ Each step names the screen and the expected result. All steps were last checked 
 
   Expected: one `school_bootstrap` entry, the password change (`app_user UPDATE`), the structure, staff and timetable entries, two `student_import CREATE` and one `IMPORT`, and four `invitation_code CREATE`.
 
-Known limit: the invitation codes are created but no SMS leaves yet. The notification outbox and its SMS dispatcher come in Phase 2 (task 2.4).
+Known limit: inviting the class queues one SMS per guardian in `notification_outbox` (event type `INVITATION`), but no SMS leaves yet: the dispatcher and the SMS provider come in Phase 2 (tasks 2.6 and later).

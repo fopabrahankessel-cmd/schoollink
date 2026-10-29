@@ -39,6 +39,14 @@ class JdbcSchoolCalendar implements SchoolCalendar {
 	}
 
 	@Override
+	public Period period(UUID schoolId, UUID periodId) {
+		return jdbc.queryForObject("SELECT number, start_time, end_time FROM period WHERE id = :id AND school_id = :school",
+				Map.of("school", schoolId, "id", periodId),
+				(rs, n) -> new Period(periodId, rs.getInt("number"), rs.getTime("start_time").toLocalTime(),
+						rs.getTime("end_time").toLocalTime()));
+	}
+
+	@Override
 	public boolean isSchoolDay(UUID schoolId, LocalDate date) {
 		return isWeekday(date) && Boolean.TRUE.equals(jdbc.queryForObject("SELECT EXISTS (SELECT 1 FROM " + TERM_DAY + ")",
 				params(schoolId, date), Boolean.class));

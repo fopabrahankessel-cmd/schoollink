@@ -14,6 +14,9 @@ public interface SchoolCalendar {
 
 	boolean periodExists(UUID schoolId, UUID periodId);
 
+	/** The period's number and times (for messages: "absent in period 2"). */
+	Period period(UUID schoolId, UUID periodId);
+
 	/** D3, D10: Monday to Friday, inside a term, outside that term's holidays. */
 	boolean isSchoolDay(UUID schoolId, LocalDate date);
 
@@ -23,6 +26,9 @@ public interface SchoolCalendar {
 	 * school day.
 	 */
 	List<Lesson> lessonsOf(UUID schoolId, UUID teacherId, LocalDate date);
+
+	record Period(UUID id, int number, LocalTime startTime, LocalTime endTime) {
+	}
 
 	record Lesson(UUID classId, String className, UUID periodId, int periodNumber, LocalTime startTime,
 			LocalTime endTime, String subject) {

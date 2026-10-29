@@ -134,7 +134,7 @@ class InvitationService implements Invitations {
 				INSERT INTO invitation_code (school_id, guardian_id, code_hash, created_at, expires_at)
 				VALUES (:school, :guardian, :hash, :now, :expires) RETURNING id""",
 				p.addValue("hash", hash(code)).addValue("expires", Timestamp.from(expiresAt)), UUID.class);
-		events.publishEvent(new InvitationIssued(school, guardianId, code, expiresAt));
+		events.publishEvent(new InvitationIssued(id, school, guardianId, code, expiresAt));
 		// NFR-11, NFR-9: never the code itself
 		audit.record(new AuditEntry(school, actor, AuditAction.CREATE, "invitation_code", id.toString(), null,
 				Map.of("guardianId", guardianId, "expiresAt", expiresAt.toString(), "revokedPrevious", revoked)));

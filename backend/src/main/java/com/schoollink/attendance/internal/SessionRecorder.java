@@ -1,6 +1,7 @@
 package com.schoollink.attendance.internal;
 
 import com.schoollink.attendance.AttendanceConfirmed;
+import com.schoollink.attendance.AttendanceConfirmed.Absence;
 import com.schoollink.audit.AuditAction;
 import com.schoollink.audit.AuditEntry;
 import com.schoollink.audit.AuditLog;
@@ -19,6 +20,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -119,16 +121,26 @@ class SessionRecorder {
 			return find(id).map(stored -> replay(user, stored, request, confirmedAt))
 				.orElseThrow(() -> ApiException.conflict("attendance.session_exists"));
 		}
-		jdbc.batchUpdate("""
-				INSERT INTO attendance_record (school_id, session_id, student_id, status)
-				VALUES (:school, :session, :student, :status)""", roll.stream()
-			.map(student -> new MapSqlParameterSource("school", school).addValue("session", id)
+		List<SqlParameterSource> records = new ArrayList<>();
+		List<Absence> absences = new ArrayList<>();
+		for (UUID student : roll) {
+			UUID recordId = UUID.randomUUID();
+			boolean absent = request.absentStudentIds().contains(student);
+			if (absent) {
+				absences.add(new Absence(recordId, student));
+			}
+			records.add(new MapSqlParameterSource("id", recordId).addValue("school", school)
+				.addValue("session", id)
 				.addValue("student", student)
-				.addValue("status", request.absentStudentIds().contains(student) ? "ABSENT" : "PRESENT"))
-			.toArray(SqlParameterSource[]::new));
+				.addValue("status", absent ? "ABSENT" : "PRESENT"));
+		}
+		jdbc.batchUpdate("""
+				INSERT INTO attendance_record (id, school_id, session_id, student_id, status)
+				VALUES (:id, :school, :session, :student, :status)""", records.toArray(SqlParameterSource[]::new));
 
+		// D2: the outbox rows for the guardians are written by its listeners, in this transaction
 		events.publishEvent(new AttendanceConfirmed(id, school, request.classId(), request.date(), request.periodId(),
-				user.userId(), confirmedAt, request.absentStudentIds()));
+				user.userId(), confirmedAt, absences));
 		// NFR-11: ids only, no names
 		audit.record(new AuditEntry(school, user.userId(), AuditAction.CREATE, "attendance_session", id.toString(), null,
 				Map.of("classId", request.classId(), "date", request.date().toString(), "periodId", request.periodId(),

@@ -8,11 +8,11 @@ import java.util.UUID;
  * module turns it into an {@code INVITATION} SMS in the outbox, in the same transaction (task 2.4).
  * {@code code} is the only copy of the code in clear: never log or store it elsewhere.
  */
-public record InvitationIssued(UUID schoolId, UUID guardianId, String code, Instant expiresAt) {
+public record InvitationIssued(UUID invitationId, UUID schoolId, UUID guardianId, String code, Instant expiresAt) {
 
 	@Override
 	public String toString() {
-		return "InvitationIssued[schoolId=" + schoolId + ", guardianId=" + guardianId + ", expiresAt=" + expiresAt + "]";
+		return "InvitationIssued[invitationId=" + invitationId + ", schoolId=" + schoolId + ", guardianId=" + guardianId + ", expiresAt=" + expiresAt + "]";
 	}
 
 }
