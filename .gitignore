@@ -28,3 +28,6 @@ desktop.ini
 
 # Logs
 *.log
+
+# Browser automation scratch files (screenshots, snapshots)
+.playwright-mcp/

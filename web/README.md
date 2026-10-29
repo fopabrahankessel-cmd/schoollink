@@ -1,32 +1,28 @@
-# React + TypeScript + Vite
+# SchoolLink web
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Dashboard for administrators, Discipline Masters, counsellors and the researcher (SPEC §3). Generated with `npm create vite@latest` (react-ts template), then extended with MUI, React Router, i18next (FR/EN) and Vitest.
 
-Currently, two official plugins are available:
+## Run
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+npm ci
+npm run dev        # http://localhost:5173, proxies /api to the backend on :8080
+npm run lint       # oxlint
+npm test           # Vitest + Testing Library (jsdom)
+npm run build      # type check (tsc -b) + production build in dist/
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Start the backend first with the dev profile (`./mvnw spring-boot:run -Dspring-boot.run.profiles=dev` in `backend/`). It seeds two fake schools, and every account signs in with `schoollink-dev` (logins are printed at startup).
+
+## Layout
+
+| Path | What |
+| --- | --- |
+| `src/api/client.ts` | HTTP client: access token in memory, refresh token in `sessionStorage`, one shared refresh on a 401, then retry |
+| `src/api/auth.ts` | Sign-in, school picker, `/me`, password change |
+| `src/auth/` | Session state (`AuthProvider`, `useAuth`), route guard, school remembered on the device (D16) |
+| `src/i18n/` | `fr.json` and `en.json` (NFR-12: same keys, checked by a test), language switch remembered on the device |
+| `src/pages/` | Sign-in, password change (D18), home |
+| `src/test/` | Test setup and a scripted fake API |
+
+All user-facing text goes through i18next: add every key to both `fr.json` and `en.json` in the same change. Server error messages come back already translated, in the language of the request (signed out) or of the account (signed in).

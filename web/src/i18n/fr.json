@@ -1,0 +1,56 @@
+{
+  "app": {
+    "name": "SchoolLink",
+    "tagline": "Assiduité et information des parents"
+  },
+  "language": {
+    "label": "Langue",
+    "fr": "Français",
+    "en": "English"
+  },
+  "common": {
+    "loading": "Chargement…"
+  },
+  "errors": {
+    "network": "Impossible de joindre le serveur. Vérifiez votre connexion et réessayez.",
+    "server": "Le serveur a rencontré un problème. Réessayez dans un instant."
+  },
+  "login": {
+    "title": "Connexion",
+    "login": "Téléphone ou e-mail",
+    "password": "Mot de passe",
+    "school": "Établissement",
+    "schoolChoose": "Choisissez votre établissement",
+    "schoolHint": "Ce compte existe dans plusieurs établissements.",
+    "submit": "Se connecter"
+  },
+  "password": {
+    "title": "Choisissez votre mot de passe",
+    "intro": "Votre mot de passe actuel est temporaire. Choisissez-en un nouveau pour continuer.",
+    "current": "Mot de passe actuel",
+    "new": "Nouveau mot de passe",
+    "confirm": "Confirmez le nouveau mot de passe",
+    "rules": "Entre 8 et 72 caractères.",
+    "tooShort": "Le mot de passe doit contenir au moins 8 caractères.",
+    "tooLong": "Le mot de passe doit contenir au plus 72 caractères.",
+    "mismatch": "Les deux mots de passe ne correspondent pas.",
+    "submit": "Enregistrer"
+  },
+  "nav": {
+    "signOut": "Se déconnecter"
+  },
+  "home": {
+    "welcome": "Bienvenue sur SchoolLink",
+    "roles": "Vos rôles",
+    "mobileOnly": "Cet espace est réservé aux administrateurs, aux Surveillants Généraux, aux conseillers d'orientation et au chercheur. Utilisez l'application mobile SchoolLink."
+  },
+  "roles": {
+    "ADMIN": "Administrateur",
+    "TEACHER": "Enseignant",
+    "ASSISTANT_DM": "Surveillant Général adjoint",
+    "DM": "Surveillant Général",
+    "COUNSELLOR": "Conseiller d'orientation",
+    "PARENT": "Parent",
+    "RESEARCHER": "Chercheur"
+  }
+}
