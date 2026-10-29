@@ -36,7 +36,8 @@ Backend base package is `com.schoollink` (`SchoolLinkApplication`). Spring Boot 
 Start local infrastructure from the repo root:
 
 ```bash
-docker compose up -d db        # PostgreSQL 16 on localhost:5432
+cp .env.example .env           # once; local dev credentials
+docker compose up -d db        # PostgreSQL 16 on localhost:5433 (5432 is often a local PostgreSQL install)
 docker compose down            # stop (add -v to wipe the data volume)
 ```
 

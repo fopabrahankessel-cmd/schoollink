@@ -1,0 +1,30 @@
+# Repo-wide ignores. Each part (mobile/, backend/, web/) keeps its own .gitignore too.
+
+# Secrets and local config
+.env
+.env.*
+!.env.example
+*.keystore
+*.jks
+key.properties
+google-services.json
+firebase-service-account*.json
+
+# Real school data must never be committed (see CLAUDE.md)
+/data/
+*.real.csv
+*.real.xlsx
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors and IDEs
+.idea/
+.vscode/
+*.iml
+*.swp
+
+# Logs
+*.log
