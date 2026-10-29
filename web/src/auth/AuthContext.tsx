@@ -35,7 +35,7 @@ export function AuthProvider({ client, children }: { client: ApiClient; children
         client.startSession(await authApi.changePassword(client, currentPassword, newPassword))
       },
       signOut() {
-        client.endSession()
+        void client.signOut()
       },
     }),
     [client, status, user],

@@ -257,6 +257,27 @@ class AuthTests {
 	}
 
 	@Test
+	void logoutEndsTheSessionOfTheRefreshToken() throws Exception {
+		String r1 = tokens(null, PHONE, "Secret-A1!").get("refreshToken").asString();
+		String r2 = json.readTree(refresh(r1).andReturn().getResponse().getContentAsString())
+			.get("refreshToken")
+			.asString();
+		String otherDevice = tokens(null, PHONE, "Secret-A1!").get("refreshToken").asString();
+
+		logout(r1).andExpect(status().isNoContent()); // an older token of the session is enough
+
+		refresh(r2).andExpect(status().isUnauthorized());
+		refresh(otherDevice).andExpect(status().isOk()); // other sessions go on
+	}
+
+	@Test
+	void logoutAnswersTheSameForAnyToken() throws Exception { // reveals nothing
+		logout("not-a-token").andExpect(status().isNoContent());
+		mockMvc.perform(post("/api/v1/auth/logout").contentType(MediaType.APPLICATION_JSON).content("{}"))
+			.andExpect(status().isBadRequest());
+	}
+
+	@Test
 	void expiredRefreshTokenIsRejected() throws Exception {
 		String refresh = tokens(null, PHONE, "Secret-A1!").get("refreshToken").asString();
 		jdbc.update("UPDATE refresh_token SET expires_at = now() - interval '1 second' WHERE token_hash = ?",
@@ -306,6 +327,11 @@ class AuthTests {
 			.andReturn()
 			.getResponse()
 			.getContentAsString());
+	}
+
+	private ResultActions logout(String refreshToken) throws Exception {
+		return mockMvc.perform(post("/api/v1/auth/logout").contentType(MediaType.APPLICATION_JSON)
+			.content(json.createObjectNode().put("refreshToken", refreshToken).toString()));
 	}
 
 	private ResultActions refresh(String refreshToken) throws Exception {

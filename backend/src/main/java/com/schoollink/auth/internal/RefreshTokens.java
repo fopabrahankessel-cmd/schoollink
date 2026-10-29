@@ -82,6 +82,14 @@ class RefreshTokens {
 				Timestamp.from(now), familyId);
 	}
 
+	/** Sign-out: ends the session (the token family) this token belongs to, whatever its state. */
+	void revokeFamilyOf(String raw) {
+		jdbc.update("""
+				UPDATE refresh_token SET revoked_at = ?
+				WHERE revoked_at IS NULL AND family_id = (SELECT family_id FROM refresh_token WHERE token_hash = ?)""",
+				Timestamp.from(clock.instant()), hash(raw));
+	}
+
 	/** Signs the user out of every device: after a password change or an admin reset (D18). */
 	void revokeAll(UUID userId) {
 		jdbc.update("UPDATE refresh_token SET revoked_at = ? WHERE user_id = ? AND revoked_at IS NULL",

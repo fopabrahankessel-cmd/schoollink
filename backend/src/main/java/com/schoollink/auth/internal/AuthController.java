@@ -9,10 +9,12 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 /** SPEC §9 auth endpoints. Phone numbers travel only in request bodies, never in URLs (NFR-9). */
@@ -40,6 +42,13 @@ class AuthController {
 	@PostMapping("/api/v1/auth/refresh")
 	TokenResponse refresh(@Valid @RequestBody RefreshRequest request) {
 		return auth.refresh(request.refreshToken());
+	}
+
+	/** Sign-out: revokes the session of this refresh token. No access token needed, it may have expired. */
+	@PostMapping("/api/v1/auth/logout")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	void logout(@Valid @RequestBody RefreshRequest request) {
+		auth.logout(request.refreshToken());
 	}
 
 	/** D16: the school picker shown before login. */

@@ -109,6 +109,16 @@ export class ApiClient {
     this.listeners.forEach((l) => l(null))
   }
 
+  /** Signs out here and on the server (the refresh token stops working). */
+  async signOut(): Promise<void> {
+    const refreshToken = this.readRefreshToken()
+    this.endSession()
+    if (refreshToken !== null) {
+      // best effort: offline, the token still expires on its own
+      await this.send('/auth/logout', { method: 'POST', body: { refreshToken } }, null).catch(() => undefined)
+    }
+  }
+
   hasSession(): boolean {
     return this.accessToken !== null || this.readRefreshToken() !== null
   }

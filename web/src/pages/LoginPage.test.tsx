@@ -133,7 +133,10 @@ describe('LoginPage', () => {
 
   it('keeps the session across a reload with the stored refresh token', async () => {
     sessionStorage.setItem('schoollink.refreshToken', 'refresh-1')
-    const api = fakeFetch({ 'POST /auth/refresh': json(200, tokens({}, 2)) })
+    const api = fakeFetch({
+      'POST /auth/refresh': json(200, tokens({}, 2)),
+      'POST /auth/logout': () => new Response(null, { status: 204 }),
+    })
     renderApp(newClient(api.fetch), '/')
 
     expect(await screen.findByRole('heading', { name: 'Bienvenue sur SchoolLink' })).toBeInTheDocument()
@@ -141,5 +144,8 @@ describe('LoginPage', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Se déconnecter' }))
     expect(await screen.findByRole('heading', { name: 'Connexion' })).toBeInTheDocument()
     expect(sessionStorage.getItem('schoollink.refreshToken')).toBeNull()
+    await waitFor(() =>
+      expect(api.calls.find((c) => c.path === '/auth/logout')?.body).toEqual({ refreshToken: 'refresh-2' }),
+    )
   })
 })

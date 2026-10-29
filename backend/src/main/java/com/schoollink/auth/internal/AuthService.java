@@ -121,6 +121,15 @@ class AuthService {
 	}
 
 	/** Rotation: the presented token is used up and a new one is issued in the same family. */
+	/**
+	 * Sign-out: the refresh token and the rest of its family stop working. Answers the same way
+	 * for any token, so it reveals nothing; the access token expires on its own (15 min, NFR-7).
+	 */
+	@Transactional
+	void logout(String rawRefreshToken) {
+		refreshTokens.revokeFamilyOf(rawRefreshToken);
+	}
+
 	@Transactional(noRollbackFor = ApiException.class) // a reuse-triggered revocation must commit
 	TokenResponse refresh(String rawRefreshToken) {
 		RefreshTokens.Consumed consumed = refreshTokens.consume(rawRefreshToken).orElseThrow(AuthService::invalidRefresh);

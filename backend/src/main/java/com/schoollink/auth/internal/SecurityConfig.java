@@ -38,7 +38,8 @@ class SecurityConfig {
 			.sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 			.authorizeHttpRequests(auth -> auth
 				.requestMatchers("/actuator/health", "/actuator/health/**", "/error").permitAll()
-				.requestMatchers(HttpMethod.POST, "/api/v1/auth/login", "/api/v1/auth/refresh").permitAll()
+				.requestMatchers(HttpMethod.POST, "/api/v1/auth/login", "/api/v1/auth/refresh",
+						"/api/v1/auth/logout").permitAll()
 				.requestMatchers(HttpMethod.GET, "/api/v1/auth/schools").permitAll()
 				.anyRequest().authenticated())
 			.oauth2ResourceServer(o -> o.jwt(jwt -> jwt.jwtAuthenticationConverter(currentUser))
