@@ -18,7 +18,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 /**
  * Flyway V2 (people) on a real PostgreSQL 16: the constraints behind UC-A2..A4, BR-1, NFR-8,
- * NFR-10 and decisions D5, D7. Fake data only.
+ * NFR-10 and decisions D5, D7, D15. Fake data only.
  */
 @SpringBootTest
 @Import(TestcontainersConfiguration.class)
@@ -63,8 +63,8 @@ class PeopleMigrationTests {
 	void studentsAndGuardiansAreManyToMany() {
 		UUID paul = student(schoolA, classA, "M-001");
 		UUID marie = student(schoolA, classA, "M-002");
-		UUID mother = guardian(schoolA, false);
-		UUID father = guardian(schoolA, false);
+		UUID mother = guardian(schoolA);
+		UUID father = guardian(schoolA);
 
 		link(schoolA, paul, mother, true);
 		link(schoolA, paul, father, false);
@@ -76,9 +76,9 @@ class PeopleMigrationTests {
 	@Test
 	void onePrimaryGuardianPerStudent() {
 		UUID paul = student(schoolA, classA, "M-001");
-		link(schoolA, paul, guardian(schoolA, false), true);
+		link(schoolA, paul, guardian(schoolA), true);
 
-		assertRejected(() -> link(schoolA, paul, guardian(schoolA, false), true));
+		assertRejected(() -> link(schoolA, paul, guardian(schoolA), true));
 	}
 
 	@Test
@@ -106,11 +106,27 @@ class PeopleMigrationTests {
 	}
 
 	@Test
-	void loginPhoneAndEmailAreGloballyUnique() {
-		user(schoolA, "+237699100001", "dm@example.test");
+	void phoneAndEmailIdentifyOneUserPerSchool() { // D15
+		user(schoolA, "+237699100001", "parent@example.test");
 
 		assertRejected(() -> user(schoolA, "+237699100001", null));
-		assertRejected(() -> user(schoolA, null, "dm@example.test"));
+		assertRejected(() -> user(schoolA, null, "parent@example.test"));
+	}
+
+	@Test
+	void sameParentCanHaveAnAccountInEachSchool() { // D15
+		UUID schoolB = jdbc.queryForObject("INSERT INTO school (name) VALUES ('Collège Test B') RETURNING id", UUID.class);
+		user(schoolA, "+237699100001", "parent@example.test");
+
+		user(schoolB, "+237699100001", "parent@example.test");
+	}
+
+	@Test
+	void usersWithoutPhoneOrWithoutEmailDoNotClash() {
+		user(schoolA, null, "a@example.test");
+		user(schoolA, null, "b@example.test");
+		user(schoolA, "+237699100001", null);
+		user(schoolA, "+237699100002", null);
 	}
 
 	@Test
@@ -166,17 +182,32 @@ class PeopleMigrationTests {
 	}
 
 	@Test
-	void smsOnlyGuardianHasNoAccount() { // D7
-		UUID parent = user(schoolA);
+	void guardianWithoutAccountIsAllowedAndGetsAnAccountOnActivation() { // D7: no account = SMS, account = push
+		UUID guardian = guardian(schoolA);
+		assertThat(jdbc.queryForObject("SELECT user_id FROM guardian WHERE id = ?", UUID.class, guardian)).isNull();
 
-		assertRejected(() -> jdbc.update(
-				"INSERT INTO guardian (school_id, user_id, name, phone, sms_only) VALUES (?, ?, 'Parent Test', ?, true)",
-				schoolA, parent, nextPhone()));
+		jdbc.update("UPDATE guardian SET user_id = ? WHERE id = ?", user(schoolA), guardian);
+	}
+
+	@Test
+	void guardianAccountMustBelongToTheSameSchool() { // NFR-8
+		UUID schoolB = jdbc.queryForObject("INSERT INTO school (name) VALUES ('Collège Test B') RETURNING id", UUID.class);
+		UUID guardian = guardian(schoolA);
+		UUID userInB = user(schoolB);
+
+		assertRejected(() -> jdbc.update("UPDATE guardian SET user_id = ? WHERE id = ?", userInB, guardian));
+	}
+
+	@Test
+	void guardianHasNoSmsOnlyFlag() { // D7: the channel follows from user_id
+		var columns = jdbc.queryForList(
+				"SELECT column_name FROM information_schema.columns WHERE table_name = 'guardian'", String.class);
+		assertThat(columns).contains("user_id").doesNotContain("sms_only");
 	}
 
 	@Test
 	void oneLiveInvitationCodePerGuardian() { // UC-A4
-		UUID guardian = guardian(schoolA, false);
+		UUID guardian = guardian(schoolA);
 		UUID first = code(schoolA, guardian, "hash-1");
 
 		assertRejected(() -> code(schoolA, guardian, "hash-2"));
@@ -218,10 +249,9 @@ class PeopleMigrationTests {
 				UUID.class, school, schoolClass, matricule);
 	}
 
-	private UUID guardian(UUID school, boolean smsOnly) {
-		return jdbc.queryForObject(
-				"INSERT INTO guardian (school_id, name, phone, sms_only) VALUES (?, 'Parent Test', ?, ?) RETURNING id",
-				UUID.class, school, nextPhone(), smsOnly);
+	private UUID guardian(UUID school) {
+		return jdbc.queryForObject("INSERT INTO guardian (school_id, name, phone) VALUES (?, 'Parent Test', ?) RETURNING id",
+				UUID.class, school, nextPhone());
 	}
 
 	private UUID guardianWithPhone(UUID school, String phone) {

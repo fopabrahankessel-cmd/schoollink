@@ -27,14 +27,14 @@ Exit criterion: an admin can set up a school and import students.
 | 1.3 | Shared error model `{code, message, field}`, localized through `messages_fr/en.properties` and `Accept-Language` / the user's language | §9, NFR-12 | Test: one validation error returns the French text for `fr` and the English text for `en` |
 | 1.4 | Flyway V2 people tables: `app_user`, `role_assignment`, `teaching_assignment`, `student`, `guardian`, `student_guardian`, `invitation_code`. Phone numbers normalized to E.164, birth year only | §7, NFR-10 | Migration and constraint tests (unique matricule per school, many-to-many guardians) |
 | 1.5 | `audit` module: append-only `audit_log`, an `AuditService` other modules call; the DB rejects UPDATE and DELETE | NFR-11 | Test: insert works, update and delete fail |
-| 1.6 | Staff auth: `POST /auth/login` (phone or email), BCrypt, JWT access token 15 min, refresh token 30 days with rotation, `POST /auth/refresh` | NFR-7 | Tests: valid login, wrong password, expired access token, refresh rotates and the old refresh token is rejected |
+| 1.6 | Staff auth: `POST /auth/login` (school + phone or email + password, D15 ❓F6), BCrypt, JWT access token 15 min, refresh token 30 days with rotation, `POST /auth/refresh` | NFR-7 | Tests: valid login, wrong password, same phone in two schools resolves to the right account, expired access token, refresh rotates and the old refresh token is rejected |
 | 1.7 | Rate limiting on login (and on activation later) | NFR-7 | Test: the request past the limit returns 429 |
 | 1.8 | Scope resolution: a `CurrentUser` principal (user, school_id, roles, class ids in scope) built from the role and teaching assignments; a reusable permission-matrix test harness | §3, NFR-8 | Tests: a teacher of class A cannot read class B; school X cannot read school Y; one test per row of the §3 matrix that exists so far |
 | 1.9 | School structure API (UC-A1): years, terms, periods, holidays, blocks, classes and the timetable (D1, D5) | UC-A1 | Admin can write; other roles can read or get 403, as in the matrix; changes are audited |
 | 1.10 | Staff accounts and assignments API (UC-A2): create teacher, assistant DM, DM and counsellor accounts; assign classes and blocks | UC-A2 | Integration tests; each assignment is audited |
 | 1.11 | Student/guardian import, preview step: CSV (OpenCSV) and XLSX (POI) parsing, row-level validation, staged import stored with an error list | UC-A3 | A fake fixture file with known errors returns exactly those errors; no rows appear in `student` |
 | 1.12 | Import commit step: applies a valid staged import in one transaction | UC-A3 | Commit creates students, guardians and links; a second commit of the same import is rejected; the import is audited |
-| 1.13 | Invitation codes (UC-A4): generate only for app-using guardians, never for `sms_only` ones (D7); hashed, single-use, 30-day expiry; sent by SMS through the outbox in 2.4 (D13) | UC-A4 | Tests: expiry, single use, only the hash is stored |
+| 1.13 | Invitation codes (UC-A4): generate for guardians without an account (D7); hashed, single-use, 30-day expiry, issuing a new code revokes the previous one; sent by SMS through the outbox in 2.4 (D13) | UC-A4 | Tests: expiry, single use, only the hash is stored |
 | 1.14 | `dev` profile seed: two fake schools generated with a faker (FR/EN names), with classes, staff, students and guardians | rules | `spring-boot:run` with `dev` gives the expected counts; no real data |
 
 ### Web
@@ -45,7 +45,7 @@ Exit criterion: an admin can set up a school and import students.
 | 1.16 | Admin: school structure screens (years, terms, periods, classes, timetable) | UC-A1 | Component tests; manual: create a full term structure |
 | 1.17 | Admin: staff accounts and assignments screens | UC-A2 | Component tests; manual: create a teacher and assign 2 classes |
 | 1.18 | Admin: import wizard (upload → preview with an error table → commit) | UC-A3 | Manual with the fake fixture file: errors shown, then a clean file commits |
-| 1.19 | Admin: guardians and invitation codes (generate and send by SMS, per guardian or per class; `sms_only` guardians excluded) | UC-A4, D13 | Component tests; manual: codes queued in the outbox for a class |
+| 1.19 | Admin: guardians and invitation codes (generate and send by SMS, per guardian or per class; guardians who already have an account are skipped) | UC-A4, D7, D13 | Component tests; manual: codes queued in the outbox for a class |
 | 1.20 | **Phase 1 exit check**: a scripted walkthrough (README section) from an empty DB to an imported school | §12 | Done by hand and checked off |
 
 ## Phase 2 — Attendance loop
@@ -64,7 +64,7 @@ Exit criterion: a teacher's confirmation reaches a parent's phone.
 | 2.6 | Outbox dispatcher: scheduled poller (`FOR UPDATE SKIP LOCKED`), `PushProvider` interface with a fake, statuses queued/sent/failed, backoff, max 3 retries | BR-21, BR-24, NFR-5/6 | Tests: a provider that fails twice then succeeds ends `sent` with attempts = 3; a row picked mid-send is recovered after a simulated restart |
 | 2.7 | Firebase Admin `PushProvider` + `PUT /me/device-token` | BR-21 | Integration test with a mocked `FirebaseMessaging`; a real send to a test device |
 | 2.8 | Lateness: student search for the gate (scope-limited) + `PUT /lateness/{uuid}` (idempotent, one per student per day, arrival time after the school start time); publishes `LatenessRecorded` | BR-7–BR-9, UC-AD1/AD2 | Tests: duplicate same day; outside scope gets 403; attendance rows untouched (BR-9); outbox rows created |
-| 2.9 | Parent activation: `POST /auth/parent/activate` (code + phone → OTP) and `/verify` (→ tokens); OTP sent directly via `SmsProvider` (D7, F4); rate-limited | UC-P1, NFR-7 | Tests: wrong phone, used code, expired code, OTP brute force gets 429 |
+| 2.9 | Parent activation: `POST /auth/parent/activate` (code + phone → OTP) and `/verify` (→ tokens); OTP sent directly via `SmsProvider` (D7); the account is created in the guardian's school (D15); rate-limited | UC-P1, NFR-7 | Tests: wrong phone, used code, expired code, OTP brute force gets 429 |
 | 2.10 | Parent API: `/me/children`, `/children/{id}/history`, `/me/notifications`, `POST /notifications/{id}/opened` | UC-P2/P3 | Tests: a parent cannot read another family's child; the opened receipt sets `opened_at` |
 
 ### Mobile
@@ -120,13 +120,18 @@ Exit criterion: a full test day produces the correct alerts and one digest per s
 | D4 | Disciplinary and refer decisions in the MVP | Store the decision and create a minimal `disciplinary_record` / `counselling_case` row (status `open`); their screens come in wave 2. |
 | D5 | DM scope | A **block** is a named group of classes, with **one DM per block** (assistant DMs also assigned per block). Add a `block` table; `role_assignment.scope_type = BLOCK`. The DM "in charge" of a student is the DM of the block holding the student's class. |
 | D6 | SMS content | A digest SMS goes to a guardian **only when the student was marked absent or late**, never an empty digest. The 13:00 run covers the morning; the 17:00 run covers only new absence/lateness since 13:00. |
-| D7 | Activation and SMS-only guardians | Invitation codes and OTP activation (UC-P1) exist **only for guardians who use the mobile app**. Guardians flagged `sms_only` get no code and receive their notifications by SMS. |
+| D7 | Parent accounts and channels | **Every guardian** can receive an invitation code **by SMS** (D13). A guardian who activates it in the app (UC-P1) gets an app account and receives **push** notifications; a guardian without an account receives **SMS**. The channel follows from whether the guardian has an account, so no `sms_only` flag is stored (V3). |
 | D8 | Mobile identity | Package `schoollink`, applicationId `cm.schoollink.app`; remove `ios/ linux/ macos/ web/ windows/`. **Keep the animated Lottie splash.** |
 | D9 | Alert rules | Three rule types, **each configured by the DM** (count, unit, window, on/off) in UC-D7; the values below are only the seeded starting values: 1 day of absence, 5 lateness, 15 unjustified absences. Rules only raise alerts for the DM; the DM decides (summon, dismiss, discipline, refer). |
 | D10 | Holidays | The admin configures holidays per term (UC-A1). |
 | D11 | Corrections | **Only the DM** cancels a record and triggers a correction (BR-13, BR-14). The correction goes out on the same channel as the original notification. |
 | D12 | Summons channels | Summons go out immediately (BR-23): push to app users, **SMS to guardians without the app**. Summons SMS is never held for the digest and is still sent when the monthly cap is reached (BR-25). |
-| D13 | Activation code delivery | Parents who use the app receive their invitation code **by SMS**, through the outbox (event type `INVITATION`). The printed sheet is dropped from the MVP. |
+| D13 | Activation code delivery | Invitation codes are sent **by SMS** through the outbox (event type `INVITATION`) to guardians who have no account yet. No printed sheet in the MVP. |
 | D14 | Backend stack | **Spring Boot 4** (as generated, 4.1.2) with Java 21; folder `backend/`, base package `com.schoollink`. |
+| D15 | Identity per school | A phone number or an email identifies **one user within one school**; the same parent can have an account in each pilot school (V3). Phone numbers: Cameroon E.164 only (+237 + 9 digits), foreign numbers rejected. |
 
 Questions not answered keep their recommended defaults: DM can cancel a whole session; lateness time defaults to the device time, today only; a cancellation before the digest removes the item and sends no correction SMS; fake SMS provider until one is chosen; guardian language from import, falling back to the school's language; a CSV template from us with upsert by matricule; E.164 (+237); DM features split mobile/web as proposed; store both device `confirmed_at` and server `received_at`; the activation OTP SMS is sent directly via `SmsProvider`, counted but never blocked by the cap.
+
+## Follow-up questions
+
+- **F6. Choosing the school at login (D15).** Since a phone or email is unique only within a school, a parent or staff member registered in both pilot schools has two accounts with the same login. How should login pick the account? Default: **the login request includes the school (the app and web show a school picker, remembered on the device); if the phone or email exists in only one school, the picker is skipped.**
