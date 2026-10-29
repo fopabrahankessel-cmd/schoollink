@@ -67,7 +67,9 @@ class LoginRateLimitTests {
 		}
 
 		login(PHONE, "Right-Pass1", "10.0.0.1").andExpect(status().isTooManyRequests())
-			.andExpect(header().string("Retry-After", "180"))
+			// 180 s per refilled attempt, minus the time the five BCrypt checks took
+			.andExpect(result -> assertThat(Long.parseLong(result.getResponse().getHeader("Retry-After")))
+				.isBetween(170L, 180L))
 			.andExpect(jsonPath("$.code").value("rate_limited"))
 			.andExpect(jsonPath("$.message").value("Trop de tentatives. Réessayez dans 3 minutes."));
 	}
