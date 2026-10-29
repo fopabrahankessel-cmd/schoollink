@@ -52,15 +52,19 @@ class RefreshTokens {
 	 * Consumes a token: returns its user and family if it is valid, and marks it used. A token
 	 * that was already used revokes its family. Must run in a transaction that commits even when
 	 * the result is empty, so the revocation sticks.
+	 *
+	 * <p>A family with any revoked member is over: a sign-out or password change running at the
+	 * same time as a refresh can miss the token that refresh creates, but never the older ones.
 	 */
 	Optional<Consumed> consume(String raw) {
 		Instant now = clock.instant();
 		var rows = jdbc.query("""
-				SELECT id, user_id, family_id, expires_at, used_at, revoked_at
-				FROM refresh_token WHERE token_hash = ? FOR UPDATE""",
+				SELECT id, user_id, family_id, expires_at, used_at,
+				       EXISTS (SELECT 1 FROM refresh_token f WHERE f.family_id = t.family_id AND f.revoked_at IS NOT NULL) AS revoked
+				FROM refresh_token t WHERE token_hash = ? FOR UPDATE""",
 				(rs, n) -> new Row(rs.getObject("id", UUID.class), rs.getObject("user_id", UUID.class),
 						rs.getObject("family_id", UUID.class), rs.getTimestamp("expires_at").toInstant(),
-						rs.getTimestamp("used_at") != null, rs.getTimestamp("revoked_at") != null),
+						rs.getTimestamp("used_at") != null, rs.getBoolean("revoked")),
 				hash(raw));
 		if (rows.isEmpty()) {
 			return Optional.empty();

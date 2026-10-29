@@ -40,6 +40,32 @@ describe('ApiClient', () => {
     expect(sessionStorage.getItem(REFRESH_TOKEN_KEY)).toBeNull()
   })
 
+  it('signs out after a refresh under way, revoking the newest token', async () => {
+    let finishRefresh: (r: Response) => void = () => undefined
+    const api = fakeFetch({
+      'GET /me': expired,
+      'POST /auth/refresh': () => json(200, tokens({}, 2))(),
+      'POST /auth/logout': () => new Response(null, { status: 204 }),
+    })
+    const slowFetch: typeof fetch = (input, init) =>
+      String(input).endsWith('/auth/refresh')
+        ? new Promise<Response>((resolve) => {
+            finishRefresh = resolve
+          }).then(() => api.fetch(input, init))
+        : api.fetch(input, init)
+    const client = newClient(slowFetch)
+    client.startSession(tokens({}, 1))
+
+    const request = client.request('/me').catch(() => undefined)
+    await new Promise((r) => setTimeout(r, 0)) // the 401 arrives and the refresh starts
+    const signOut = client.signOut()
+    finishRefresh(new Response())
+    await Promise.all([request, signOut])
+
+    expect(client.hasSession()).toBe(false)
+    expect(api.calls.find((c) => c.path === '/auth/logout')?.body).toEqual({ refreshToken: 'refresh-2' })
+  })
+
   it('treats a 401 from sign-in as an answer, without refreshing', async () => {
     const api = fakeFetch({
       'POST /auth/login': json(401, { code: 'auth.invalid_credentials', message: 'Identifiant incorrect.' }),

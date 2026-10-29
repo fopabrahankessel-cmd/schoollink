@@ -82,6 +82,8 @@ export class ApiClient {
   private readonly language: () => string
   private accessToken: string | null = null
   private refreshing: Promise<boolean> | null = null
+  /** Bumped when the session ends, so a refresh that was under way cannot bring it back. */
+  private generation = 0
   private readonly listeners = new Set<SessionListener>()
 
   constructor(options: ApiClientOptions) {
@@ -104,6 +106,7 @@ export class ApiClient {
   }
 
   endSession(): void {
+    this.generation++
     this.accessToken = null
     this.writeRefreshToken(null)
     this.listeners.forEach((l) => l(null))
@@ -111,6 +114,8 @@ export class ApiClient {
 
   /** Signs out here and on the server (the refresh token stops working). */
   async signOut(): Promise<void> {
+    // A refresh under way rotates the token: wait for it, so the newest one is revoked.
+    await this.refreshing?.catch(() => false)
     const refreshToken = this.readRefreshToken()
     this.endSession()
     if (refreshToken !== null) {
@@ -154,13 +159,17 @@ export class ApiClient {
       this.endSession()
       return false
     }
+    const generation = this.generation
     // A network error rejects here and keeps the refresh token for the next attempt.
     const response = await this.send('/auth/refresh', { method: 'POST', body: { refreshToken } }, null)
+    if (generation !== this.generation) return false // signed out meanwhile
     if (!response.ok) {
       this.endSession()
       return false
     }
-    this.startSession((await response.json()) as TokenResponse)
+    const tokens = (await response.json()) as TokenResponse
+    if (generation !== this.generation) return false
+    this.startSession(tokens)
     return true
   }
 

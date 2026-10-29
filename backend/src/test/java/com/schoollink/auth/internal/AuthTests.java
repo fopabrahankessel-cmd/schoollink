@@ -271,6 +271,18 @@ class AuthTests {
 	}
 
 	@Test
+	void aTokenIssuedDuringALogoutStillStopsWorking() throws Exception {
+		String r1 = tokens(null, PHONE, "Secret-A1!").get("refreshToken").asString();
+		String r2 = json.readTree(refresh(r1).andReturn().getResponse().getContentAsString())
+			.get("refreshToken")
+			.asString();
+		// a logout racing with the refresh: it revoked the older token but missed the new one
+		jdbc.update("UPDATE refresh_token SET revoked_at = now() WHERE token_hash = ?", RefreshTokens.hash(r1));
+
+		refresh(r2).andExpect(status().isUnauthorized());
+	}
+
+	@Test
 	void logoutAnswersTheSameForAnyToken() throws Exception { // reveals nothing
 		logout("not-a-token").andExpect(status().isNoContent());
 		mockMvc.perform(post("/api/v1/auth/logout").contentType(MediaType.APPLICATION_JSON).content("{}"))
