@@ -548,4 +548,183 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get loading => 'Chargement…';
+
+  @override
+  String get today => 'Aujourd\'hui';
+
+  @override
+  String get yesterday => 'Hier';
+
+  @override
+  String unreadMessages(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count messages non lus',
+      one: '1 message non lu',
+      zero: 'Tout est lu',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get unread => 'Non lu';
+
+  @override
+  String get inboxEmpty => 'Aucun message pour l\'instant';
+
+  @override
+  String get inboxEmptyHint => 'Les absences et retards de vos enfants s\'afficheront ici, le jour même.';
+
+  @override
+  String get olderMessages => 'Afficher les messages plus anciens';
+
+  @override
+  String get olderMessagesFailed =>
+      'Les messages plus anciens n\'ont pas pu être chargés. Vérifiez votre connexion et réessayez.';
+
+  @override
+  String get messageNotFound => 'Ce message n\'est plus dans vos notifications.';
+
+  @override
+  String get backToInbox => 'Retour aux notifications';
+
+  @override
+  String receivedAt(String date, String time) {
+    return 'Reçu le $date à $time';
+  }
+
+  @override
+  String get seeHistory => 'Voir les absences et retards';
+
+  @override
+  String get eventAbsence => 'Absence';
+
+  @override
+  String get eventLateness => 'Retard';
+
+  @override
+  String get eventCorrection => 'Correction';
+
+  @override
+  String get eventSummons => 'Convocation';
+
+  @override
+  String get eventMessage => 'Message';
+
+  @override
+  String get eventAnnouncement => 'Annonce';
+
+  @override
+  String get eventOther => 'Notification';
+
+  @override
+  String yourChildren(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Vos $count enfants',
+      one: 'Votre enfant',
+      zero: 'Aucun enfant',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get childrenHint => 'Touchez un enfant pour voir ses absences et retards.';
+
+  @override
+  String get noChildren => 'Aucun enfant n\'est lié à votre compte';
+
+  @override
+  String get noChildrenHint => 'Contactez l\'établissement pour vérifier le numéro qu\'il a pour vous.';
+
+  @override
+  String classLabel(String name) {
+    return 'Classe : $name';
+  }
+
+  @override
+  String get historyTitle => 'Historique';
+
+  @override
+  String historyOf(String name) {
+    return 'Historique de $name';
+  }
+
+  @override
+  String periodFromTo(String from, String to) {
+    return 'Du $from au $to';
+  }
+
+  @override
+  String absentPeriodsLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'heures d\'absence',
+      one: 'heure d\'absence',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String unjustifiedAbsences(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'dont $count non justifiées',
+      one: 'dont 1 non justifiée',
+      zero: 'aucune non justifiée',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String latenessLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: 'retards', one: 'retard');
+    return '$_temp0';
+  }
+
+  @override
+  String unjustifiedLateness(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'dont $count non justifiés',
+      one: 'dont 1 non justifié',
+      zero: 'aucun non justifié',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dayByDay => 'Jour par jour';
+
+  @override
+  String historyEmpty(String name) {
+    return 'Aucune absence ni retard pour $name';
+  }
+
+  @override
+  String absentFromLesson(String time) {
+    return 'Cours de $time';
+  }
+
+  @override
+  String lateArrivedAt(String time) {
+    return 'Arrivée à $time';
+  }
+
+  @override
+  String get absenceJustified => 'Justifiée';
+
+  @override
+  String get absenceUnjustified => 'Non justifiée';
+
+  @override
+  String get latenessJustified => 'Justifié';
+
+  @override
+  String get latenessUnjustified => 'Non justifié';
 }

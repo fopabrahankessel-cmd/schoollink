@@ -389,5 +389,152 @@
   "loading": "Loading…",
   "@loading": {
     "description": "Read by screen readers while a skeleton stands in for content."
-  }
+  },
+  "today": "Today",
+  "yesterday": "Yesterday",
+  "unreadMessages": "{count, plural, =0{All read} =1{1 unread message} other{{count} unread messages}}",
+  "@unreadMessages": {
+    "description": "UC-P2: the inbox header.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "unread": "Unread",
+  "@unread": {
+    "description": "Read by screen readers on an unread message."
+  },
+  "inboxEmpty": "No messages yet",
+  "inboxEmptyHint": "Your children's absences and lateness will appear here, the same day.",
+  "olderMessages": "Show older messages",
+  "olderMessagesFailed": "Older messages could not be loaded. Check your connection and try again.",
+  "messageNotFound": "This message is no longer in your notifications.",
+  "backToInbox": "Back to notifications",
+  "receivedAt": "Received {date} at {time}",
+  "@receivedAt": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "seeHistory": "See absences and lateness",
+  "eventAbsence": "Absence",
+  "eventLateness": "Lateness",
+  "eventCorrection": "Correction",
+  "@eventCorrection": {
+    "description": "An absence cancelled after the parent was told (BR-14)."
+  },
+  "eventSummons": "Summons",
+  "eventMessage": "Message",
+  "eventAnnouncement": "Announcement",
+  "eventOther": "Notification",
+  "yourChildren": "{count, plural, =0{No child} =1{Your child} other{Your {count} children}}",
+  "@yourChildren": {
+    "description": "UC-P3: the children header.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "childrenHint": "Tap a child to see their absences and lateness.",
+  "noChildren": "No child is linked to your account",
+  "noChildrenHint": "Contact the school to check the phone number it has for you.",
+  "classLabel": "Class: {name}",
+  "@classLabel": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "historyTitle": "History",
+  "historyOf": "{name}'s history",
+  "@historyOf": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "periodFromTo": "From {from} to {to}",
+  "@periodFromTo": {
+    "description": "UC-P3: the period shown, last 90 days.",
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "absentPeriodsLabel": "{count, plural, =1{lesson missed} other{lessons missed}}",
+  "@absentPeriodsLabel": {
+    "description": "Under the number of absent periods.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "unjustifiedAbsences": "{count, plural, =0{none unjustified} =1{1 not justified} other{{count} not justified}}",
+  "@unjustifiedAbsences": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "latenessLabel": "{count, plural, =1{time late} other{times late}}",
+  "@latenessLabel": {
+    "description": "Under the number of times late.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "unjustifiedLateness": "{count, plural, =0{none unjustified} =1{1 not justified} other{{count} not justified}}",
+  "@unjustifiedLateness": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dayByDay": "Day by day",
+  "historyEmpty": "No absence or lateness for {name}",
+  "@historyEmpty": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "absentFromLesson": "Lesson at {time}",
+  "@absentFromLesson": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "lateArrivedAt": "Arrived at {time}",
+  "@lateArrivedAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "absenceJustified": "Justified",
+  "absenceUnjustified": "Not justified",
+  "latenessJustified": "Justified",
+  "latenessUnjustified": "Not justified"
 }

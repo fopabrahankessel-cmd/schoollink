@@ -23,12 +23,15 @@ class Reply {
 
 /// What the app sent.
 class Sent {
-  const Sent(this.method, this.path, this.headers, this.body);
+  const Sent(this.method, this.path, this.headers, this.body, {this.query = const {}});
 
   final String method;
   final String path;
   final Map<String, dynamic> headers;
   final Object? body;
+
+  /// The query string, kept apart from [path] so routes match without it.
+  final Map<String, String> query;
 
   String? get authorization => headers['Authorization'] as String?;
 }
@@ -54,7 +57,13 @@ class FakeServer implements HttpClientAdapter {
     Future<void>? cancelFuture,
   ) async {
     final path = options.uri.path.replaceFirst('/api/v1', '');
-    final request = Sent(options.method, path, Map.of(options.headers), options.data);
+    final request = Sent(
+      options.method,
+      path,
+      Map.of(options.headers),
+      options.data,
+      query: options.uri.queryParameters,
+    );
     requests.add(request);
     if (offline) {
       throw DioException.connectionError(requestOptions: options, reason: 'offline');

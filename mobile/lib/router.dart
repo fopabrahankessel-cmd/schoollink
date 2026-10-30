@@ -12,6 +12,8 @@ import 'features/shell/home_shell.dart';
 import 'features/shell/web_only_screen.dart';
 import 'features/splash/splash_screen.dart';
 import 'features/teacher/attendance_screen.dart';
+import 'features/parent/history_screen.dart';
+import 'features/parent/inbox_screen.dart';
 
 /// Where the user must be, given who is signed in; null when [location] is already right.
 String? redirectFor(AsyncValue<UserInfo?> auth, String location) {
@@ -55,6 +57,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/home/:tab',
         builder: (context, state) => HomeShell(current: Destination.byPath(state.pathParameters['tab'])!),
         routes: [
+          GoRoute(
+            path: 'message/:id',
+            builder: (context, state) => MessageScreen(id: state.pathParameters['id']!),
+          ),
+          GoRoute(
+            path: 'child/:childId',
+            builder: (context, state) => ChildHistoryScreen(childId: state.pathParameters['childId']!),
+          ),
           GoRoute(
             path: 'attendance/:classId/:periodId',
             builder: (context, state) => AttendanceScreen(

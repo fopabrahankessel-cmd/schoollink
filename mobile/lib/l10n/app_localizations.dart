@@ -943,6 +943,240 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Loading…'**
   String get loading;
+
+  /// No description provided for @today.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get today;
+
+  /// No description provided for @yesterday.
+  ///
+  /// In en, this message translates to:
+  /// **'Yesterday'**
+  String get yesterday;
+
+  /// UC-P2: the inbox header.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{All read} =1{1 unread message} other{{count} unread messages}}'**
+  String unreadMessages(int count);
+
+  /// Read by screen readers on an unread message.
+  ///
+  /// In en, this message translates to:
+  /// **'Unread'**
+  String get unread;
+
+  /// No description provided for @inboxEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No messages yet'**
+  String get inboxEmpty;
+
+  /// No description provided for @inboxEmptyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Your children\'s absences and lateness will appear here, the same day.'**
+  String get inboxEmptyHint;
+
+  /// No description provided for @olderMessages.
+  ///
+  /// In en, this message translates to:
+  /// **'Show older messages'**
+  String get olderMessages;
+
+  /// No description provided for @olderMessagesFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Older messages could not be loaded. Check your connection and try again.'**
+  String get olderMessagesFailed;
+
+  /// No description provided for @messageNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'This message is no longer in your notifications.'**
+  String get messageNotFound;
+
+  /// No description provided for @backToInbox.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to notifications'**
+  String get backToInbox;
+
+  /// No description provided for @receivedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Received {date} at {time}'**
+  String receivedAt(String date, String time);
+
+  /// No description provided for @seeHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'See absences and lateness'**
+  String get seeHistory;
+
+  /// No description provided for @eventAbsence.
+  ///
+  /// In en, this message translates to:
+  /// **'Absence'**
+  String get eventAbsence;
+
+  /// No description provided for @eventLateness.
+  ///
+  /// In en, this message translates to:
+  /// **'Lateness'**
+  String get eventLateness;
+
+  /// An absence cancelled after the parent was told (BR-14).
+  ///
+  /// In en, this message translates to:
+  /// **'Correction'**
+  String get eventCorrection;
+
+  /// No description provided for @eventSummons.
+  ///
+  /// In en, this message translates to:
+  /// **'Summons'**
+  String get eventSummons;
+
+  /// No description provided for @eventMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Message'**
+  String get eventMessage;
+
+  /// No description provided for @eventAnnouncement.
+  ///
+  /// In en, this message translates to:
+  /// **'Announcement'**
+  String get eventAnnouncement;
+
+  /// No description provided for @eventOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Notification'**
+  String get eventOther;
+
+  /// UC-P3: the children header.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No child} =1{Your child} other{Your {count} children}}'**
+  String yourChildren(int count);
+
+  /// No description provided for @childrenHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a child to see their absences and lateness.'**
+  String get childrenHint;
+
+  /// No description provided for @noChildren.
+  ///
+  /// In en, this message translates to:
+  /// **'No child is linked to your account'**
+  String get noChildren;
+
+  /// No description provided for @noChildrenHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact the school to check the phone number it has for you.'**
+  String get noChildrenHint;
+
+  /// No description provided for @classLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Class: {name}'**
+  String classLabel(String name);
+
+  /// No description provided for @historyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get historyTitle;
+
+  /// No description provided for @historyOf.
+  ///
+  /// In en, this message translates to:
+  /// **'{name}\'s history'**
+  String historyOf(String name);
+
+  /// UC-P3: the period shown, last 90 days.
+  ///
+  /// In en, this message translates to:
+  /// **'From {from} to {to}'**
+  String periodFromTo(String from, String to);
+
+  /// Under the number of absent periods.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{lesson missed} other{lessons missed}}'**
+  String absentPeriodsLabel(int count);
+
+  /// No description provided for @unjustifiedAbsences.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{none unjustified} =1{1 not justified} other{{count} not justified}}'**
+  String unjustifiedAbsences(int count);
+
+  /// Under the number of times late.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{time late} other{times late}}'**
+  String latenessLabel(int count);
+
+  /// No description provided for @unjustifiedLateness.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{none unjustified} =1{1 not justified} other{{count} not justified}}'**
+  String unjustifiedLateness(int count);
+
+  /// No description provided for @dayByDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Day by day'**
+  String get dayByDay;
+
+  /// No description provided for @historyEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No absence or lateness for {name}'**
+  String historyEmpty(String name);
+
+  /// No description provided for @absentFromLesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson at {time}'**
+  String absentFromLesson(String time);
+
+  /// No description provided for @lateArrivedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Arrived at {time}'**
+  String lateArrivedAt(String time);
+
+  /// No description provided for @absenceJustified.
+  ///
+  /// In en, this message translates to:
+  /// **'Justified'**
+  String get absenceJustified;
+
+  /// No description provided for @absenceUnjustified.
+  ///
+  /// In en, this message translates to:
+  /// **'Not justified'**
+  String get absenceUnjustified;
+
+  /// No description provided for @latenessJustified.
+  ///
+  /// In en, this message translates to:
+  /// **'Justified'**
+  String get latenessJustified;
+
+  /// No description provided for @latenessUnjustified.
+  ///
+  /// In en, this message translates to:
+  /// **'Not justified'**
+  String get latenessUnjustified;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

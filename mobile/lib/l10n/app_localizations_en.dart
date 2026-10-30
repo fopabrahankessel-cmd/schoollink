@@ -543,4 +543,177 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get loading => 'Loading…';
+
+  @override
+  String get today => 'Today';
+
+  @override
+  String get yesterday => 'Yesterday';
+
+  @override
+  String unreadMessages(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count unread messages',
+      one: '1 unread message',
+      zero: 'All read',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get unread => 'Unread';
+
+  @override
+  String get inboxEmpty => 'No messages yet';
+
+  @override
+  String get inboxEmptyHint => 'Your children\'s absences and lateness will appear here, the same day.';
+
+  @override
+  String get olderMessages => 'Show older messages';
+
+  @override
+  String get olderMessagesFailed => 'Older messages could not be loaded. Check your connection and try again.';
+
+  @override
+  String get messageNotFound => 'This message is no longer in your notifications.';
+
+  @override
+  String get backToInbox => 'Back to notifications';
+
+  @override
+  String receivedAt(String date, String time) {
+    return 'Received $date at $time';
+  }
+
+  @override
+  String get seeHistory => 'See absences and lateness';
+
+  @override
+  String get eventAbsence => 'Absence';
+
+  @override
+  String get eventLateness => 'Lateness';
+
+  @override
+  String get eventCorrection => 'Correction';
+
+  @override
+  String get eventSummons => 'Summons';
+
+  @override
+  String get eventMessage => 'Message';
+
+  @override
+  String get eventAnnouncement => 'Announcement';
+
+  @override
+  String get eventOther => 'Notification';
+
+  @override
+  String yourChildren(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Your $count children',
+      one: 'Your child',
+      zero: 'No child',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get childrenHint => 'Tap a child to see their absences and lateness.';
+
+  @override
+  String get noChildren => 'No child is linked to your account';
+
+  @override
+  String get noChildrenHint => 'Contact the school to check the phone number it has for you.';
+
+  @override
+  String classLabel(String name) {
+    return 'Class: $name';
+  }
+
+  @override
+  String get historyTitle => 'History';
+
+  @override
+  String historyOf(String name) {
+    return '$name\'s history';
+  }
+
+  @override
+  String periodFromTo(String from, String to) {
+    return 'From $from to $to';
+  }
+
+  @override
+  String absentPeriodsLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: 'lessons missed', one: 'lesson missed');
+    return '$_temp0';
+  }
+
+  @override
+  String unjustifiedAbsences(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count not justified',
+      one: '1 not justified',
+      zero: 'none unjustified',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String latenessLabel(int count) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: 'times late', one: 'time late');
+    return '$_temp0';
+  }
+
+  @override
+  String unjustifiedLateness(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count not justified',
+      one: '1 not justified',
+      zero: 'none unjustified',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dayByDay => 'Day by day';
+
+  @override
+  String historyEmpty(String name) {
+    return 'No absence or lateness for $name';
+  }
+
+  @override
+  String absentFromLesson(String time) {
+    return 'Lesson at $time';
+  }
+
+  @override
+  String lateArrivedAt(String time) {
+    return 'Arrived at $time';
+  }
+
+  @override
+  String get absenceJustified => 'Justified';
+
+  @override
+  String get absenceUnjustified => 'Not justified';
+
+  @override
+  String get latenessJustified => 'Justified';
+
+  @override
+  String get latenessUnjustified => 'Not justified';
 }

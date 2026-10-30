@@ -12,6 +12,9 @@ import '../dm/dm_home_screen.dart';
 import '../lateness/gate_screen.dart';
 import '../teacher/sessions_screen.dart';
 import 'destinations.dart';
+import '../parent/children_screen.dart';
+import '../parent/inbox_screen.dart';
+import '../parent/parent.dart';
 
 /// The role-based shell: one tab per screen the user's roles give (SPEC §8). With a single
 /// screen there is no tab bar. Records saved offline are announced above every screen, with a way
@@ -30,6 +33,8 @@ class HomeShell extends ConsumerWidget {
     final pending = ref.watch(pendingSyncProvider).value ?? 0;
     // listened from the start, so the banner knows the network state when it appears
     final offline = ref.watch(onlineProvider).value == false;
+    // UC-P2: unread messages counted on the tab, so a parent sees them from the children
+    final unread = user?.roles.contains(Role.parent) == true ? ref.watch(inboxProvider).value?.unread ?? 0 : 0;
 
     return Scaffold(
       appBar: AppBar(
@@ -46,6 +51,8 @@ class HomeShell extends ConsumerWidget {
               Destination.sessions => const SessionsScreen(),
               Destination.gate => const GateScreen(),
               Destination.alerts => const DmHomeScreen(),
+              Destination.children => const ChildrenScreen(),
+              Destination.inbox => const InboxScreen(),
               _ => _Placeholder(current),
             },
           ),
@@ -61,8 +68,11 @@ class HomeShell extends ConsumerWidget {
               destinations: [
                 for (final destination in destinations)
                   NavigationDestination(
-                    icon: Icon(destination.icon),
-                    selectedIcon: Icon(destination.selectedIcon),
+                    icon: _withBadge(Icon(destination.icon), destination == Destination.inbox ? unread : 0),
+                    selectedIcon: _withBadge(
+                      Icon(destination.selectedIcon),
+                      destination == Destination.inbox ? unread : 0,
+                    ),
                     label: destination.label(l),
                   ),
               ],
@@ -234,6 +244,10 @@ class _SyncBannerState extends ConsumerState<SyncBanner> {
     );
   }
 }
+
+Widget _withBadge(Widget icon, int count) => count == 0
+    ? icon
+    : Badge(key: const ValueKey('unread-badge'), label: Text(count > 99 ? '99+' : '$count'), child: icon);
 
 class _Placeholder extends StatelessWidget {
   const _Placeholder(this.destination);

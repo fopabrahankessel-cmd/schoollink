@@ -103,10 +103,20 @@ final pushRegistrationProvider = Provider<PushRegistration?>((ref) {
     client: client,
     dio: ref.watch(dioProvider),
     online: ref.watch(connectivityProvider),
-    onOpened: (_) {
-      // UC-P2: a parent lands in their notifications; staff on their home screen
+    onOpened: (message) {
+      // UC-P2: a parent lands on the message, which sends its receipt (BR-24), or in their
+      // notifications; staff on their home screen
       final roles = ref.read(authControllerProvider).value?.roles ?? const <Role>{};
-      ref.read(routerProvider).go(roles.contains(Role.parent) ? '/home/inbox' : '/home');
+      final router = ref.read(routerProvider);
+      if (!roles.contains(Role.parent)) {
+        router.go('/home');
+      } else if (message.notificationId case final id?) {
+        router
+          ..go('/home/inbox')
+          ..push('/home/inbox/message/$id');
+      } else {
+        router.go('/home/inbox');
+      }
     },
   )..start();
   ref.onDispose(registration.dispose);

@@ -46,11 +46,14 @@ void main() {
 
   testWidgets("a signed-in user sees their account's language, whatever the phone's", (tester) async {
     final user = userJson(roles: ['PARENT'], language: 'EN');
-    final fake = FakeServer()..on('GET /me', (_) => Reply.ok(user));
+    final fake = FakeServer()
+      ..on('GET /me', (_) => Reply.ok(user))
+      ..on('GET /me/children', (_) => const Reply.ok([]))
+      ..on('GET /me/notifications', (_) => const Reply.ok([]));
     await pumpApp(tester, server: fake, store: MemoryDeviceStore(signedIn(user)), language: 'fr');
 
     expect(find.widgetWithText(AppBar, 'Children'), findsOneWidget);
-    expect(find.text('This screen arrives in a coming update.'), findsOneWidget);
+    expect(find.text('No child is linked to your account'), findsOneWidget);
   });
 
   test('both languages have the same keys', () {
