@@ -5,7 +5,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:schoollink/core/cache/response_cache.dart';
 import 'package:schoollink/core/db/database.dart';
 import 'package:schoollink/core/storage/device_store.dart';
-import 'package:schoollink/features/teacher/sessions_screen.dart';
 
 import '../support/fake_server.dart';
 import '../support/harness.dart';
@@ -91,15 +90,13 @@ void main() {
 
   testWidgets('sessions still to record are highlighted; recorded ones give their absentees', (tester) async {
     await open(tester);
-    final scheme = Theme.of(tester.element(find.byType(SessionsScreen))).colorScheme;
-    Color colorOf(Finder t) => tester.widget<Card>(t).color!;
 
     expect(find.descendant(of: tile('5e B', 2), matching: find.text('À faire')), findsOneWidget);
     expect(find.descendant(of: tile('6e A', 3), matching: find.text('À faire')), findsOneWidget);
     expect(find.descendant(of: tile('6e A', 1), matching: find.text('Enregistré, 2 absents')), findsOneWidget);
-    expect(colorOf(tile('5e B', 2)), scheme.primaryContainer);
-    expect(colorOf(tile('6e A', 3)), scheme.primaryContainer);
-    expect(colorOf(tile('6e A', 1)), isNot(scheme.primaryContainer));
+    expect(find.descendant(of: tile('5e B', 2), matching: find.text("Faire l'appel")), findsOneWidget);
+    expect(find.text('2 appels à faire'), findsOneWidget);
+    expect(find.text('1 sur 3 enregistrés'), findsOneWidget);
   });
 
   testWidgets('as the time passes, the next period moves to the top', (tester) async {

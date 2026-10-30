@@ -260,4 +260,189 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sessionNotFound => 'This session is not in today\'s list.';
+
+  @override
+  String get signedInAs => 'Signed in as';
+
+  @override
+  String get roleAdmin => 'Administrator';
+
+  @override
+  String get roleTeacher => 'Teacher';
+
+  @override
+  String get roleAssistantDm => 'Assistant discipline master';
+
+  @override
+  String get roleDm => 'Discipline master';
+
+  @override
+  String get roleCounsellor => 'Counsellor';
+
+  @override
+  String get roleParent => 'Parent';
+
+  @override
+  String get roleResearcher => 'Researcher';
+
+  @override
+  String pendingOnline(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count records waiting to be sent.',
+      one: '1 record waiting to be sent.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String pendingOffline(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'No network: $count records will be sent when it is back.',
+      one: 'No network: 1 record will be sent when it is back.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get sendNow => 'Send now';
+
+  @override
+  String get todaySchedule => 'Today\'s timetable';
+
+  @override
+  String get noRollToday => 'No roll call today';
+
+  @override
+  String rollsLeft(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count roll calls to do',
+      one: '1 roll call to do',
+      zero: 'All rolls are done',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String rollsProgress(int done, int total) {
+    return '$done of $total recorded';
+  }
+
+  @override
+  String get takeRoll => 'Take the roll';
+
+  @override
+  String get findStudent => 'Find a student';
+
+  @override
+  String latenessToday(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count late arrivals today',
+      one: '1 late arrival today',
+      zero: 'No lateness today',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String classesStartAt(String time) {
+    return 'Classes start at $time';
+  }
+
+  @override
+  String get searchStudentHint => 'Name or matricule';
+
+  @override
+  String get clearSearch => 'Clear';
+
+  @override
+  String get gateStudentsUnavailable =>
+      'The student list is not on this phone yet. Connect to the network once to load it.';
+
+  @override
+  String get noStudentFound => 'No student matches this search.';
+
+  @override
+  String searchResults(int count) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count students', one: '1 student');
+    return '$_temp0';
+  }
+
+  @override
+  String get typeMore => 'Type more letters to narrow the list.';
+
+  @override
+  String get latenessListTitle => 'Today\'s lateness';
+
+  @override
+  String get noLatenessToday => 'No lateness recorded today.';
+
+  @override
+  String get noLatenessTodayHint => 'Search a student above to record their arrival.';
+
+  @override
+  String classAndMatricule(String className, String matricule) {
+    return '$className, no. $matricule';
+  }
+
+  @override
+  String alreadyLateAt(String time) {
+    return 'Late at $time';
+  }
+
+  @override
+  String get arrivalTimeLabel => 'Arrival time';
+
+  @override
+  String get changeTime => 'Change';
+
+  @override
+  String arrivalNotLate(String start) {
+    return 'Classes start at $start: arriving at that time or before is not late.';
+  }
+
+  @override
+  String get arrivalInFuture => 'The arrival time cannot be later than now.';
+
+  @override
+  String get latenessIndependent => 'Recorded apart from the class roll: it does not change it.';
+
+  @override
+  String get recordLateness => 'Record lateness';
+
+  @override
+  String latenessSaved(String name, String time) {
+    return 'Lateness recorded: $name at $time.';
+  }
+
+  @override
+  String get latenessWaiting => 'On this phone, waiting to be sent';
+
+  @override
+  String latenessRefused(String name, String time) {
+    return 'Not accepted by the school: $name at $time.';
+  }
+
+  @override
+  String get justifiedLabel => 'Justified';
+
+  @override
+  String get inYourClasses => 'In the classes you are in charge of';
+
+  @override
+  String get alertsTitle => 'Alerts to decide';
+
+  @override
+  String get alertsSoonTitle => 'Risk alerts arrive in a coming update';
+
+  @override
+  String get alertsSoonBody =>
+      'Repeated absences and lateness in your classes will show here for your decision. The app never decides for you.';
 }

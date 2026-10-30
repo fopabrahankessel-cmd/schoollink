@@ -505,6 +505,270 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This session is not in today\'s list.'**
   String get sessionNotFound;
+
+  /// No description provided for @signedInAs.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed in as'**
+  String get signedInAs;
+
+  /// No description provided for @roleAdmin.
+  ///
+  /// In en, this message translates to:
+  /// **'Administrator'**
+  String get roleAdmin;
+
+  /// No description provided for @roleTeacher.
+  ///
+  /// In en, this message translates to:
+  /// **'Teacher'**
+  String get roleTeacher;
+
+  /// No description provided for @roleAssistantDm.
+  ///
+  /// In en, this message translates to:
+  /// **'Assistant discipline master'**
+  String get roleAssistantDm;
+
+  /// No description provided for @roleDm.
+  ///
+  /// In en, this message translates to:
+  /// **'Discipline master'**
+  String get roleDm;
+
+  /// No description provided for @roleCounsellor.
+  ///
+  /// In en, this message translates to:
+  /// **'Counsellor'**
+  String get roleCounsellor;
+
+  /// No description provided for @roleParent.
+  ///
+  /// In en, this message translates to:
+  /// **'Parent'**
+  String get roleParent;
+
+  /// No description provided for @roleResearcher.
+  ///
+  /// In en, this message translates to:
+  /// **'Researcher'**
+  String get roleResearcher;
+
+  /// BR-6, UC-T2: records saved on the phone, network available.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 record waiting to be sent.} other{{count} records waiting to be sent.}}'**
+  String pendingOnline(int count);
+
+  /// BR-6, UC-T2: records saved on the phone, no network.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{No network: 1 record will be sent when it is back.} other{No network: {count} records will be sent when it is back.}}'**
+  String pendingOffline(int count);
+
+  /// No description provided for @sendNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Send now'**
+  String get sendNow;
+
+  /// No description provided for @todaySchedule.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s timetable'**
+  String get todaySchedule;
+
+  /// No description provided for @noRollToday.
+  ///
+  /// In en, this message translates to:
+  /// **'No roll call today'**
+  String get noRollToday;
+
+  /// UC-T3: sessions of the day still to record.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{All rolls are done} =1{1 roll call to do} other{{count} roll calls to do}}'**
+  String rollsLeft(int count);
+
+  /// No description provided for @rollsProgress.
+  ///
+  /// In en, this message translates to:
+  /// **'{done} of {total} recorded'**
+  String rollsProgress(int done, int total);
+
+  /// No description provided for @takeRoll.
+  ///
+  /// In en, this message translates to:
+  /// **'Take the roll'**
+  String get takeRoll;
+
+  /// No description provided for @findStudent.
+  ///
+  /// In en, this message translates to:
+  /// **'Find a student'**
+  String get findStudent;
+
+  /// UC-AD2: lateness of the day in scope.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No lateness today} =1{1 late arrival today} other{{count} late arrivals today}}'**
+  String latenessToday(int count);
+
+  /// No description provided for @classesStartAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Classes start at {time}'**
+  String classesStartAt(String time);
+
+  /// No description provided for @searchStudentHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Name or matricule'**
+  String get searchStudentHint;
+
+  /// No description provided for @clearSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get clearSearch;
+
+  /// No description provided for @gateStudentsUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'The student list is not on this phone yet. Connect to the network once to load it.'**
+  String get gateStudentsUnavailable;
+
+  /// No description provided for @noStudentFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No student matches this search.'**
+  String get noStudentFound;
+
+  /// No description provided for @searchResults.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 student} other{{count} students}}'**
+  String searchResults(int count);
+
+  /// No description provided for @typeMore.
+  ///
+  /// In en, this message translates to:
+  /// **'Type more letters to narrow the list.'**
+  String get typeMore;
+
+  /// No description provided for @latenessListTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s lateness'**
+  String get latenessListTitle;
+
+  /// No description provided for @noLatenessToday.
+  ///
+  /// In en, this message translates to:
+  /// **'No lateness recorded today.'**
+  String get noLatenessToday;
+
+  /// No description provided for @noLatenessTodayHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search a student above to record their arrival.'**
+  String get noLatenessTodayHint;
+
+  /// No description provided for @classAndMatricule.
+  ///
+  /// In en, this message translates to:
+  /// **'{className}, no. {matricule}'**
+  String classAndMatricule(String className, String matricule);
+
+  /// BR-7: one lateness per student per day.
+  ///
+  /// In en, this message translates to:
+  /// **'Late at {time}'**
+  String alreadyLateAt(String time);
+
+  /// No description provided for @arrivalTimeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Arrival time'**
+  String get arrivalTimeLabel;
+
+  /// No description provided for @changeTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Change'**
+  String get changeTime;
+
+  /// BR-7.
+  ///
+  /// In en, this message translates to:
+  /// **'Classes start at {start}: arriving at that time or before is not late.'**
+  String arrivalNotLate(String start);
+
+  /// No description provided for @arrivalInFuture.
+  ///
+  /// In en, this message translates to:
+  /// **'The arrival time cannot be later than now.'**
+  String get arrivalInFuture;
+
+  /// BR-8, BR-9.
+  ///
+  /// In en, this message translates to:
+  /// **'Recorded apart from the class roll: it does not change it.'**
+  String get latenessIndependent;
+
+  /// No description provided for @recordLateness.
+  ///
+  /// In en, this message translates to:
+  /// **'Record lateness'**
+  String get recordLateness;
+
+  /// No description provided for @latenessSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Lateness recorded: {name} at {time}.'**
+  String latenessSaved(String name, String time);
+
+  /// No description provided for @latenessWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'On this phone, waiting to be sent'**
+  String get latenessWaiting;
+
+  /// No description provided for @latenessRefused.
+  ///
+  /// In en, this message translates to:
+  /// **'Not accepted by the school: {name} at {time}.'**
+  String latenessRefused(String name, String time);
+
+  /// No description provided for @justifiedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Justified'**
+  String get justifiedLabel;
+
+  /// No description provided for @inYourClasses.
+  ///
+  /// In en, this message translates to:
+  /// **'In the classes you are in charge of'**
+  String get inYourClasses;
+
+  /// No description provided for @alertsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Alerts to decide'**
+  String get alertsTitle;
+
+  /// No description provided for @alertsSoonTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Risk alerts arrive in a coming update'**
+  String get alertsSoonTitle;
+
+  /// BR-16 to BR-19.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeated absences and lateness in your classes will show here for your decision. The app never decides for you.'**
+  String get alertsSoonBody;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

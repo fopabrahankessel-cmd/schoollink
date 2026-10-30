@@ -7,6 +7,8 @@ import 'package:intl/intl.dart';
 
 import '../../core/db/database.dart';
 import '../../core/providers.dart';
+import '../../core/theme.dart';
+import '../../core/ui/widgets.dart';
 import '../../l10n/app_localizations.dart';
 import '../auth/failure_text.dart';
 import 'attendance.dart';
@@ -51,7 +53,7 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
         onRefresh: () => ref.refresh(teacherDayProvider.future),
         child: _DayList(day: day, now: now, local: local),
       ),
-      AsyncError(:final error) => _Failure(
+      AsyncError(:final error) => FailureView(
         message: failureText(error, l),
         onRetry: () => ref.invalidate(teacherDayProvider),
       ),
@@ -72,50 +74,115 @@ class _DayList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final theme = Theme.of(context);
     final locale = Localizations.localeOf(context).toLanguageTag();
     final today = day.date.year == now.year && day.date.month == now.month && day.date.day == now.day;
     final time = DayTime.of(now);
     final sessions = day.orderedAt(today ? time : null);
-    final empty = !day.schoolDay
-        ? l.notASchoolDay
-        : sessions.isEmpty
-        ? l.noLessonsToday
-        : null;
+    LocalSession? localOf(ExpectedSession s) => local.where((l) => l.isFor(s, day.date)).firstOrNull;
+    final done = sessions.where((s) => s.recorded || localOf(s) != null).length;
+    final current = today ? sessions.where((s) => s.isCurrentAt(time)).firstOrNull : null;
+    final rest = [
+      for (final s in sessions)
+        if (!identical(s, current)) s,
+    ];
 
     return ListView(
       // pulling down refreshes even when the list is short
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+      padding: const EdgeInsets.only(bottom: Gap.xl),
       children: [
-        Text(DateFormat.yMMMMEEEEd(locale).format(day.date), style: theme.textTheme.titleMedium),
-        if (day.fetchedAt case final fetchedAt?) ...[
-          const SizedBox(height: 12),
-          _OfflineNotice(text: l.offlineSince(DateFormat.Hm(locale).format(fetchedAt))),
-        ],
-        const SizedBox(height: 12),
-        if (empty != null)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 48),
-            child: Text(empty, style: theme.textTheme.bodyLarge, textAlign: TextAlign.center),
-          )
-        else
-          for (final session in sessions)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: SessionTile(
-                session: session,
-                current: today && session.isCurrentAt(time),
-                local: local.where((l) => l.isFor(session, day.date)).firstOrNull,
-              ),
+        _DayHeader(
+          date: DateFormat.yMMMMEEEEd(locale).format(day.date),
+          done: done,
+          total: sessions.length,
+          schoolDay: day.schoolDay,
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: Gap.l),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (day.fetchedAt case final fetchedAt?) ...[
+                const SizedBox(height: Gap.l),
+                InfoBanner(
+                  icon: Icons.cloud_off_rounded,
+                  text: l.offlineSince(DateFormat.Hm(locale).format(fetchedAt)),
+                  background: Theme.of(context).colorScheme.secondaryContainer,
+                  foreground: Theme.of(context).colorScheme.onSecondaryContainer,
+                ),
+              ],
+              if (!day.schoolDay)
+                EmptyState(icon: Icons.event_busy_rounded, title: l.notASchoolDay)
+              else if (sessions.isEmpty)
+                EmptyState(icon: Icons.free_breakfast_outlined, title: l.noLessonsToday)
+              else ...[
+                if (current != null) ...[
+                  const SizedBox(height: Gap.l),
+                  SessionTile(session: current, current: true, local: localOf(current)),
+                ],
+                if (rest.isNotEmpty) SectionHeader(title: l.todaySchedule),
+                for (final session in rest)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: Gap.m),
+                    child: SessionTile(session: session, current: false, local: localOf(session)),
+                  ),
+              ],
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+/// The day, and how many rolls are left: the one figure a teacher needs on opening the app.
+class _DayHeader extends StatelessWidget {
+  const _DayHeader({required this.date, required this.done, required this.total, required this.schoolDay});
+
+  final String date;
+  final int done;
+  final int total;
+  final bool schoolDay;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final status = StatusColors.of(context);
+    final left = total - done;
+    return HeaderBand(
+      children: [
+        Text(date, style: theme.textTheme.bodyLarge?.copyWith(color: status.onHeaderMuted)),
+        const SizedBox(height: Gap.xs),
+        Text(
+          !schoolDay || total == 0 ? l.noRollToday : l.rollsLeft(left),
+          style: theme.textTheme.headlineSmall?.copyWith(color: status.onHeader),
+        ),
+        if (schoolDay && total > 0) ...[
+          const SizedBox(height: Gap.m),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(99),
+            child: LinearProgressIndicator(
+              value: done / total,
+              minHeight: 8,
+              color: left == 0 ? const Color(0xFF5FD39A) : status.onHeader,
+              backgroundColor: status.onHeader.withValues(alpha: 0.16),
             ),
+          ),
+          const SizedBox(height: Gap.s),
+          Text(
+            l.rollsProgress(done, total),
+            style: theme.textTheme.bodyMedium?.copyWith(color: status.onHeaderMuted, fontFeatures: tabular),
+          ),
+        ],
       ],
     );
   }
 }
 
 /// One session: its times, class and subject, and whether it is still to record. Opens the roll,
-/// or the locked session once recorded (UC-T1).
+/// or the locked session once recorded (UC-T1). The period under way is a larger card with the
+/// call to action.
 class SessionTile extends StatelessWidget {
   const SessionTile({super.key, required this.session, required this.current, this.local});
 
@@ -130,20 +197,50 @@ class SessionTile extends StatelessWidget {
     final l = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final status = StatusColors.of(context);
     final toRecord = !session.recorded && local == null;
     final absent = local?.absentStudentIds.length ?? session.absentCount ?? 0;
-    final status = toRecord ? l.sessionToRecord : l.sessionRecorded(absent);
+    final statusText = toRecord ? l.sessionToRecord : l.sessionRecorded(absent);
     final waiting = local?.state == SyncState.pending;
+    final times = l.sessionTimes(session.startTime.toString(), session.endTime.toString());
     void open() => context.push('/home/sessions/attendance/${session.classId}/${session.periodId}');
+
+    final pill = toRecord
+        ? StatusPill(
+            label: statusText,
+            icon: Icons.radio_button_unchecked_rounded,
+            background: scheme.primaryContainer,
+            foreground: scheme.onPrimaryContainer,
+          )
+        : StatusPill(
+            label: statusText,
+            icon: Icons.check_circle_rounded,
+            background: status.presentContainer,
+            foreground: status.present,
+          );
+    final waitingLine = waiting
+        ? Padding(
+            padding: const EdgeInsets.only(top: Gap.s),
+            child: Row(
+              children: [
+                Icon(Icons.cloud_upload_outlined, size: 18, color: status.late),
+                const SizedBox(width: Gap.xs + 2),
+                Expanded(
+                  child: Text(l.syncWaiting, style: theme.textTheme.bodySmall?.copyWith(color: status.onLateContainer)),
+                ),
+              ],
+            ),
+          )
+        : null;
 
     return Semantics(
       container: true,
       label: [
         if (current) l.sessionNow,
-        l.sessionTimes(session.startTime.toString(), session.endTime.toString()),
+        times,
         session.className,
         ?session.subject,
-        status,
+        statusText,
         if (waiting) l.syncWaiting,
       ].join(', '),
       button: true,
@@ -152,161 +249,112 @@ class SessionTile extends StatelessWidget {
       child: Card(
         clipBehavior: Clip.antiAlias,
         key: ValueKey('session-${session.classId}-${session.periodId}'),
-        margin: EdgeInsets.zero,
-        elevation: 0,
-        color: toRecord ? scheme.primaryContainer : scheme.surfaceContainerLow,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: current ? BorderSide(color: scheme.primary, width: 2) : BorderSide.none,
+          borderRadius: BorderRadius.circular(Radii.l),
+          side: current
+              ? BorderSide(color: scheme.primary, width: 2)
+              : BorderSide(color: toRecord ? scheme.outline.withValues(alpha: 0.5) : scheme.outlineVariant),
         ),
         child: InkWell(
           onTap: open,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(
-                  width: 64,
+          child: current
+              ? Padding(
+                  padding: const EdgeInsets.all(Gap.l + 2),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(session.startTime.toString(), style: theme.textTheme.titleMedium),
-                      Text(session.endTime.toString(), style: theme.textTheme.bodySmall),
-                    ],
-                  ),
-                ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        session.className,
-                        style: theme.textTheme.titleLarge?.copyWith(
-                          color: toRecord ? scheme.onPrimaryContainer : null,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      if (session.subject case final subject?)
-                        Text(
-                          subject,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: toRecord ? scheme.onPrimaryContainer : null,
-                          ),
-                        ),
-                      const SizedBox(height: 8),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 4,
+                      Row(
                         children: [
-                          if (current)
-                            _Badge(text: l.sessionNow, background: scheme.primary, foreground: scheme.onPrimary),
-                          toRecord
-                              ? _Badge(text: status, background: scheme.surface, foreground: scheme.primary)
-                              : Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(Icons.check_circle, size: 18, color: scheme.tertiary),
-                                    const SizedBox(width: 4),
-                                    Text(status, style: theme.textTheme.bodyMedium),
-                                  ],
-                                ),
+                          StatusPill(
+                            label: l.sessionNow,
+                            icon: Icons.schedule_rounded,
+                            background: scheme.primary,
+                            foreground: scheme.onPrimary,
+                          ),
+                          const SizedBox(width: Gap.s),
+                          Flexible(child: pill),
                         ],
                       ),
-                      if (waiting) ...[
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Icon(Icons.cloud_upload_outlined, size: 18, color: scheme.onSurfaceVariant),
-                            const SizedBox(width: 4),
-                            Expanded(
-                              child: Text(
-                                l.syncWaiting,
-                                style: theme.textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
-                              ),
-                            ),
-                          ],
+                      const SizedBox(height: Gap.m),
+                      Text(session.className, style: theme.textTheme.headlineSmall),
+                      Text(
+                        [?session.subject, times].join(', '),
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          color: scheme.onSurfaceVariant,
+                          fontFeatures: tabular,
+                        ),
+                      ),
+                      ?waitingLine,
+                      if (toRecord) ...[
+                        const SizedBox(height: Gap.l),
+                        FilledButton.icon(
+                          onPressed: open,
+                          icon: const Icon(Icons.fact_check_outlined),
+                          label: Text(l.takeRoll),
                         ),
                       ],
                     ],
                   ),
+                )
+              : IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Container(width: 5, color: toRecord ? scheme.primary : status.present),
+                      SizedBox(
+                        width: 76,
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(Gap.m, Gap.l, 0, Gap.l),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                session.startTime.toString(),
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  fontFeatures: tabular,
+                                ),
+                              ),
+                              Text(
+                                session.endTime.toString(),
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: scheme.onSurfaceVariant,
+                                  fontFeatures: tabular,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(Gap.xs, Gap.l, Gap.m, Gap.l),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                session.className,
+                                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                              ),
+                              if (session.subject case final subject?)
+                                Text(
+                                  subject,
+                                  style: theme.textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
+                                ),
+                              const SizedBox(height: Gap.s),
+                              Align(alignment: Alignment.centerLeft, child: pill),
+                              ?waitingLine,
+                            ],
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(right: Gap.s),
+                        child: Icon(Icons.chevron_right_rounded, color: scheme.outline),
+                      ),
+                    ],
+                  ),
                 ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _Badge extends StatelessWidget {
-  const _Badge({required this.text, required this.background, required this.foreground});
-
-  final String text;
-  final Color background;
-  final Color foreground;
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(color: background, borderRadius: BorderRadius.circular(6)),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-        child: Text(
-          text,
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(color: foreground, fontWeight: FontWeight.w700),
-        ),
-      ),
-    );
-  }
-}
-
-class _OfflineNotice extends StatelessWidget {
-  const _OfflineNotice({required this.text});
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return DecoratedBox(
-      decoration: BoxDecoration(color: scheme.secondaryContainer, borderRadius: BorderRadius.circular(8)),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          children: [
-            Icon(Icons.cloud_off_outlined, color: scheme.onSecondaryContainer),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(text, style: TextStyle(color: scheme.onSecondaryContainer)),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _Failure extends StatelessWidget {
-  const _Failure({required this.message, required this.onRetry});
-
-  final String message;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context);
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(message, style: Theme.of(context).textTheme.bodyLarge, textAlign: TextAlign.center),
-            const SizedBox(height: 16),
-            OutlinedButton(onPressed: onRetry, child: Text(l.retry)),
-          ],
         ),
       ),
     );

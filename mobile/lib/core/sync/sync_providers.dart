@@ -48,3 +48,6 @@ final pendingSyncProvider = StreamProvider<int>((ref) {
   final userId = ref.watch(authControllerProvider.select((auth) => auth.value?.id));
   return userId == null ? Stream.value(0) : ref.watch(syncQueueProvider).watchPending(userId);
 });
+
+/// Whether the phone has a network, as last reported; unknown (null) until the first change.
+final onlineProvider = StreamProvider<bool>((ref) => ref.watch(connectivityProvider));

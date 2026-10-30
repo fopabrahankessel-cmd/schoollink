@@ -263,4 +263,189 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get sessionNotFound => 'Cette séance n\'est pas dans la liste du jour.';
+
+  @override
+  String get signedInAs => 'Connecté en tant que';
+
+  @override
+  String get roleAdmin => 'Administrateur';
+
+  @override
+  String get roleTeacher => 'Enseignant';
+
+  @override
+  String get roleAssistantDm => 'Surveillant général adjoint';
+
+  @override
+  String get roleDm => 'Surveillant général';
+
+  @override
+  String get roleCounsellor => 'Conseiller d\'orientation';
+
+  @override
+  String get roleParent => 'Parent';
+
+  @override
+  String get roleResearcher => 'Chercheur';
+
+  @override
+  String pendingOnline(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count enregistrements en attente d\'envoi.',
+      one: '1 enregistrement en attente d\'envoi.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String pendingOffline(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Pas de réseau : $count enregistrements seront envoyés à son retour.',
+      one: 'Pas de réseau : 1 enregistrement sera envoyé à son retour.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get sendNow => 'Envoyer';
+
+  @override
+  String get todaySchedule => 'Programme du jour';
+
+  @override
+  String get noRollToday => 'Pas d\'appel aujourd\'hui';
+
+  @override
+  String rollsLeft(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count appels à faire',
+      one: '1 appel à faire',
+      zero: 'Tous les appels sont faits',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String rollsProgress(int done, int total) {
+    return '$done sur $total enregistrés';
+  }
+
+  @override
+  String get takeRoll => 'Faire l\'appel';
+
+  @override
+  String get findStudent => 'Rechercher un élève';
+
+  @override
+  String latenessToday(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count retards aujourd\'hui',
+      one: '1 retard aujourd\'hui',
+      zero: 'Aucun retard aujourd\'hui',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String classesStartAt(String time) {
+    return 'Début des cours : $time';
+  }
+
+  @override
+  String get searchStudentHint => 'Nom ou matricule';
+
+  @override
+  String get clearSearch => 'Effacer';
+
+  @override
+  String get gateStudentsUnavailable =>
+      'La liste des élèves n\'est pas encore sur ce téléphone. Connectez-vous une fois au réseau pour la charger.';
+
+  @override
+  String get noStudentFound => 'Aucun élève ne correspond à cette recherche.';
+
+  @override
+  String searchResults(int count) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count élèves', one: '1 élève');
+    return '$_temp0';
+  }
+
+  @override
+  String get typeMore => 'Tapez plus de lettres pour affiner la liste.';
+
+  @override
+  String get latenessListTitle => 'Retards du jour';
+
+  @override
+  String get noLatenessToday => 'Aucun retard enregistré aujourd\'hui.';
+
+  @override
+  String get noLatenessTodayHint => 'Cherchez un élève ci-dessus pour noter son arrivée.';
+
+  @override
+  String classAndMatricule(String className, String matricule) {
+    return '$className, matricule $matricule';
+  }
+
+  @override
+  String alreadyLateAt(String time) {
+    return 'En retard à $time';
+  }
+
+  @override
+  String get arrivalTimeLabel => 'Heure d\'arrivée';
+
+  @override
+  String get changeTime => 'Modifier';
+
+  @override
+  String arrivalNotLate(String start) {
+    return 'Les cours commencent à $start : arriver à cette heure ou avant n\'est pas un retard.';
+  }
+
+  @override
+  String get arrivalInFuture => 'L\'heure d\'arrivée ne peut pas être après l\'heure actuelle.';
+
+  @override
+  String get latenessIndependent => 'Noté à part de l\'appel en classe : il ne le modifie pas.';
+
+  @override
+  String get recordLateness => 'Enregistrer le retard';
+
+  @override
+  String latenessSaved(String name, String time) {
+    return 'Retard enregistré : $name à $time.';
+  }
+
+  @override
+  String get latenessWaiting => 'Sur ce téléphone, en attente d\'envoi';
+
+  @override
+  String latenessRefused(String name, String time) {
+    return 'Refusé par l\'école : $name à $time.';
+  }
+
+  @override
+  String get justifiedLabel => 'Justifié';
+
+  @override
+  String get inYourClasses => 'Dans les classes dont vous avez la charge';
+
+  @override
+  String get alertsTitle => 'Alertes à traiter';
+
+  @override
+  String get alertsSoonTitle => 'Les alertes de risque arrivent dans une prochaine mise à jour';
+
+  @override
+  String get alertsSoonBody =>
+      'Les absences et retards répétés de vos classes apparaîtront ici pour décision. L\'application ne décide jamais à votre place.';
 }

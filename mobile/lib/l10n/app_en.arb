@@ -160,5 +160,157 @@
   "leaveBody": "The absences you marked will be lost.",
   "leave": "Leave",
   "rosterUnavailable": "The class list is not on this phone yet. Connect to the network once to load it.",
-  "sessionNotFound": "This session is not in today's list."
+  "sessionNotFound": "This session is not in today's list.",
+  "signedInAs": "Signed in as",
+  "roleAdmin": "Administrator",
+  "roleTeacher": "Teacher",
+  "roleAssistantDm": "Assistant discipline master",
+  "roleDm": "Discipline master",
+  "roleCounsellor": "Counsellor",
+  "roleParent": "Parent",
+  "roleResearcher": "Researcher",
+  "pendingOnline": "{count, plural, =1{1 record waiting to be sent.} other{{count} records waiting to be sent.}}",
+  "@pendingOnline": {
+    "description": "BR-6, UC-T2: records saved on the phone, network available.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "pendingOffline": "{count, plural, =1{No network: 1 record will be sent when it is back.} other{No network: {count} records will be sent when it is back.}}",
+  "@pendingOffline": {
+    "description": "BR-6, UC-T2: records saved on the phone, no network.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sendNow": "Send now",
+  "todaySchedule": "Today's timetable",
+  "noRollToday": "No roll call today",
+  "rollsLeft": "{count, plural, =0{All rolls are done} =1{1 roll call to do} other{{count} roll calls to do}}",
+  "@rollsLeft": {
+    "description": "UC-T3: sessions of the day still to record.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "rollsProgress": "{done} of {total} recorded",
+  "@rollsProgress": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "takeRoll": "Take the roll",
+  "findStudent": "Find a student",
+  "latenessToday": "{count, plural, =0{No lateness today} =1{1 late arrival today} other{{count} late arrivals today}}",
+  "@latenessToday": {
+    "description": "UC-AD2: lateness of the day in scope.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "classesStartAt": "Classes start at {time}",
+  "@classesStartAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "searchStudentHint": "Name or matricule",
+  "clearSearch": "Clear",
+  "gateStudentsUnavailable": "The student list is not on this phone yet. Connect to the network once to load it.",
+  "noStudentFound": "No student matches this search.",
+  "searchResults": "{count, plural, =1{1 student} other{{count} students}}",
+  "@searchResults": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "typeMore": "Type more letters to narrow the list.",
+  "latenessListTitle": "Today's lateness",
+  "noLatenessToday": "No lateness recorded today.",
+  "noLatenessTodayHint": "Search a student above to record their arrival.",
+  "classAndMatricule": "{className}, no. {matricule}",
+  "@classAndMatricule": {
+    "placeholders": {
+      "className": {
+        "type": "String"
+      },
+      "matricule": {
+        "type": "String"
+      }
+    }
+  },
+  "alreadyLateAt": "Late at {time}",
+  "@alreadyLateAt": {
+    "description": "BR-7: one lateness per student per day.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "arrivalTimeLabel": "Arrival time",
+  "changeTime": "Change",
+  "arrivalNotLate": "Classes start at {start}: arriving at that time or before is not late.",
+  "@arrivalNotLate": {
+    "description": "BR-7.",
+    "placeholders": {
+      "start": {
+        "type": "String"
+      }
+    }
+  },
+  "arrivalInFuture": "The arrival time cannot be later than now.",
+  "latenessIndependent": "Recorded apart from the class roll: it does not change it.",
+  "@latenessIndependent": {
+    "description": "BR-8, BR-9."
+  },
+  "recordLateness": "Record lateness",
+  "latenessSaved": "Lateness recorded: {name} at {time}.",
+  "@latenessSaved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "latenessWaiting": "On this phone, waiting to be sent",
+  "latenessRefused": "Not accepted by the school: {name} at {time}.",
+  "@latenessRefused": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "justifiedLabel": "Justified",
+  "inYourClasses": "In the classes you are in charge of",
+  "alertsTitle": "Alerts to decide",
+  "alertsSoonTitle": "Risk alerts arrive in a coming update",
+  "alertsSoonBody": "Repeated absences and lateness in your classes will show here for your decision. The app never decides for you.",
+  "@alertsSoonBody": {
+    "description": "BR-16 to BR-19."
+  }
 }
