@@ -2,6 +2,7 @@ package com.schoollink.notification.internal;
 
 import com.schoollink.attendance.AttendanceConfirmed;
 import com.schoollink.attendance.AttendanceConfirmed.Absence;
+import com.schoollink.lateness.LatenessRecorded;
 import com.schoollink.notification.internal.Outbox.Channel;
 import com.schoollink.notification.internal.Outbox.EventType;
 import com.schoollink.notification.internal.Outbox.Row;
@@ -13,6 +14,7 @@ import com.schoollink.school.SchoolCalendar;
 import com.schoollink.school.SchoolCalendar.Period;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.context.event.EventListener;
@@ -26,7 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
  * failure here rolls the event back. Never sends anything itself: the dispatcher does (task 2.6).
  *
  * <p>Channel (D7): a guardian with an app account gets a push, sent at once (BR-21); one without gets
- * an SMS. An absence's SMS is held for the daily digest (BR-22, D6); an invitation goes at once (D13).
+ * an SMS. An absence's or a lateness's SMS is held for the daily digest (BR-22, D6); an invitation goes at once (D13).
  * Each row is in the guardian's language (BR-20). The payload holds what the templates need (task
  * 2.5), captured now, so a later rename does not change a sent message.
  */
@@ -61,6 +63,19 @@ class OutboxListeners {
 					"periodStart", period.startTime().toString());
 			return childEvent(event.schoolId(), guardian, EventType.ABSENCE, recordOf.get(guardian.studentId()),
 					payload);
+		}).toList();
+		outbox.write(rows);
+	}
+
+	/** BR-20: the lateness goes to every guardian of the student (push now, or SMS in the digest). */
+	@EventListener
+	@Transactional(propagation = Propagation.MANDATORY)
+	void on(LatenessRecorded event) {
+		List<Row> rows = guardians.ofStudents(event.schoolId(), Set.of(event.studentId())).stream().map(guardian -> {
+			Map<String, Object> payload = Map.of("studentId", guardian.studentId(), "firstName",
+					guardian.studentFirstName(), "date", event.date().toString(), "arrivalTime",
+					event.arrivalTime().toString());
+			return childEvent(event.schoolId(), guardian, EventType.LATENESS, event.recordId(), payload);
 		}).toList();
 		outbox.write(rows);
 	}

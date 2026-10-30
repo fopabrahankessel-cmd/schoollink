@@ -2,6 +2,7 @@ package com.schoollink.school.internal;
 
 import com.schoollink.school.SchoolCalendar;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +24,12 @@ class JdbcSchoolCalendar implements SchoolCalendar {
 
 	JdbcSchoolCalendar(NamedParameterJdbcTemplate jdbc) {
 		this.jdbc = jdbc;
+	}
+
+	@Override
+	public LocalTime startTime(UUID schoolId) {
+		return jdbc.queryForObject("SELECT start_time FROM school WHERE id = :school", Map.of("school", schoolId),
+				LocalTime.class);
 	}
 
 	@Override

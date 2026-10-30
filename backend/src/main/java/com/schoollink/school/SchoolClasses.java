@@ -15,6 +15,9 @@ public interface SchoolClasses {
 
 	boolean classExists(UUID schoolId, UUID classId);
 
+	/** The names of the given classes of the school: id -> name; ids of other schools are left out. */
+	Map<UUID, String> names(UUID schoolId, Set<UUID> classIds);
+
 	boolean yearExists(UUID schoolId, UUID academicYearId);
 
 	/** The classes of an academic year: name -> id (UC-A3 import). */

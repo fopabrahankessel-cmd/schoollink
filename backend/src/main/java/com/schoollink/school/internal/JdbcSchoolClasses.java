@@ -37,6 +37,19 @@ class JdbcSchoolClasses implements SchoolClasses {
 	}
 
 	@Override
+	public Map<UUID, String> names(UUID schoolId, Set<UUID> classIds) {
+		Map<UUID, String> names = new HashMap<>();
+		if (!classIds.isEmpty()) {
+			jdbc.query("SELECT id, name FROM school_class WHERE school_id = :school AND id IN (:classes)",
+					Map.of("school", schoolId, "classes", classIds),
+					rs -> {
+						names.put(rs.getObject("id", UUID.class), rs.getString("name"));
+					});
+		}
+		return names;
+	}
+
+	@Override
 	public boolean classExists(UUID schoolId, UUID classId) {
 		return exists("SELECT 1 FROM school_class WHERE id = :id AND school_id = :school", schoolId, classId);
 	}

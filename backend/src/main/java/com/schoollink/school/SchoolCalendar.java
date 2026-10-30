@@ -12,6 +12,9 @@ public interface SchoolCalendar {
 	/** The school's time zone: "today" and "the current period" are read in it. */
 	ZoneId zone(UUID schoolId);
 
+	/** BR-7: a student entering after this time is late (default 07:30, set per school). */
+	LocalTime startTime(UUID schoolId);
+
 	boolean periodExists(UUID schoolId, UUID periodId);
 
 	/** The period's number and times (for messages: "absent in period 2"). */

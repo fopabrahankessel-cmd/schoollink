@@ -300,7 +300,9 @@ One REST API under `/api/v1`, secured by JWT; the server derives the school and 
 | Attendance | `GET /me/sessions?date=` | Teacher | Today's sessions to record |
 | Attendance | `PUT /sessions/{uuid}` | Teacher | Create or sync a confirmed session (idempotent by device UUID) |
 | Attendance | `POST /records/{id}/cancel` | DM | Cancel an erroneous absence with a reason |
+| Lateness | `GET /lateness/students?q=` | Assistant DM | Students of their scope for the gate search; without `q`, the whole scope for offline search |
 | Lateness | `PUT /lateness/{uuid}` | Assistant DM | Record lateness (idempotent) |
+| Lateness | `GET /lateness?date=` | Admin, Assistant DM, DM | The day's lateness in scope (UC-AD2) |
 | Discipline | `POST /justifications` | DM | Justify one or several records |
 | Detection | `GET /alerts?status=open` | DM | Alerts in scope |
 | Detection | `POST /alerts/{id}/decision` | DM | Dismiss, summon, disciplinary, refer |
