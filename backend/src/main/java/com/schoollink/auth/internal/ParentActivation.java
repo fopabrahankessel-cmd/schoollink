@@ -181,7 +181,10 @@ class ParentActivation {
 				.orElseThrow(ParentActivation::invalidActivation);
 			jdbc.update("UPDATE parent_activation SET verified_at = :now WHERE id = :id",
 					p.addValue("now", Timestamp.from(now)));
-			UserAccount account = accounts.findById(userId).orElseThrow();
+			// defence in depth: tokens only ever go to an active account (D18)
+			UserAccount account = accounts.findById(userId)
+				.filter(UserAccount::isActive)
+				.orElseThrow(ParentActivation::invalidActivation);
 			return Optional.of(new TokenResponse("Bearer", accessTokens.issue(account), accessTokens.ttlSeconds(),
 					refreshTokens.create(userId, UUID.randomUUID()), UserInfo.of(account)));
 		});

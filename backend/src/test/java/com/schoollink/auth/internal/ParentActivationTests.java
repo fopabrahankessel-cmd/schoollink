@@ -275,6 +275,18 @@ class ParentActivationTests {
 	}
 
 	@Test
+	void aCodeNeverBringsADisabledAccountBack() throws Exception { // D18
+		jdbc.update("UPDATE app_user SET status = 'DISABLED' WHERE id = ?", world.user(TEACHER_A));
+		jdbc.update("UPDATE guardian SET user_id = ? WHERE id = ?", world.user(TEACHER_A), guardian);
+
+		verify(start(), sms.sent.getFirst().code()).andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.code").value("auth.invalid_activation"))
+			.andExpect(jsonPath("$.accessToken").doesNotExist());
+		assertThat(jdbc.queryForObject("SELECT used_at FROM invitation_code WHERE id = ?", Timestamp.class, invitation))
+			.isNull();
+	}
+
+	@Test
 	void theAccountIsMadeInTheGuardiansSchool() throws Exception { // D15: one account per school
 		UUID guardianY = guardian(world.schoolY, "Parent Y", PHONE, "EN");
 		invitation(world.schoolY, guardianY, "SCHO-OLY4", NOW.plus(Duration.ofDays(30)));

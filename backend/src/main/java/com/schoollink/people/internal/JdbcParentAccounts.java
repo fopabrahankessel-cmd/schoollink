@@ -59,7 +59,14 @@ class JdbcParentAccounts implements ParentAccounts {
 				p, (rs, n) -> new Guardian(rs.getString("name"), rs.getString("phone"), rs.getString("language"),
 						rs.getObject("user_id", UUID.class)));
 		if (guardian.userId() != null) {
-			// D7: codes go to guardians without an account; one linked meanwhile keeps its account
+			// D7: codes go to guardians without an account; one linked meanwhile keeps its account,
+			// unless it was disabled (D18): a code never brings a disabled account back
+			String status = jdbc.queryForObject("""
+					SELECT status FROM app_user WHERE id = :user AND school_id = :school FOR UPDATE""",
+					p.addValue("user", guardian.userId()), String.class);
+			if ("DISABLED".equals(status)) {
+				return Optional.empty();
+			}
 			useInvitation(p);
 			return Optional.of(guardian.userId());
 		}
