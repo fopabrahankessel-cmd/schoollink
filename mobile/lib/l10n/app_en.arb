@@ -369,5 +369,21 @@
   },
   "activateAccount": "Activate my account",
   "resendCode": "Send a new code",
-  "changeNumber": "Change the number"
+  "changeNumber": "Change the number",
+  "parentSignInWithSms": "Sign in with a code by SMS",
+  "@parentSignInWithSms": {
+    "description": "D24: a parent who already activated signs in again."
+  },
+  "parentSignInTitle": "Parent sign-in",
+  "parentSignInHeadline": "Your phone number",
+  "parentSignInIntro": "Choose your school and enter the number you gave it. We will send you a code by SMS. First time? Use your invitation code instead.",
+  "otpSentIfAccount": "If {phone} has a SchoolLink parent account, a 6-digit code was sent to it by SMS.",
+  "@otpSentIfAccount": {
+    "description": "D24, NFR-7: the server does not say whether the number has an account.",
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  }
 }

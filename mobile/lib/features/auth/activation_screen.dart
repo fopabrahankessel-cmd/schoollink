@@ -10,6 +10,7 @@ import '../../l10n/app_localizations.dart';
 import 'auth_api.dart';
 import 'auth_controller.dart';
 import 'failure_text.dart';
+import 'login_screen.dart' show loginSchoolsProvider;
 
 /// The nine digits of a Cameroon mobile number, from what the parent typed ("6 99 00 00 01",
 /// "+237699000001", "00237…"); null when it is not one (D15). The server checks it again.
@@ -25,9 +26,12 @@ String? cameroonDigits(String typed) {
 
 /// UC-P1: a parent activates their account. Step 1, the invitation code the school sent by SMS
 /// and their phone number; step 2, the one-time code sent to that phone. Then they are signed in
-/// and land on their children. The phone stays in request bodies, never in a URL (NFR-9).
+/// and land on their children. With [signIn] (D24), a parent who already activated signs in again:
+/// step 1 is their school and phone. The phone stays in request bodies, never in a URL (NFR-9).
 class ActivationScreen extends ConsumerStatefulWidget {
-  const ActivationScreen({super.key});
+  const ActivationScreen({super.key, this.signIn = false});
+
+  final bool signIn;
 
   @override
   ConsumerState<ActivationScreen> createState() => _ActivationScreenState();
@@ -46,6 +50,9 @@ class _ActivationScreenState extends ConsumerState<ActivationScreen> {
   Object? _error;
   bool _busy = false;
   bool _resent = false;
+
+  /// D24: the school picked, when it differs from the remembered one.
+  String? _schoolId;
 
   @override
   void dispose() {
@@ -79,10 +86,11 @@ class _ActivationScreenState extends ConsumerState<ActivationScreen> {
       return;
     }
     final digits = cameroonDigits(_phone.text)!;
+    final api = ref.read(authApiProvider);
     await _run(() async {
-      final started = await ref
-          .read(authApiProvider)
-          .activateParent(code: _code.text.trim().toUpperCase(), phone: '+237$digits');
+      final started = widget.signIn
+          ? await api.parentSignIn(schoolId: _school()!, phone: '+237$digits')
+          : await api.activateParent(code: _code.text.trim().toUpperCase(), phone: '+237$digits');
       setState(() {
         _started = started;
         _sentTo =
@@ -94,14 +102,17 @@ class _ActivationScreenState extends ConsumerState<ActivationScreen> {
     });
   }
 
+  String? _school() => _schoolId ?? ref.read(loginSchoolsProvider).value?.$2;
+
   Future<void> _verify() async {
     if (!_otpForm.currentState!.validate()) {
       return;
     }
     // signed in: the router takes the parent to their children
     await _run(
-      () =>
-          ref.read(authControllerProvider.notifier).verifyParent(activationId: _started!.activationId, otp: _otp.text),
+      () => ref
+          .read(authControllerProvider.notifier)
+          .verifyParent(activationId: _started!.activationId, otp: _otp.text, signIn: widget.signIn),
     );
   }
 
@@ -124,7 +135,7 @@ class _ActivationScreenState extends ConsumerState<ActivationScreen> {
         }
       },
       child: Scaffold(
-        appBar: AppBar(title: Text(l.activationTitle)),
+        appBar: AppBar(title: Text(widget.signIn ? l.parentSignInTitle : l.activationTitle)),
         body: ListView(
           padding: const EdgeInsets.only(bottom: Gap.xl),
           children: [
@@ -136,12 +147,20 @@ class _ActivationScreenState extends ConsumerState<ActivationScreen> {
                 ),
                 const SizedBox(height: Gap.xs),
                 Text(
-                  step2 ? l.otpTitle : l.activationHeadline,
+                  step2
+                      ? l.otpTitle
+                      : widget.signIn
+                      ? l.parentSignInHeadline
+                      : l.activationHeadline,
                   style: theme.textTheme.headlineSmall?.copyWith(color: status.onHeader),
                 ),
                 const SizedBox(height: Gap.s),
                 Text(
-                  step2 ? l.otpSentTo(_sentTo!) : l.activationIntro,
+                  step2
+                      ? (widget.signIn ? l.otpSentIfAccount(_sentTo!) : l.otpSentTo(_sentTo!))
+                      : widget.signIn
+                      ? l.parentSignInIntro
+                      : l.activationIntro,
                   style: theme.textTheme.bodyMedium?.copyWith(color: status.onHeaderMuted),
                 ),
                 const SizedBox(height: Gap.m),
@@ -181,21 +200,24 @@ class _ActivationScreenState extends ConsumerState<ActivationScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          TextFormField(
-            key: const ValueKey('invitation-code'),
-            controller: _code,
-            decoration: InputDecoration(
-              labelText: l.invitationCodeLabel,
-              helperText: l.invitationCodeHelp,
-              prefixIcon: const Icon(Icons.key_rounded),
+          if (widget.signIn)
+            _SchoolPicker(selected: _schoolId, onChanged: (id) => setState(() => _schoolId = id))
+          else
+            TextFormField(
+              key: const ValueKey('invitation-code'),
+              controller: _code,
+              decoration: InputDecoration(
+                labelText: l.invitationCodeLabel,
+                helperText: l.invitationCodeHelp,
+                prefixIcon: const Icon(Icons.key_rounded),
+              ),
+              textCapitalization: TextCapitalization.characters,
+              autocorrect: false,
+              enableSuggestions: false,
+              textInputAction: TextInputAction.next,
+              style: const TextStyle(fontSize: 18, letterSpacing: 1.5, fontWeight: FontWeight.w600),
+              validator: (value) => value == null || value.trim().isEmpty ? l.fieldRequired : null,
             ),
-            textCapitalization: TextCapitalization.characters,
-            autocorrect: false,
-            enableSuggestions: false,
-            textInputAction: TextInputAction.next,
-            style: const TextStyle(fontSize: 18, letterSpacing: 1.5, fontWeight: FontWeight.w600),
-            validator: (value) => value == null || value.trim().isEmpty ? l.fieldRequired : null,
-          ),
           const SizedBox(height: Gap.l),
           TextFormField(
             key: const ValueKey('phone'),
@@ -324,5 +346,37 @@ class _Steps extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+/// D24: the parent's school (D15: a phone may have an account in each school), the one remembered
+/// on this phone first.
+class _SchoolPicker extends ConsumerWidget {
+  const _SchoolPicker({required this.selected, required this.onChanged});
+
+  final String? selected;
+  final ValueChanged<String?> onChanged;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+    return switch (ref.watch(loginSchoolsProvider)) {
+      AsyncData(value: (final list, final initial)) => DropdownButtonFormField<String>(
+        key: const ValueKey('school'),
+        initialValue: selected ?? initial,
+        isExpanded: true,
+        decoration: InputDecoration(labelText: l.schoolLabel, prefixIcon: const Icon(Icons.school_outlined)),
+        items: [for (final school in list) DropdownMenuItem(value: school.id, child: Text(school.name))],
+        onChanged: onChanged,
+        validator: (value) => value == null ? l.fieldRequired : null,
+      ),
+      AsyncError() => Row(
+        children: [
+          Expanded(child: Text(l.schoolsLoadFailed)),
+          TextButton(onPressed: () => ref.invalidate(loginSchoolsProvider), child: Text(l.retry)),
+        ],
+      ),
+      _ => const LinearProgressIndicator(),
+    };
   }
 }

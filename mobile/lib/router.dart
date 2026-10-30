@@ -22,8 +22,8 @@ String? redirectFor(AsyncValue<UserInfo?> auth, String location) {
   }
   final user = auth.value;
   if (user == null) {
-    // UC-P1: a parent with an invitation code activates instead of signing in
-    return location == '/activate' ? null : goTo('/login');
+    // UC-P1, D24: parents activate, or sign in again, by SMS instead of a password
+    return location == '/activate' || location == '/parent-sign-in' ? null : goTo('/login');
   }
   if (user.passwordChangeRequired) {
     return goTo('/change-password'); // D18
@@ -48,6 +48,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/splash', builder: (context, state) => const SplashScreen()),
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
       GoRoute(path: '/activate', builder: (context, state) => const ActivationScreen()),
+      GoRoute(path: '/parent-sign-in', builder: (context, state) => const ActivationScreen(signIn: true)),
       GoRoute(path: '/change-password', builder: (context, state) => const ChangePasswordScreen()),
       GoRoute(path: '/web-only', builder: (context, state) => const WebOnlyScreen()),
       GoRoute(

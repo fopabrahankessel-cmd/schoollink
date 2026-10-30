@@ -291,6 +291,8 @@ One REST API under `/api/v1`, secured by JWT; the server derives the school and 
 | Auth | `POST /auth/login` | Staff | Phone or email + password, returns access + refresh tokens |
 | Auth | `POST /auth/parent/activate` | Parent | Invitation code + phone, sends an SMS one-time code |
 | Auth | `POST /auth/parent/verify` | Parent | One-time code, returns tokens |
+| Auth | `POST /auth/parent/sign-in` | Parent | School + phone of an activated parent, sends an SMS one-time code; same answer for an unknown number (D24) |
+| Auth | `POST /auth/parent/sign-in/verify` | Parent | One-time code, returns tokens (D24) |
 | Auth | `POST /auth/refresh` | All | New access token |
 | School | `GET/POST /classes`, `/periods`, `/terms` | Admin | School structure |
 | People | `POST /students/import` (preview), `POST /students/import/{id}/commit` | Admin | CSV/Excel import in two steps |

@@ -63,6 +63,24 @@ class AuthApi {
   Future<TokenResponse> verifyParent({required String activationId, required String otp}) =>
       _tokens('/auth/parent/verify', {'activationId': activationId, 'otp': otp}, _public);
 
+  /// D24 step 1: a parent who already activated signs in again with their school and phone. The
+  /// server answers the same whether or not the number has an account (NFR-7).
+  Future<ActivationStarted> parentSignIn({required String schoolId, required String phone}) => _call(() async {
+    final response = await _dio.post<Map<String, dynamic>>(
+      '/auth/parent/sign-in',
+      data: {'schoolId': schoolId, 'phone': phone},
+      options: _public,
+    );
+    return ActivationStarted(
+      activationId: response.data!['activationId'] as String,
+      expiresAt: DateTime.parse(response.data!['expiresAt'] as String).toLocal(),
+    );
+  });
+
+  /// D24 step 2: the one-time code; the parent is signed in.
+  Future<TokenResponse> verifyParentSignIn({required String signInId, required String otp}) =>
+      _tokens('/auth/parent/sign-in/verify', {'activationId': signInId, 'otp': otp}, _public);
+
   Future<UserInfo> me() => _call(() async {
     final response = await _dio.get<Map<String, dynamic>>('/me');
     return UserInfo.fromJson(response.data!);

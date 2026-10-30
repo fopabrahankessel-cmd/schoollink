@@ -26,11 +26,14 @@ class AuthController {
 
 	private final ParentActivation activation;
 
+	private final ParentSignIn parentSignIn;
+
 	private final Schools schools;
 
-	AuthController(AuthService auth, ParentActivation activation, Schools schools) {
+	AuthController(AuthService auth, ParentActivation activation, ParentSignIn parentSignIn, Schools schools) {
 		this.auth = auth;
 		this.activation = activation;
+		this.parentSignIn = parentSignIn;
 		this.schools = schools;
 	}
 
@@ -53,6 +56,18 @@ class AuthController {
 	@PostMapping("/api/v1/auth/parent/verify")
 	TokenResponse verify(@Valid @RequestBody VerifyRequest request, HttpServletRequest http) {
 		return activation.verify(request.activationId(), request.otp(), http.getRemoteAddr());
+	}
+
+	/** D24 step 1: a parent's school + phone; sends a one-time code by SMS if the account exists. */
+	@PostMapping("/api/v1/auth/parent/sign-in")
+	ParentActivation.Started parentSignIn(@Valid @RequestBody ParentSignInRequest request, HttpServletRequest http) {
+		return parentSignIn.start(request.schoolId(), request.phone(), http.getRemoteAddr());
+	}
+
+	/** D24 step 2: the one-time code; returns the parent's tokens. */
+	@PostMapping("/api/v1/auth/parent/sign-in/verify")
+	TokenResponse parentSignInVerify(@Valid @RequestBody VerifyRequest request, HttpServletRequest http) {
+		return parentSignIn.verify(request.activationId(), request.otp(), http.getRemoteAddr());
 	}
 
 	@PostMapping("/api/v1/auth/refresh")
@@ -98,6 +113,9 @@ class AuthController {
 
 	/** {@code code}: as in the SMS ("K7QM-3XPA", spaces and case do not matter). */
 	record ActivateRequest(@NotBlank @Size(max = 20) String code, @NotBlank @Size(max = 20) String phone) {
+	}
+
+	record ParentSignInRequest(@NotNull UUID schoolId, @NotBlank @Size(max = 20) String phone) {
 	}
 
 	record VerifyRequest(@NotNull UUID activationId, @NotBlank @Size(max = 10) String otp) {

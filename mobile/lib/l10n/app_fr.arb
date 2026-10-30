@@ -135,5 +135,10 @@
   "otpResent": "Un nouveau code a été envoyé. Il est valable jusqu'à {time}.",
   "activateAccount": "Activer mon compte",
   "resendCode": "Renvoyer un code",
-  "changeNumber": "Changer de numéro"
+  "changeNumber": "Changer de numéro",
+  "parentSignInWithSms": "Me connecter avec un code par SMS",
+  "parentSignInTitle": "Connexion parent",
+  "parentSignInHeadline": "Votre numéro de téléphone",
+  "parentSignInIntro": "Choisissez votre établissement et saisissez le numéro que vous lui avez donné. Nous vous enverrons un code par SMS. Première fois ? Utilisez plutôt votre code d'invitation.",
+  "otpSentIfAccount": "Si le {phone} a un compte parent SchoolLink, un code à 6 chiffres lui a été envoyé par SMS."
 }

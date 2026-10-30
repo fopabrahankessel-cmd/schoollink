@@ -522,4 +522,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get changeNumber => 'Change the number';
+
+  @override
+  String get parentSignInWithSms => 'Sign in with a code by SMS';
+
+  @override
+  String get parentSignInTitle => 'Parent sign-in';
+
+  @override
+  String get parentSignInHeadline => 'Your phone number';
+
+  @override
+  String get parentSignInIntro =>
+      'Choose your school and enter the number you gave it. We will send you a code by SMS. First time? Use your invitation code instead.';
+
+  @override
+  String otpSentIfAccount(String phone) {
+    return 'If $phone has a SchoolLink parent account, a 6-digit code was sent to it by SMS.';
+  }
 }

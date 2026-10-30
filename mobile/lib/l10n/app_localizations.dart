@@ -907,6 +907,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Change the number'**
   String get changeNumber;
+
+  /// D24: a parent who already activated signs in again.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with a code by SMS'**
+  String get parentSignInWithSms;
+
+  /// No description provided for @parentSignInTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Parent sign-in'**
+  String get parentSignInTitle;
+
+  /// No description provided for @parentSignInHeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Your phone number'**
+  String get parentSignInHeadline;
+
+  /// No description provided for @parentSignInIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose your school and enter the number you gave it. We will send you a code by SMS. First time? Use your invitation code instead.'**
+  String get parentSignInIntro;
+
+  /// D24, NFR-7: the server does not say whether the number has an account.
+  ///
+  /// In en, this message translates to:
+  /// **'If {phone} has a SchoolLink parent account, a 6-digit code was sent to it by SMS.'**
+  String otpSentIfAccount(String phone);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

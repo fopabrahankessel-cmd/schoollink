@@ -22,7 +22,8 @@ final loginSchoolsProvider = FutureProvider.autoDispose<(List<School>, String?)>
   return (schools, initial);
 });
 
-/// Staff sign-in: school, phone or email, password (D15, D16). Parents sign in through activation.
+/// Staff sign-in: school, phone or email, password (D15, D16). Parents activate (UC-P1) or sign in
+/// again by SMS (D24).
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
 
@@ -186,9 +187,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       ),
                       const SizedBox(height: 16),
                       OutlinedButton.icon(
-                        onPressed: _busy ? null : () => context.push('/activate'),
+                        onPressed: _busy ? null : () => context.push('/parent-sign-in'),
                         icon: const Icon(Icons.sms_outlined),
-                        label: Text(l.activateWithCode),
+                        label: Text(l.parentSignInWithSms),
+                      ),
+                      const SizedBox(height: 8),
+                      TextButton(
+                        onPressed: _busy ? null : () => context.push('/activate'),
+                        child: Text(l.activateWithCode),
                       ),
                     ],
                   ),
