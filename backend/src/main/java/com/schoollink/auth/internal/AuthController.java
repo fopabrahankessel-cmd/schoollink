@@ -6,6 +6,7 @@ import com.schoollink.shared.security.CurrentUser;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.util.List;
 import java.util.UUID;
@@ -23,10 +24,13 @@ class AuthController {
 
 	private final AuthService auth;
 
+	private final ParentActivation activation;
+
 	private final Schools schools;
 
-	AuthController(AuthService auth, Schools schools) {
+	AuthController(AuthService auth, ParentActivation activation, Schools schools) {
 		this.auth = auth;
+		this.activation = activation;
 		this.schools = schools;
 	}
 
@@ -37,6 +41,18 @@ class AuthController {
 	@PostMapping("/api/v1/auth/login")
 	TokenResponse login(@Valid @RequestBody LoginRequest request, HttpServletRequest http) {
 		return auth.login(request.schoolId(), request.login(), request.password(), http.getRemoteAddr());
+	}
+
+	/** UC-P1 step 1: invitation code + phone; sends the one-time code by SMS. */
+	@PostMapping("/api/v1/auth/parent/activate")
+	ParentActivation.Started activate(@Valid @RequestBody ActivateRequest request, HttpServletRequest http) {
+		return activation.start(request.code(), request.phone(), http.getRemoteAddr());
+	}
+
+	/** UC-P1 step 2: the one-time code; returns the parent's tokens. */
+	@PostMapping("/api/v1/auth/parent/verify")
+	TokenResponse verify(@Valid @RequestBody VerifyRequest request, HttpServletRequest http) {
+		return activation.verify(request.activationId(), request.otp(), http.getRemoteAddr());
 	}
 
 	@PostMapping("/api/v1/auth/refresh")
@@ -78,6 +94,13 @@ class AuthController {
 	}
 
 	record RefreshRequest(@NotBlank String refreshToken) {
+	}
+
+	/** {@code code}: as in the SMS ("K7QM-3XPA", spaces and case do not matter). */
+	record ActivateRequest(@NotBlank @Size(max = 20) String code, @NotBlank @Size(max = 20) String phone) {
+	}
+
+	record VerifyRequest(@NotNull UUID activationId, @NotBlank @Size(max = 10) String otp) {
 	}
 
 }

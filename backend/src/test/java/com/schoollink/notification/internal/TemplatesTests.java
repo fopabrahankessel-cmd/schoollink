@@ -4,6 +4,7 @@ import com.schoollink.notification.internal.Outbox.EventType;
 import com.schoollink.notification.internal.Templates.Digest;
 import com.schoollink.notification.internal.Templates.Push;
 import com.schoollink.notification.internal.Templates.School;
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
@@ -109,6 +110,14 @@ class TemplatesTests {
 	}
 
 	@Test
+	void activationCodeSms() { // UC-P1
+		assertThat(templates.otp("FR", "042917", Duration.ofMinutes(10))).isEqualTo(
+				"SchoolLink : votre code de vérification est 042917. Il expire dans 10 minutes. Ne le communiquez à personne.");
+		assertThat(templates.otp("EN", "042917", Duration.ofMinutes(10)))
+			.isEqualTo("SchoolLink: your verification code is 042917. It expires in 10 minutes. Never share it.");
+	}
+
+	@Test
 	void digestSms() { // BR-22, D6
 		LocalDate day = LocalDate.parse("2026-10-28");
 		Digest both = new Digest("Paul", day, new TreeSet<>(List.of(1, 2, 3, 5)), "07:48");
@@ -153,7 +162,8 @@ class TemplatesTests {
 					templates.sms(EventType.CORRECTION, language, lateness, longName),
 					templates.sms(EventType.SUMMONS, language, summons, longName),
 					templates.sms(EventType.INVITATION, language, invitation, longName),
-					templates.digest(language, digest, longName));
+					templates.digest(language, digest, longName),
+					templates.otp(language, "042917", Duration.ofMinutes(10)));
 			assertThat(all).allSatisfy(sms -> {
 				assertThat(sms).as(sms).hasSizeLessThanOrEqualTo(160);
 				assertThat(sms.chars().filter(c -> GSM_7.indexOf(c) < 0).mapToObj(Character::toString).toList())

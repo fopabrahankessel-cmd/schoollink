@@ -1,6 +1,7 @@
 package com.schoollink.notification.internal;
 
 import com.schoollink.notification.internal.Outbox.EventType;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -137,6 +138,11 @@ class Templates {
 	/** A lateness correction has no period; its template does not use the argument. */
 	private static String periodOf(JsonNode payload) {
 		return payload.has("periodNumber") ? text(payload, "periodNumber") : "";
+	}
+
+	/** UC-P1: the activation one-time code, sent at once and outside the outbox. */
+	String otp(String language, String code, Duration validity) {
+		return message(language, "notification.otp.sms", code, validity.toMinutes());
 	}
 
 	private String message(String language, String key, Object... args) {
