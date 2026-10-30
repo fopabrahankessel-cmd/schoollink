@@ -18,8 +18,25 @@ Map<String, String> signedIn(Map<String, dynamic> user) => {
   'session.user': jsonEncode(user),
 };
 
+/// The running app of a test.
+class TestApp {
+  TestApp(this.container);
+
+  final ProviderContainer container;
+  bool _disposed = false;
+
+  /// Ends the providers, and their timers (the sync backoff), before the test ends. Otherwise
+  /// done after the test.
+  void dispose() {
+    if (!_disposed) {
+      _disposed = true;
+      container.dispose();
+    }
+  }
+}
+
 /// Starts the whole app against [server], with [store] as the phone's storage.
-Future<ProviderContainer> pumpApp(
+Future<TestApp> pumpApp(
   WidgetTester tester, {
   required FakeServer server,
   MemoryDeviceStore? store,
@@ -29,21 +46,24 @@ Future<ProviderContainer> pumpApp(
   String language = 'fr',
 }) async {
   final db = database ?? AppDatabase(NativeDatabase.memory());
-  final container = ProviderContainer(
-    overrides: [
-      appDatabaseProvider.overrideWithValue(db),
-      connectivityProvider.overrideWithValue(online),
-      if (clock != null) clockProvider.overrideWithValue(clock),
-      deviceStoreProvider.overrideWithValue(store ?? MemoryDeviceStore()),
-      httpAdapterProvider.overrideWithValue(server),
-      initialLanguageProvider.overrideWithValue(language),
-    ],
+  final app = TestApp(
+    ProviderContainer(
+      retry: noRetry,
+      overrides: [
+        appDatabaseProvider.overrideWithValue(db),
+        connectivityProvider.overrideWithValue(online),
+        if (clock != null) clockProvider.overrideWithValue(clock),
+        deviceStoreProvider.overrideWithValue(store ?? MemoryDeviceStore()),
+        httpAdapterProvider.overrideWithValue(server),
+        initialLanguageProvider.overrideWithValue(language),
+      ],
+    ),
   );
   addTearDown(() async {
-    container.dispose();
+    app.dispose();
     await db.close();
   });
-  await tester.pumpWidget(UncontrolledProviderScope(container: container, child: const SchoolLinkApp()));
+  await tester.pumpWidget(UncontrolledProviderScope(container: app.container, child: const SchoolLinkApp()));
   await tester.pumpAndSettle();
-  return container;
+  return app;
 }

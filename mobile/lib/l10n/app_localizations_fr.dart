@@ -169,4 +169,98 @@ class AppLocalizationsFr extends AppLocalizations {
   String offlineSince(String time) {
     return 'Pas de connexion. Affiché tel que mis à jour à $time.';
   }
+
+  @override
+  String get attendanceHint => 'Touchez les élèves absents.';
+
+  @override
+  String presentCount(int count) {
+    return 'Présents : $count';
+  }
+
+  @override
+  String absentCount(int count) {
+    return 'Absents : $count';
+  }
+
+  @override
+  String get absentLabel => 'Absent';
+
+  @override
+  String get save => 'Enregistrer';
+
+  @override
+  String confirmAbsentees(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Ces $count élèves sont marqués absents. Est-ce correct ?',
+      one: 'Cet élève est marqué absent. Est-ce correct ?',
+      zero: 'Aucun élève n\'est marqué absent. Est-ce correct ?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get back => 'Retour';
+
+  @override
+  String get yes => 'Oui';
+
+  @override
+  String get confirmNotifyTitle => 'Confirmer et prévenir les parents ?';
+
+  @override
+  String get confirmNotifyBody => 'Une fois confirmée, la séance est verrouillée et ne peut plus être modifiée.';
+
+  @override
+  String get confirm => 'Confirmer';
+
+  @override
+  String sessionLockedAt(String time) {
+    return 'Verrouillée : enregistrée à $time.';
+  }
+
+  @override
+  String get absentStudents => 'Élèves absents';
+
+  @override
+  String get noAbsentStudents => 'Aucun élève absent.';
+
+  @override
+  String absentTotal(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count élèves absents.',
+      one: '1 élève absent.',
+      zero: 'Aucun élève absent.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get syncWaiting => 'Enregistrée sur ce téléphone, en attente d\'envoi.';
+
+  @override
+  String get syncSent => 'Envoyée à l\'école.';
+
+  @override
+  String get syncNotAccepted => 'Refusée par l\'école.';
+
+  @override
+  String get leaveTitle => 'Quitter sans enregistrer ?';
+
+  @override
+  String get leaveBody => 'Les absences marquées seront perdues.';
+
+  @override
+  String get leave => 'Quitter';
+
+  @override
+  String get rosterUnavailable =>
+      'La liste de la classe n\'est pas encore sur ce téléphone. Connectez-vous une fois au réseau pour la charger.';
+
+  @override
+  String get sessionNotFound => 'Cette séance n\'est pas dans la liste du jour.';
 }

@@ -61,7 +61,8 @@ void main() {
   Future<FakeServer> open(WidgetTester tester, {Object? day, String language = 'fr', bool offline = false}) async {
     final server = FakeServer()
       ..on('GET /me', (_) => offline ? Reply.unreachable : Reply.ok(teacher))
-      ..on('GET /me/sessions', (_) => offline ? Reply.unreachable : Reply.ok(day ?? monday));
+      ..on('GET /me/sessions', (_) => offline ? Reply.unreachable : Reply.ok(day ?? monday))
+      ..on('GET /me/classes', (_) => offline ? Reply.unreachable : const Reply.ok([]));
     await pumpApp(
       tester,
       server: server,

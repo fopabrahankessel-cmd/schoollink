@@ -10,6 +10,7 @@ import 'features/shell/destinations.dart';
 import 'features/shell/home_shell.dart';
 import 'features/shell/web_only_screen.dart';
 import 'features/splash/splash_screen.dart';
+import 'features/teacher/attendance_screen.dart';
 
 /// Where the user must be, given who is signed in; null when [location] is already right.
 String? redirectFor(AsyncValue<UserInfo?> auth, String location) {
@@ -29,7 +30,8 @@ String? redirectFor(AsyncValue<UserInfo?> auth, String location) {
   if (destinations.isEmpty) {
     return goTo('/web-only');
   }
-  final tab = location.startsWith('/home/') ? Destination.byPath(location.substring('/home/'.length)) : null;
+  // the tab is the first segment: /home/sessions, /home/sessions/attendance/...
+  final tab = location.startsWith('/home/') ? Destination.byPath(location.split('/')[2]) : null;
   return destinations.contains(tab) ? null : '/home/${destinations.first.path}';
 }
 
@@ -48,6 +50,15 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/home/:tab',
         builder: (context, state) => HomeShell(current: Destination.byPath(state.pathParameters['tab'])!),
+        routes: [
+          GoRoute(
+            path: 'attendance/:classId/:periodId',
+            builder: (context, state) => AttendanceScreen(
+              classId: state.pathParameters['classId']!,
+              periodId: state.pathParameters['periodId']!,
+            ),
+          ),
+        ],
       ),
     ],
   );

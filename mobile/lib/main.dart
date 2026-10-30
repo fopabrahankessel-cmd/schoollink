@@ -13,6 +13,7 @@ Future<void> main() async {
   final language = await store.read(PreferredLanguage.key);
   runApp(
     ProviderScope(
+      retry: noRetry,
       overrides: [
         deviceStoreProvider.overrideWithValue(store),
         if (language != null) initialLanguageProvider.overrideWithValue(language),

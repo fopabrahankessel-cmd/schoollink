@@ -66,6 +66,14 @@ class SyncQueue {
 
   Stream<SyncItem?> watch(String id) => (_db.select(_db.syncItems)..where((i) => i.id.equals(id))).watchSingleOrNull();
 
+  /// The user's records of one kind, whatever their state, oldest first: what the screens show of
+  /// the work done on this phone (synced ones until they are pruned).
+  Stream<List<SyncItem>> watchKind(String userId, String kind) =>
+      (_db.select(_db.syncItems)
+            ..where((i) => i.userId.equals(userId) & i.kind.equals(kind))
+            ..orderBy([(i) => OrderingTerm(expression: i.createdAt)]))
+          .watch();
+
   /// The user's records not on the server yet ("Waiting to sync", UC-T2).
   Stream<int> watchPending(String userId) => _pendingCount(userId).watchSingle();
 

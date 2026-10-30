@@ -367,6 +367,144 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No connection. Shown as last updated at {time}.'**
   String offlineSince(String time);
+
+  /// No description provided for @attendanceHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the students who are absent.'**
+  String get attendanceHint;
+
+  /// No description provided for @presentCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Present: {count}'**
+  String presentCount(int count);
+
+  /// No description provided for @absentCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Absent: {count}'**
+  String absentCount(int count);
+
+  /// No description provided for @absentLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Absent'**
+  String get absentLabel;
+
+  /// No description provided for @save.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get save;
+
+  /// UC-T1 step 4, first confirmation (BR-3).
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No student is marked absent. Correct?} =1{This student is marked absent. Correct?} other{These {count} students are marked absent. Correct?}}'**
+  String confirmAbsentees(int count);
+
+  /// No description provided for @back.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get back;
+
+  /// No description provided for @yes.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes'**
+  String get yes;
+
+  /// UC-T1 step 5, second confirmation (BR-3).
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm and notify parents?'**
+  String get confirmNotifyTitle;
+
+  /// No description provided for @confirmNotifyBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Once confirmed, the session is locked and can no longer be changed.'**
+  String get confirmNotifyBody;
+
+  /// No description provided for @confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get confirm;
+
+  /// BR-4: a confirmed session never changes.
+  ///
+  /// In en, this message translates to:
+  /// **'Locked: recorded at {time}.'**
+  String sessionLockedAt(String time);
+
+  /// No description provided for @absentStudents.
+  ///
+  /// In en, this message translates to:
+  /// **'Absent students'**
+  String get absentStudents;
+
+  /// No description provided for @noAbsentStudents.
+  ///
+  /// In en, this message translates to:
+  /// **'No student was absent.'**
+  String get noAbsentStudents;
+
+  /// No description provided for @absentTotal.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No student was absent.} =1{1 student was absent.} other{{count} students were absent.}}'**
+  String absentTotal(int count);
+
+  /// No description provided for @syncWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved on this phone, waiting to be sent.'**
+  String get syncWaiting;
+
+  /// No description provided for @syncSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Sent to the school.'**
+  String get syncSent;
+
+  /// No description provided for @syncNotAccepted.
+  ///
+  /// In en, this message translates to:
+  /// **'Not accepted by the school.'**
+  String get syncNotAccepted;
+
+  /// No description provided for @leaveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave without saving?'**
+  String get leaveTitle;
+
+  /// No description provided for @leaveBody.
+  ///
+  /// In en, this message translates to:
+  /// **'The absences you marked will be lost.'**
+  String get leaveBody;
+
+  /// No description provided for @leave.
+  ///
+  /// In en, this message translates to:
+  /// **'Leave'**
+  String get leave;
+
+  /// No description provided for @rosterUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'The class list is not on this phone yet. Connect to the network once to load it.'**
+  String get rosterUnavailable;
+
+  /// No description provided for @sessionNotFound.
+  ///
+  /// In en, this message translates to:
+  /// **'This session is not in today\'s list.'**
+  String get sessionNotFound;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

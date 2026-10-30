@@ -97,5 +97,68 @@
         "type": "String"
       }
     }
-  }
+  },
+  "attendanceHint": "Tap the students who are absent.",
+  "presentCount": "Present: {count}",
+  "@presentCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "absentCount": "Absent: {count}",
+  "@absentCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "absentLabel": "Absent",
+  "save": "Save",
+  "confirmAbsentees": "{count, plural, =0{No student is marked absent. Correct?} =1{This student is marked absent. Correct?} other{These {count} students are marked absent. Correct?}}",
+  "@confirmAbsentees": {
+    "description": "UC-T1 step 4, first confirmation (BR-3).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "back": "Back",
+  "yes": "Yes",
+  "confirmNotifyTitle": "Confirm and notify parents?",
+  "@confirmNotifyTitle": {
+    "description": "UC-T1 step 5, second confirmation (BR-3)."
+  },
+  "confirmNotifyBody": "Once confirmed, the session is locked and can no longer be changed.",
+  "confirm": "Confirm",
+  "sessionLockedAt": "Locked: recorded at {time}.",
+  "@sessionLockedAt": {
+    "description": "BR-4: a confirmed session never changes.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "absentStudents": "Absent students",
+  "noAbsentStudents": "No student was absent.",
+  "absentTotal": "{count, plural, =0{No student was absent.} =1{1 student was absent.} other{{count} students were absent.}}",
+  "@absentTotal": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncWaiting": "Saved on this phone, waiting to be sent.",
+  "syncSent": "Sent to the school.",
+  "syncNotAccepted": "Not accepted by the school.",
+  "leaveTitle": "Leave without saving?",
+  "leaveBody": "The absences you marked will be lost.",
+  "leave": "Leave",
+  "rosterUnavailable": "The class list is not on this phone yet. Connect to the network once to load it.",
+  "sessionNotFound": "This session is not in today's list."
 }

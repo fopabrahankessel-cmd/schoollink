@@ -35,7 +35,8 @@ class Sent {
 
 typedef Handler = FutureOr<Reply> Function(Sent request);
 
-/// Stands in for the backend: handlers by "METHOD /path" (path after /api/v1). A missing
+/// Stands in for the backend: handlers by "METHOD /path" (path after /api/v1), or "METHOD /path/*"
+/// for any last segment. A missing
 /// handler fails the test; [offline] makes every request fail as if there were no network.
 class FakeServer implements HttpClientAdapter {
   final Map<String, Handler> handlers = {};
@@ -58,7 +59,9 @@ class FakeServer implements HttpClientAdapter {
     if (offline) {
       throw DioException.connectionError(requestOptions: options, reason: 'offline');
     }
-    final handler = handlers['${options.method} $path'];
+    final route = '${options.method} $path';
+    // "PUT /sessions/*" answers any id the phone made up
+    final handler = handlers[route] ?? handlers['${route.substring(0, route.lastIndexOf('/'))}/*'];
     if (handler == null) {
       throw StateError('No fake handler for ${options.method} $path');
     }

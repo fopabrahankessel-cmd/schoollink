@@ -80,3 +80,7 @@ final appLocaleProvider = Provider<Locale>((ref) {
 
 /// The phone's clock. Overridden in tests.
 final clockProvider = Provider<DateTime Function()>((ref) => DateTime.now);
+
+/// No automatic retry of failed providers: the screens offer their own "Retry", and the sync queue
+/// has its own backoff (D22).
+Duration? noRetry(int retryCount, Object error) => null;

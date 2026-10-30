@@ -2,11 +2,14 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/db/database.dart';
 import '../../core/providers.dart';
 import '../../l10n/app_localizations.dart';
 import '../auth/failure_text.dart';
+import 'attendance.dart';
 import 'teacher_sessions.dart';
 
 /// UC-T3: the teacher's sessions today, the one under way first, those still to record
@@ -39,11 +42,14 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
     final l = AppLocalizations.of(context);
     final day = ref.watch(teacherDayProvider);
     final now = ref.watch(clockProvider)();
+    // read now, so the rosters are on the phone before the network goes (NFR-3)
+    ref.watch(rostersProvider);
+    final local = ref.watch(localSessionsProvider).value ?? const <LocalSession>[];
 
     return switch (day) {
       AsyncValue(value: final day?) => RefreshIndicator(
         onRefresh: () => ref.refresh(teacherDayProvider.future),
-        child: _DayList(day: day, now: now),
+        child: _DayList(day: day, now: now, local: local),
       ),
       AsyncError(:final error) => _Failure(
         message: failureText(error, l),
@@ -55,10 +61,13 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
 }
 
 class _DayList extends StatelessWidget {
-  const _DayList({required this.day, required this.now});
+  const _DayList({required this.day, required this.now, required this.local});
 
   final TeacherDay day;
   final DateTime now;
+
+  /// Sessions confirmed on this phone: recorded, even before the server has them.
+  final List<LocalSession> local;
 
   @override
   Widget build(BuildContext context) {
@@ -94,27 +103,38 @@ class _DayList extends StatelessWidget {
           for (final session in sessions)
             Padding(
               padding: const EdgeInsets.only(bottom: 12),
-              child: SessionTile(session: session, current: today && session.isCurrentAt(time)),
+              child: SessionTile(
+                session: session,
+                current: today && session.isCurrentAt(time),
+                local: local.where((l) => l.isFor(session, day.date)).firstOrNull,
+              ),
             ),
       ],
     );
   }
 }
 
-/// One session: its times, class and subject, and whether it is still to record.
+/// One session: its times, class and subject, and whether it is still to record. Opens the roll,
+/// or the locked session once recorded (UC-T1).
 class SessionTile extends StatelessWidget {
-  const SessionTile({super.key, required this.session, required this.current});
+  const SessionTile({super.key, required this.session, required this.current, this.local});
 
   final ExpectedSession session;
   final bool current;
+
+  /// The copy confirmed on this phone, if any.
+  final LocalSession? local;
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
-    final toRecord = !session.recorded;
-    final status = toRecord ? l.sessionToRecord : l.sessionRecorded(session.absentCount ?? 0);
+    final toRecord = !session.recorded && local == null;
+    final absent = local?.absentStudentIds.length ?? session.absentCount ?? 0;
+    final status = toRecord ? l.sessionToRecord : l.sessionRecorded(absent);
+    final waiting = local?.state == SyncState.pending;
+    void open() => context.push('/home/sessions/attendance/${session.classId}/${session.periodId}');
 
     return Semantics(
       container: true,
@@ -124,9 +144,13 @@ class SessionTile extends StatelessWidget {
         session.className,
         ?session.subject,
         status,
+        if (waiting) l.syncWaiting,
       ].join(', '),
+      button: true,
+      onTap: open,
       excludeSemantics: true,
       child: Card(
+        clipBehavior: Clip.antiAlias,
         key: ValueKey('session-${session.classId}-${session.periodId}'),
         margin: EdgeInsets.zero,
         elevation: 0,
@@ -135,60 +159,80 @@ class SessionTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           side: current ? BorderSide(color: scheme.primary, width: 2) : BorderSide.none,
         ),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(
-                width: 64,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(session.startTime.toString(), style: theme.textTheme.titleMedium),
-                    Text(session.endTime.toString(), style: theme.textTheme.bodySmall),
-                  ],
+        child: InkWell(
+          onTap: open,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  width: 64,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(session.startTime.toString(), style: theme.textTheme.titleMedium),
+                      Text(session.endTime.toString(), style: theme.textTheme.bodySmall),
+                    ],
+                  ),
                 ),
-              ),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      session.className,
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        color: toRecord ? scheme.onPrimaryContainer : null,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    if (session.subject case final subject?)
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Text(
-                        subject,
-                        style: theme.textTheme.bodyMedium?.copyWith(color: toRecord ? scheme.onPrimaryContainer : null),
+                        session.className,
+                        style: theme.textTheme.titleLarge?.copyWith(
+                          color: toRecord ? scheme.onPrimaryContainer : null,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    const SizedBox(height: 8),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 4,
-                      children: [
-                        if (current)
-                          _Badge(text: l.sessionNow, background: scheme.primary, foreground: scheme.onPrimary),
-                        toRecord
-                            ? _Badge(text: status, background: scheme.surface, foreground: scheme.primary)
-                            : Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(Icons.check_circle, size: 18, color: scheme.tertiary),
-                                  const SizedBox(width: 4),
-                                  Text(status, style: theme.textTheme.bodyMedium),
-                                ],
+                      if (session.subject case final subject?)
+                        Text(
+                          subject,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: toRecord ? scheme.onPrimaryContainer : null,
+                          ),
+                        ),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 4,
+                        children: [
+                          if (current)
+                            _Badge(text: l.sessionNow, background: scheme.primary, foreground: scheme.onPrimary),
+                          toRecord
+                              ? _Badge(text: status, background: scheme.surface, foreground: scheme.primary)
+                              : Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.check_circle, size: 18, color: scheme.tertiary),
+                                    const SizedBox(width: 4),
+                                    Text(status, style: theme.textTheme.bodyMedium),
+                                  ],
+                                ),
+                        ],
+                      ),
+                      if (waiting) ...[
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            Icon(Icons.cloud_upload_outlined, size: 18, color: scheme.onSurfaceVariant),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                l.syncWaiting,
+                                style: theme.textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
                               ),
+                            ),
+                          ],
+                        ),
                       ],
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

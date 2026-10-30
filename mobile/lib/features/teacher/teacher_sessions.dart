@@ -43,6 +43,7 @@ class ExpectedSession {
     required this.subject,
     required this.recorded,
     required this.sessionId,
+    required this.confirmedAt,
     required this.absentCount,
   });
 
@@ -56,6 +57,10 @@ class ExpectedSession {
     subject: json['subject'] as String?,
     recorded: json['recorded'] as bool,
     sessionId: json['sessionId'] as String?,
+    confirmedAt: switch (json['confirmedAt']) {
+      final String at => DateTime.parse(at).toLocal(),
+      _ => null,
+    },
     absentCount: json['absentCount'] as int?,
   );
 
@@ -68,6 +73,9 @@ class ExpectedSession {
   final String? subject;
   final bool recorded;
   final String? sessionId;
+
+  /// When it was confirmed (BR-4: the lock time); null until recorded.
+  final DateTime? confirmedAt;
 
   /// Null until recorded; cancelled absences are not counted (BR-15).
   final int? absentCount;

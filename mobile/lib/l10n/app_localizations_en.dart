@@ -167,4 +167,97 @@ class AppLocalizationsEn extends AppLocalizations {
   String offlineSince(String time) {
     return 'No connection. Shown as last updated at $time.';
   }
+
+  @override
+  String get attendanceHint => 'Tap the students who are absent.';
+
+  @override
+  String presentCount(int count) {
+    return 'Present: $count';
+  }
+
+  @override
+  String absentCount(int count) {
+    return 'Absent: $count';
+  }
+
+  @override
+  String get absentLabel => 'Absent';
+
+  @override
+  String get save => 'Save';
+
+  @override
+  String confirmAbsentees(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'These $count students are marked absent. Correct?',
+      one: 'This student is marked absent. Correct?',
+      zero: 'No student is marked absent. Correct?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get back => 'Back';
+
+  @override
+  String get yes => 'Yes';
+
+  @override
+  String get confirmNotifyTitle => 'Confirm and notify parents?';
+
+  @override
+  String get confirmNotifyBody => 'Once confirmed, the session is locked and can no longer be changed.';
+
+  @override
+  String get confirm => 'Confirm';
+
+  @override
+  String sessionLockedAt(String time) {
+    return 'Locked: recorded at $time.';
+  }
+
+  @override
+  String get absentStudents => 'Absent students';
+
+  @override
+  String get noAbsentStudents => 'No student was absent.';
+
+  @override
+  String absentTotal(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count students were absent.',
+      one: '1 student was absent.',
+      zero: 'No student was absent.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get syncWaiting => 'Saved on this phone, waiting to be sent.';
+
+  @override
+  String get syncSent => 'Sent to the school.';
+
+  @override
+  String get syncNotAccepted => 'Not accepted by the school.';
+
+  @override
+  String get leaveTitle => 'Leave without saving?';
+
+  @override
+  String get leaveBody => 'The absences you marked will be lost.';
+
+  @override
+  String get leave => 'Leave';
+
+  @override
+  String get rosterUnavailable => 'The class list is not on this phone yet. Connect to the network once to load it.';
+
+  @override
+  String get sessionNotFound => 'This session is not in today\'s list.';
 }

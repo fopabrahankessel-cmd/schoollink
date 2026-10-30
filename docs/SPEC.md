@@ -298,6 +298,7 @@ One REST API under `/api/v1`, secured by JWT; the server derives the school and 
 | People | `POST /guardians/{id}/invitations` | Admin | Generate an invitation code |
 | People | `POST /classes/{id}/invitations` | Admin | Invitation codes for every guardian of a class without an account (D7) |
 | Attendance | `GET /me/sessions?date=` | Teacher | Today's sessions to record |
+| Attendance | `GET /me/classes` | Teacher | The classes they teach with their students, kept on the device for offline recording |
 | Attendance | `PUT /sessions/{uuid}` | Teacher | Create or sync a confirmed session (idempotent by device UUID) |
 | Attendance | `POST /records/{id}/cancel` | DM | Cancel an erroneous absence with a reason |
 | Lateness | `GET /lateness/students?q=` | Assistant DM | Students of their scope for the gate search; without `q`, the whole scope for offline search |
