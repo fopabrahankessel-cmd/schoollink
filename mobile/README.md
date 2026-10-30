@@ -21,6 +21,8 @@ Release builds accept HTTPS only (NFR-7).
 | Folder | What |
 | --- | --- |
 | `lib/core/` | API client (dio, token refresh), session and device storage, theme, providers |
+| `lib/core/db/` | drift database (`database.g.dart` is generated: `dart run build_runner build`) |
+| `lib/core/sync/` | The offline sync queue and when it runs (BR-6, NFR-3, D22) |
 | `lib/features/auth/` | Staff sign-in and the first password (D16, D18) |
 | `lib/features/shell/` | Role-based navigation: the tabs each role gets |
 | `lib/l10n/` | `app_en.arb` and `app_fr.arb` (NFR-12); `flutter gen-l10n` writes the Dart files next to them |

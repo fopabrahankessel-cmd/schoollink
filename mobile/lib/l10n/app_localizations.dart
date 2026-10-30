@@ -176,6 +176,24 @@ abstract class AppLocalizations {
   /// **'Sign out'**
   String get signOut;
 
+  /// No description provided for @signOutPendingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Records not sent yet'**
+  String get signOutPendingTitle;
+
+  /// D22: signing out with records saved offline.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 record is waiting to be sent.} other{{count} records are waiting to be sent.}} They will be sent when you sign in again on this phone.'**
+  String signOutPendingBody(int count);
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
   /// No description provided for @fieldRequired.
   ///
   /// In en, this message translates to:

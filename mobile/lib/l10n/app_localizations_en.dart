@@ -52,6 +52,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get signOut => 'Sign out';
 
   @override
+  String get signOutPendingTitle => 'Records not sent yet';
+
+  @override
+  String signOutPendingBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count records are waiting to be sent.',
+      one: '1 record is waiting to be sent.',
+    );
+    return '$_temp0 They will be sent when you sign in again on this phone.';
+  }
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
   String get fieldRequired => 'This field is required.';
 
   @override

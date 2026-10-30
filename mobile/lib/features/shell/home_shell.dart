@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/sync/sync_providers.dart';
 import '../../l10n/app_localizations.dart';
 import '../auth/auth_controller.dart';
 import 'destinations.dart';
@@ -19,17 +20,19 @@ class HomeShell extends ConsumerWidget {
     final user = ref.watch(authControllerProvider).value;
     final destinations = user == null ? const <Destination>[] : destinationsFor(user.roles);
     final index = destinations.indexOf(current);
+    final pending = ref.watch(pendingSyncProvider).value ?? 0;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(current.label(l)),
         actions: [
-          PopupMenuButton<void>(
+          PopupMenuButton<_AccountAction>(
             tooltip: l.accountMenu,
             icon: const Icon(Icons.account_circle_outlined),
+            onSelected: (_) => _signOut(context, ref, pending),
             itemBuilder: (context) => [
               PopupMenuItem(
-                onTap: () => ref.read(authControllerProvider.notifier).signOut(),
+                value: _AccountAction.signOut,
                 child: ListTile(
                   leading: const Icon(Icons.logout),
                   title: Text(l.signOut),
@@ -57,7 +60,31 @@ class HomeShell extends ConsumerWidget {
             ),
     );
   }
+
+  /// D22: records not yet sent stay on the phone for this user's next sign-in; say so first.
+  Future<void> _signOut(BuildContext context, WidgetRef ref, int pending) async {
+    if (pending > 0) {
+      final l = AppLocalizations.of(context);
+      final confirmed = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(l.signOutPendingTitle),
+          content: Text(l.signOutPendingBody(pending)),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l.cancel)),
+            TextButton(onPressed: () => Navigator.pop(context, true), child: Text(l.signOut)),
+          ],
+        ),
+      );
+      if (confirmed != true) {
+        return;
+      }
+    }
+    await ref.read(authControllerProvider.notifier).signOut();
+  }
 }
+
+enum _AccountAction { signOut }
 
 class _Placeholder extends StatelessWidget {
   const _Placeholder(this.destination);

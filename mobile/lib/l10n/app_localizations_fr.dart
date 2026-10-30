@@ -52,6 +52,23 @@ class AppLocalizationsFr extends AppLocalizations {
   String get signOut => 'Se déconnecter';
 
   @override
+  String get signOutPendingTitle => 'Données pas encore envoyées';
+
+  @override
+  String signOutPendingBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count enregistrements attendent d\'être envoyés.',
+      one: '1 enregistrement attend d\'être envoyé.',
+    );
+    return '$_temp0 Ils seront envoyés quand vous vous reconnecterez sur ce téléphone.';
+  }
+
+  @override
+  String get cancel => 'Annuler';
+
+  @override
   String get fieldRequired => 'Ce champ est obligatoire.';
 
   @override
