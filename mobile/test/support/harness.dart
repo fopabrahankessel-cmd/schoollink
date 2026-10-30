@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:drift/native.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:schoollink/app.dart';
 import 'package:schoollink/core/db/database.dart';
@@ -44,6 +45,7 @@ Future<TestApp> pumpApp(
   Stream<bool> online = const Stream.empty(),
   DateTime Function()? clock,
   String language = 'fr',
+  List<Override> overrides = const [],
 }) async {
   final db = database ?? AppDatabase(NativeDatabase.memory());
   final app = TestApp(
@@ -56,6 +58,7 @@ Future<TestApp> pumpApp(
         deviceStoreProvider.overrideWithValue(store ?? MemoryDeviceStore()),
         httpAdapterProvider.overrideWithValue(server),
         initialLanguageProvider.overrideWithValue(language),
+        ...overrides,
       ],
     ),
   );

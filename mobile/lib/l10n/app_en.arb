@@ -312,5 +312,10 @@
   "alertsSoonBody": "Repeated absences and lateness in your classes will show here for your decision. The app never decides for you.",
   "@alertsSoonBody": {
     "description": "BR-16 to BR-19."
-  }
+  },
+  "notificationChannelName": "Absences and lateness",
+  "@notificationChannelName": {
+    "description": "BR-21: Android notification channel, shown in the phone's settings."
+  },
+  "notificationChannelDescription": "Absences, lateness and summons of your children, and school alerts."
 }

@@ -769,6 +769,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Repeated absences and lateness in your classes will show here for your decision. The app never decides for you.'**
   String get alertsSoonBody;
+
+  /// BR-21: Android notification channel, shown in the phone's settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Absences and lateness'**
+  String get notificationChannelName;
+
+  /// No description provided for @notificationChannelDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Absences, lateness and summons of your children, and school alerts.'**
+  String get notificationChannelDescription;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

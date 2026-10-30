@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api/api_failure.dart';
 import '../../core/auth/user_info.dart';
 import '../../core/providers.dart';
+import '../../core/push/push_registration.dart';
 import 'auth_api.dart';
 
 /// Who is signed in: loading while the session is restored at start-up, then the user, or null
@@ -51,7 +52,10 @@ class AuthController extends AsyncNotifier<UserInfo?> {
   }
 
   /// Signs out on the device at once; tells the server when it can (it revokes the refresh token).
+  /// The phone's push token is ended at FCM, so no notification of this user reaches it any more
+  /// (the server forgets a dead token at its next send); the next sign-in registers a new one.
   Future<void> signOut() async {
+    unawaited(ref.read(pushClientProvider)?.deleteToken().catchError((_) {}));
     final session = ref.read(sessionStoreProvider);
     final refreshToken = await session.refreshToken();
     await session.clear();

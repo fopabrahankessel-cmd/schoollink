@@ -448,4 +448,11 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get alertsSoonBody =>
       'Les absences et retards répétés de vos classes apparaîtront ici pour décision. L\'application ne décide jamais à votre place.';
+
+  @override
+  String get notificationChannelName => 'Absences et retards';
+
+  @override
+  String get notificationChannelDescription =>
+      'Absences, retards et convocations de vos enfants, et alertes de l\'école.';
 }

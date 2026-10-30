@@ -445,4 +445,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get alertsSoonBody =>
       'Repeated absences and lateness in your classes will show here for your decision. The app never decides for you.';
+
+  @override
+  String get notificationChannelName => 'Absences and lateness';
+
+  @override
+  String get notificationChannelDescription => 'Absences, lateness and summons of your children, and school alerts.';
 }

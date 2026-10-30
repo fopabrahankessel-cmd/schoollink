@@ -112,5 +112,7 @@
   "inYourClasses": "Dans les classes dont vous avez la charge",
   "alertsTitle": "Alertes à traiter",
   "alertsSoonTitle": "Les alertes de risque arrivent dans une prochaine mise à jour",
-  "alertsSoonBody": "Les absences et retards répétés de vos classes apparaîtront ici pour décision. L'application ne décide jamais à votre place."
+  "alertsSoonBody": "Les absences et retards répétés de vos classes apparaîtront ici pour décision. L'application ne décide jamais à votre place.",
+  "notificationChannelName": "Absences et retards",
+  "notificationChannelDescription": "Absences, retards et convocations de vos enfants, et alertes de l'école."
 }
