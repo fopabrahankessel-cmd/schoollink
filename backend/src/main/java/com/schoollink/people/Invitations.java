@@ -13,6 +13,9 @@ public interface Invitations {
 	record PendingInvitation(UUID invitationId, UUID schoolId, UUID guardianId) {
 	}
 
+	/** Whether the invitation is still live: not used, not revoked, not expired (D13: send its SMS?). */
+	boolean isLive(UUID schoolId, UUID invitationId);
+
 	/** The live invitation for this code, without using it (UC-P1 step 1: send the SMS one-time code). */
 	Optional<PendingInvitation> find(String code);
 

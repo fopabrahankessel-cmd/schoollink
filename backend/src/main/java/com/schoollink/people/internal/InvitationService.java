@@ -142,6 +142,17 @@ class InvitationService implements Invitations {
 	}
 
 	@Override
+	public boolean isLive(UUID schoolId, UUID invitationId) {
+		return Boolean.TRUE.equals(jdbc.queryForObject("""
+				SELECT EXISTS (SELECT 1 FROM invitation_code
+				               WHERE id = :id AND school_id = :school AND used_at IS NULL AND revoked_at IS NULL
+				                 AND expires_at > :now)""",
+				new MapSqlParameterSource("id", invitationId).addValue("school", schoolId)
+					.addValue("now", Timestamp.from(clock.instant())),
+				Boolean.class));
+	}
+
+	@Override
 	public Optional<PendingInvitation> find(String code) {
 		return jdbc.query("""
 				SELECT id, school_id, guardian_id FROM invitation_code

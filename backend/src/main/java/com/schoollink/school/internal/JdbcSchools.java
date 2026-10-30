@@ -22,4 +22,9 @@ class JdbcSchools implements Schools {
 				(rs, row) -> new SchoolSummary(rs.getObject("id", UUID.class), rs.getString("name")));
 	}
 
+	@Override
+	public String name(UUID schoolId) {
+		return jdbc.queryForObject("SELECT name FROM school WHERE id = ?", String.class, schoolId);
+	}
+
 }

@@ -17,6 +17,22 @@ public interface Guardians {
 	/** The guardian's message language, FR or EN. */
 	String language(UUID schoolId, UUID guardianId);
 
+	/**
+	 * Where to reach the guardian when a notification is sent: the app account (push) and the phone
+	 * (SMS). Never log it (NFR-9).
+	 */
+	Contact contact(UUID schoolId, UUID guardianId);
+
+	/** {@code userId} null when the guardian has no app account (D7). */
+	record Contact(UUID userId, String phone) {
+
+		@Override
+		public String toString() {
+			return "Contact[userId=" + userId + ", phone=***]";
+		}
+
+	}
+
 	/** D7: {@code hasAccount} decides the channel: push for an app account, SMS otherwise. */
 	record StudentGuardian(UUID studentId, String studentFirstName, UUID guardianId, String language,
 			boolean hasAccount) {

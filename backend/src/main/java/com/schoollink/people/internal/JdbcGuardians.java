@@ -36,6 +36,13 @@ class JdbcGuardians implements Guardians {
 	}
 
 	@Override
+	public Contact contact(UUID schoolId, UUID guardianId) {
+		return jdbc.queryForObject("SELECT user_id, phone FROM guardian WHERE id = :id AND school_id = :school",
+				Map.of("school", schoolId, "id", guardianId),
+				(rs, n) -> new Contact(rs.getObject("user_id", UUID.class), rs.getString("phone")));
+	}
+
+	@Override
 	public String language(UUID schoolId, UUID guardianId) {
 		return jdbc.queryForObject("SELECT language FROM guardian WHERE id = :id AND school_id = :school",
 				Map.of("school", schoolId, "id", guardianId), String.class);
