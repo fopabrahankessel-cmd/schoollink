@@ -45,11 +45,18 @@ class DeviceTokens {
 				(rs, n) -> new Registered(rs.getObject("id", UUID.class), rs.getObject("previous_user", UUID.class)));
 	}
 
-	/** The user's tokens, most recently seen first. */
+	/** The user's tokens, most recently seen first; none when the account is disabled (D18). */
 	List<String> tokensOf(UUID userId) {
 		return jdbc.queryForList("""
-				SELECT token FROM device_token WHERE user_id = :user ORDER BY last_seen DESC LIMIT :max""",
+				SELECT d.token FROM device_token d JOIN app_user u ON u.id = d.user_id
+				WHERE d.user_id = :user AND u.status <> 'DISABLED'
+				ORDER BY d.last_seen DESC LIMIT :max""",
 				new MapSqlParameterSource("user", userId).addValue("max", MAX_PER_USER), String.class);
+	}
+
+	/** Deletes every token of the user: their sessions ended, so their phones stop receiving (D18). */
+	void forgetUser(UUID userId) {
+		jdbc.update("DELETE FROM device_token WHERE user_id = :user", new MapSqlParameterSource("user", userId));
 	}
 
 	/** Deletes tokens FCM no longer accepts (the app was uninstalled, or its data cleared). */

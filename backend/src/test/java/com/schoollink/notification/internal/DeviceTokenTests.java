@@ -38,6 +38,7 @@ import static com.schoollink.testsupport.Actor.PARENT_A;
 import static com.schoollink.testsupport.Actor.RESEARCHER;
 import static com.schoollink.testsupport.Actor.TEACHER_A;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -66,6 +67,9 @@ class DeviceTokenTests {
 
 	@Autowired
 	TestClock clock;
+
+	@Autowired
+	DeviceTokens devices;
 
 	TestWorld world;
 
@@ -140,6 +144,29 @@ class DeviceTokenTests {
 
 		assertThat(jdbc.queryForObject("SELECT count(*) FROM device_token WHERE user_id = ?", Integer.class,
 				world.user(PARENT_A))).isEqualTo(2);
+	}
+
+	@Test
+	void aPasswordResetOrADisabledAccountForgetsTheUsersPhones() throws Exception { // D18, NFR-9
+		register(TEACHER_A, TOKEN).andExpect(status().isNoContent());
+		register(DM_1, TOKEN + "-dm").andExpect(status().isNoContent());
+
+		perform(ADMIN_X, post("/api/v1/staff/{id}/password-reset", world.user(TEACHER_A))).andExpect(status().isOk());
+		assertThat(jdbc.queryForList("SELECT token FROM device_token", String.class)).containsExactly(TOKEN + "-dm");
+
+		perform(ADMIN_X, put("/api/v1/staff/{id}/status", world.user(DM_1)).contentType(MediaType.APPLICATION_JSON)
+			.content("{\"status\":\"DISABLED\"}")).andExpect(status().isOk());
+		assertThat(jdbc.queryForObject("SELECT count(*) FROM device_token", Integer.class)).isZero();
+	}
+
+	@Test
+	void aDisabledAccountReceivesNoPushEvenIfATokenRemains() throws Exception { // D18
+		register(PARENT_A, TOKEN).andExpect(status().isNoContent());
+		assertThat(devices.tokensOf(world.user(PARENT_A))).containsExactly(TOKEN);
+
+		jdbc.update("UPDATE app_user SET status = 'DISABLED' WHERE id = ?", world.user(PARENT_A));
+
+		assertThat(devices.tokensOf(world.user(PARENT_A))).isEmpty();
 	}
 
 	@Test
