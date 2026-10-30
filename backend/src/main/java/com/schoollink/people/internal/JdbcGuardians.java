@@ -4,6 +4,7 @@ import com.schoollink.people.Guardians;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -40,6 +41,12 @@ class JdbcGuardians implements Guardians {
 		return jdbc.queryForObject("SELECT user_id, phone FROM guardian WHERE id = :id AND school_id = :school",
 				Map.of("school", schoolId, "id", guardianId),
 				(rs, n) -> new Contact(rs.getObject("user_id", UUID.class), rs.getString("phone")));
+	}
+
+	@Override
+	public Optional<UUID> ofAccount(UUID schoolId, UUID userId) {
+		return jdbc.queryForList("SELECT id FROM guardian WHERE user_id = :user AND school_id = :school",
+				Map.of("school", schoolId, "user", userId), UUID.class).stream().findFirst();
 	}
 
 	@Override

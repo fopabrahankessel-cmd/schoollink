@@ -2,6 +2,7 @@ package com.schoollink.people;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -13,6 +14,9 @@ public interface Guardians {
 
 	/** Every guardian of each of these students, with the student's first name for the message. */
 	List<StudentGuardian> ofStudents(UUID schoolId, Collection<UUID> studentIds);
+
+	/** The guardian linked to this app account, if any (a parent's own inbox, UC-P2). */
+	Optional<UUID> ofAccount(UUID schoolId, UUID userId);
 
 	/** The guardian's message language, FR or EN. */
 	String language(UUID schoolId, UUID guardianId);
