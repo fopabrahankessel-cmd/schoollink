@@ -38,5 +38,12 @@
   "navCases": "Suivis",
   "navChildren": "Enfants",
   "navInbox": "Notifications",
-  "comingSoon": "Cet écran arrive dans une prochaine mise à jour."
+  "comingSoon": "Cet écran arrive dans une prochaine mise à jour.",
+  "sessionToRecord": "À faire",
+  "sessionRecorded": "{count, plural, =0{Enregistré, aucun absent} =1{Enregistré, 1 absent} other{Enregistré, {count} absents}}",
+  "sessionNow": "En cours",
+  "sessionTimes": "{start} à {end}",
+  "notASchoolDay": "Pas de cours aujourd'hui : ce n'est pas un jour de classe.",
+  "noLessonsToday": "Vous n'avez aucun cours à l'emploi du temps aujourd'hui.",
+  "offlineSince": "Pas de connexion. Affiché tel que mis à jour à {time}."
 }

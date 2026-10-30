@@ -77,3 +77,6 @@ final appLocaleProvider = Provider<Locale>((ref) {
   final language = user?.language.toLowerCase() ?? ref.watch(preferredLanguageProvider);
   return Locale(language == 'en' ? 'en' : 'fr');
 });
+
+/// The phone's clock. Overridden in tests.
+final clockProvider = Provider<DateTime Function()>((ref) => DateTime.now);

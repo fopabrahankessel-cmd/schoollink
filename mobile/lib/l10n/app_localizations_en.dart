@@ -133,4 +133,38 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get comingSoon => 'This screen arrives in a coming update.';
+
+  @override
+  String get sessionToRecord => 'To record';
+
+  @override
+  String sessionRecorded(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Recorded, $count absent',
+      one: 'Recorded, 1 absent',
+      zero: 'Recorded, no absences',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get sessionNow => 'Now';
+
+  @override
+  String sessionTimes(String start, String end) {
+    return '$start to $end';
+  }
+
+  @override
+  String get notASchoolDay => 'No classes today: it is not a school day.';
+
+  @override
+  String get noLessonsToday => 'You have no classes in the timetable today.';
+
+  @override
+  String offlineSince(String time) {
+    return 'No connection. Shown as last updated at $time.';
+  }
 }

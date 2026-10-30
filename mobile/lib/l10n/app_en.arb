@@ -16,7 +16,14 @@
   "signOut": "Sign out",
   "signOutPendingTitle": "Records not sent yet",
   "signOutPendingBody": "{count, plural, =1{1 record is waiting to be sent.} other{{count} records are waiting to be sent.}} They will be sent when you sign in again on this phone.",
-  "@signOutPendingBody": {"description": "D22: signing out with records saved offline.", "placeholders": {"count": {"type": "int"}}},
+  "@signOutPendingBody": {
+    "description": "D22: signing out with records saved offline.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "cancel": "Cancel",
   "fieldRequired": "This field is required.",
   "networkError": "No connection to the server. Check your network and try again.",
@@ -34,16 +41,61 @@
   "webOnlyTitle": "Use the web dashboard",
   "webOnlyBody": "Your account works on the SchoolLink web dashboard. Open it on a computer.",
   "navSessions": "Attendance",
-  "@navSessions": {"description": "Teacher tab: today's sessions to record (UC-T1, UC-T3)."},
+  "@navSessions": {
+    "description": "Teacher tab: today's sessions to record (UC-T1, UC-T3)."
+  },
   "navGate": "Lateness",
-  "@navGate": {"description": "Assistant DM tab: lateness at the gate (UC-AD1, UC-AD2)."},
+  "@navGate": {
+    "description": "Assistant DM tab: lateness at the gate (UC-AD1, UC-AD2)."
+  },
   "navAlerts": "Alerts",
-  "@navAlerts": {"description": "DM tab: risk alerts to decide (UC-D2)."},
+  "@navAlerts": {
+    "description": "DM tab: risk alerts to decide (UC-D2)."
+  },
   "navCases": "Cases",
-  "@navCases": {"description": "Counsellor tab: referred students and cases (UC-C1)."},
+  "@navCases": {
+    "description": "Counsellor tab: referred students and cases (UC-C1)."
+  },
   "navChildren": "Children",
-  "@navChildren": {"description": "Parent tab: their children and attendance history (UC-P3)."},
+  "@navChildren": {
+    "description": "Parent tab: their children and attendance history (UC-P3)."
+  },
   "navInbox": "Notifications",
-  "@navInbox": {"description": "Parent tab: absence, lateness and summons notifications (UC-P2)."},
-  "comingSoon": "This screen arrives in a coming update."
+  "@navInbox": {
+    "description": "Parent tab: absence, lateness and summons notifications (UC-P2)."
+  },
+  "comingSoon": "This screen arrives in a coming update.",
+  "sessionToRecord": "To record",
+  "sessionRecorded": "{count, plural, =0{Recorded, no absences} =1{Recorded, 1 absent} other{Recorded, {count} absent}}",
+  "@sessionRecorded": {
+    "description": "UC-T3: a session already recorded, with its absentees (BR-15: cancelled ones not counted).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sessionNow": "Now",
+  "sessionTimes": "{start} to {end}",
+  "@sessionTimes": {
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "notASchoolDay": "No classes today: it is not a school day.",
+  "noLessonsToday": "You have no classes in the timetable today.",
+  "offlineSince": "No connection. Shown as last updated at {time}.",
+  "@offlineSince": {
+    "description": "NFR-3: the list comes from the phone's copy.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  }
 }

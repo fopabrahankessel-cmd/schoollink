@@ -325,6 +325,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This screen arrives in a coming update.'**
   String get comingSoon;
+
+  /// No description provided for @sessionToRecord.
+  ///
+  /// In en, this message translates to:
+  /// **'To record'**
+  String get sessionToRecord;
+
+  /// UC-T3: a session already recorded, with its absentees (BR-15: cancelled ones not counted).
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Recorded, no absences} =1{Recorded, 1 absent} other{Recorded, {count} absent}}'**
+  String sessionRecorded(int count);
+
+  /// No description provided for @sessionNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Now'**
+  String get sessionNow;
+
+  /// No description provided for @sessionTimes.
+  ///
+  /// In en, this message translates to:
+  /// **'{start} to {end}'**
+  String sessionTimes(String start, String end);
+
+  /// No description provided for @notASchoolDay.
+  ///
+  /// In en, this message translates to:
+  /// **'No classes today: it is not a school day.'**
+  String get notASchoolDay;
+
+  /// No description provided for @noLessonsToday.
+  ///
+  /// In en, this message translates to:
+  /// **'You have no classes in the timetable today.'**
+  String get noLessonsToday;
+
+  /// NFR-3: the list comes from the phone's copy.
+  ///
+  /// In en, this message translates to:
+  /// **'No connection. Shown as last updated at {time}.'**
+  String offlineSince(String time);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

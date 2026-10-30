@@ -25,6 +25,7 @@ Future<ProviderContainer> pumpApp(
   MemoryDeviceStore? store,
   AppDatabase? database,
   Stream<bool> online = const Stream.empty(),
+  DateTime Function()? clock,
   String language = 'fr',
 }) async {
   final db = database ?? AppDatabase(NativeDatabase.memory());
@@ -32,6 +33,7 @@ Future<ProviderContainer> pumpApp(
     overrides: [
       appDatabaseProvider.overrideWithValue(db),
       connectivityProvider.overrideWithValue(online),
+      if (clock != null) clockProvider.overrideWithValue(clock),
       deviceStoreProvider.overrideWithValue(store ?? MemoryDeviceStore()),
       httpAdapterProvider.overrideWithValue(server),
       initialLanguageProvider.overrideWithValue(language),

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/sync/sync_providers.dart';
 import '../../l10n/app_localizations.dart';
 import '../auth/auth_controller.dart';
+import '../teacher/sessions_screen.dart';
 import 'destinations.dart';
 
 /// The role-based shell: one tab per screen the user's roles give (SPEC §8). With a single
@@ -43,7 +44,10 @@ class HomeShell extends ConsumerWidget {
           ),
         ],
       ),
-      body: _Placeholder(current),
+      body: switch (current) {
+        Destination.sessions => const SessionsScreen(),
+        _ => _Placeholder(current),
+      },
       bottomNavigationBar: destinations.length < 2
           ? null
           : NavigationBar(

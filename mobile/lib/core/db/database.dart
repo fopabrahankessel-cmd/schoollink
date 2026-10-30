@@ -58,13 +58,39 @@ class SyncItems extends Table {
   Set<Column> get primaryKey => {id};
 }
 
-@DriftDatabase(tables: [SyncItems])
+/// NFR-3: the last answer of a read endpoint, kept so the screen can be shown with no network.
+@DataClassName('CachedResponse')
+class CachedResponses extends Table {
+  TextColumn get userId => text()();
+
+  /// What was read, e.g. `sessions:2026-11-02`.
+  TextColumn get key => text()();
+
+  TextColumn get json => text()();
+
+  DateTimeColumn get fetchedAt => dateTime()();
+
+  @override
+  Set<Column> get primaryKey => {userId, key};
+}
+
+@DriftDatabase(tables: [SyncItems, CachedResponses])
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
   /// The app's database file on the phone.
   AppDatabase.onDevice() : super(driftDatabase(name: 'schoollink'));
 
+  /// 1: sync queue (task 2.12). 2: response cache (task 2.13).
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onUpgrade: (m, from, to) async {
+      if (from < 2) {
+        await m.createTable(cachedResponses);
+      }
+    },
+  );
 }
