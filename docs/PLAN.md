@@ -80,7 +80,7 @@ Exit criterion: a teacher's confirmation reaches a parent's phone.
 | 2.17 | FCM receive + local notifications + device token registration | BR-21 | Manual on a device; unit test for token registration |
 | 2.18 | Parent: activation flow (code, phone, OTP) | UC-P1 | Widget tests |
 | 2.19 | Parent: notification inbox (sends the opened receipt) and child attendance history | UC-P2/P3, NFR-2 | Widget tests |
-| 2.20 | **Phase 2 exit check**: teacher confirms on a device and the parent device receives the push; airplane-mode variant | §12, NFR-5 | Done by hand; outbox timestamps show a send within 1 min of sync |
+| 2.20 | **Phase 2 exit check**: teacher confirms on a device and the parent device receives the push; airplane-mode variant | §12, NFR-5 | Done by hand with [PHASE2_EXIT_CHECK.md](PHASE2_EXIT_CHECK.md); outbox timestamps show a send within 1 min of sync |
 
 ## Phase 3 — DM and detection
 
