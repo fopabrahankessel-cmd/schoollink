@@ -46,6 +46,9 @@ Future<TestApp> pumpApp(
   DateTime Function()? clock,
   String language = 'fr',
   List<Override> overrides = const [],
+
+  /// False to see a screen while it loads: a skeleton animates until its data comes.
+  bool settle = true,
 }) async {
   final db = database ?? AppDatabase(NativeDatabase.memory());
   final app = TestApp(
@@ -67,6 +70,12 @@ Future<TestApp> pumpApp(
     await db.close();
   });
   await tester.pumpWidget(UncontrolledProviderScope(container: app.container, child: const SchoolLinkApp()));
-  await tester.pumpAndSettle();
+  if (settle) {
+    await tester.pumpAndSettle();
+  } else {
+    for (var i = 0; i < 5; i++) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+  }
   return app;
 }

@@ -540,4 +540,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String otpSentIfAccount(String phone) {
     return 'If $phone has a SchoolLink parent account, a 6-digit code was sent to it by SMS.';
   }
+
+  @override
+  String get loading => 'Loading…';
 }

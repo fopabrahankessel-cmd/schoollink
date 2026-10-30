@@ -937,6 +937,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'If {phone} has a SchoolLink parent account, a 6-digit code was sent to it by SMS.'**
   String otpSentIfAccount(String phone);
+
+  /// Read by screen readers while a skeleton stands in for content.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading…'**
+  String get loading;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

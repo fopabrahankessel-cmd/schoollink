@@ -13,6 +13,7 @@ import '../../l10n/app_localizations.dart';
 import '../auth/failure_text.dart';
 import 'attendance.dart';
 import 'teacher_sessions.dart';
+import '../../core/ui/skeleton.dart';
 
 /// UC-T3: the teacher's sessions today, the one under way first, those still to record
 /// highlighted. Opens from the phone's copy when there is no network (NFR-3).
@@ -57,8 +58,65 @@ class _SessionsScreenState extends ConsumerState<SessionsScreen> {
         message: failureText(error, l),
         onRetry: () => ref.invalidate(teacherDayProvider),
       ),
-      _ => const Center(child: CircularProgressIndicator()),
+      _ => const _DaySkeleton(),
     };
+  }
+}
+
+/// The day's shape while it loads: the header, the session under way and the timetable.
+class _DaySkeleton extends StatelessWidget {
+  const _DaySkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    // the times, the class, the subject; the session under way also has its button
+    Widget card({bool current = false}) => Card(
+      child: Padding(
+        padding: const EdgeInsets.all(Gap.l),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Bone(width: 96, height: 12),
+            const SizedBox(height: Gap.m),
+            const FractionallySizedBox(widthFactor: 0.6, child: Bone(height: 18)),
+            const SizedBox(height: Gap.s),
+            const FractionallySizedBox(widthFactor: 0.4, child: Bone(height: 12)),
+            if (current) ...[const SizedBox(height: Gap.l), const Bone(height: 48, radius: Radii.m)],
+          ],
+        ),
+      ),
+    );
+    return Skeleton(
+      child: ListView(
+        physics: const NeverScrollableScrollPhysics(),
+        children: [
+          const HeaderBand(
+            children: [
+              Bone(width: 160, height: 14, onDark: true),
+              SizedBox(height: Gap.s),
+              Bone(width: 220, height: 24, onDark: true),
+              SizedBox(height: Gap.m),
+              Bone(height: 8, radius: 99, onDark: true),
+              SizedBox(height: Gap.s),
+              Bone(width: 120, height: 12, onDark: true),
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.all(Gap.l),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                card(current: true),
+                const SizedBox(height: Gap.xl),
+                const Align(alignment: AlignmentDirectional.centerStart, child: Bone(width: 140, height: 14)),
+                const SizedBox(height: Gap.m),
+                for (var i = 0; i < 3; i++) ...[card(), const SizedBox(height: Gap.m)],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

@@ -9,6 +9,7 @@ import '../../l10n/app_localizations.dart';
 import '../auth/failure_text.dart';
 import '../lateness/gate_screen.dart';
 import '../lateness/lateness.dart';
+import '../../core/ui/skeleton.dart';
 
 /// The DM's home: the risk alerts to decide (UC-D2, phase 3) and, meanwhile, today's lateness in
 /// the classes they are in charge of (UC-AD2, `GET /lateness`). Read only: the DM decides, the
@@ -40,10 +41,14 @@ class DmHomeScreen extends ConsumerWidget {
                 style: theme.textTheme.bodyLarge?.copyWith(color: status.onHeaderMuted),
               ),
               const SizedBox(height: Gap.xs),
-              Text(
-                l.latenessToday(rows.length),
-                style: theme.textTheme.headlineSmall?.copyWith(color: status.onHeader, fontFeatures: tabular),
-              ),
+              // the count is not known yet: "no lateness today" would be wrong
+              if (day is AsyncLoading && rows.isEmpty)
+                const Skeleton(child: Bone(width: 220, height: 32, onDark: true))
+              else
+                Text(
+                  l.latenessToday(rows.length),
+                  style: theme.textTheme.headlineSmall?.copyWith(color: status.onHeader, fontFeatures: tabular),
+                ),
               Padding(
                 padding: const EdgeInsets.only(top: Gap.xs),
                 child: Text(l.inYourClasses, style: theme.textTheme.bodyMedium?.copyWith(color: status.onHeaderMuted)),
@@ -78,10 +83,7 @@ class DmHomeScreen extends ConsumerWidget {
                     message: failureText(error, l),
                     onRetry: () => ref.invalidate(latenessDayProvider),
                   ),
-                  AsyncLoading() when rows.isEmpty => const Padding(
-                    padding: EdgeInsets.all(Gap.xxl),
-                    child: Center(child: CircularProgressIndicator()),
-                  ),
+                  AsyncLoading() when rows.isEmpty => const Skeleton(child: SkeletonRows(count: 4)),
                   _ when rows.isEmpty => Card(
                     child: EmptyState(icon: Icons.door_front_door_outlined, title: l.noLatenessToday),
                   ),

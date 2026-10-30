@@ -66,7 +66,9 @@ void main() {
     expect(server.sent('POST /auth/parent/activate'), isEmpty);
     // NFR-7: the server does not say whether the number has an account
     expect(
-      find.text('Si le +237 699 00 00 01 a un compte parent SchoolLink, un code à 6 chiffres lui a été envoyé par SMS.'),
+      find.text(
+        'Si le +237 699 00 00 01 a un compte parent SchoolLink, un code à 6 chiffres lui a été envoyé par SMS.',
+      ),
       findsOneWidget,
     );
 

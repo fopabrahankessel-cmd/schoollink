@@ -385,5 +385,9 @@
         "type": "String"
       }
     }
+  },
+  "loading": "Loading…",
+  "@loading": {
+    "description": "Read by screen readers while a skeleton stands in for content."
   }
 }

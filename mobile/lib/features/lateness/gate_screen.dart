@@ -12,6 +12,7 @@ import '../auth/failure_text.dart';
 import '../teacher/attendance.dart' show isoDate;
 import '../teacher/teacher_sessions.dart' show DayTime;
 import 'lateness.dart';
+import '../../core/ui/skeleton.dart';
 
 /// UC-AD1, UC-AD2: the assistant DM at the gate. Search a student by name or matricule, record
 /// the arrival time, and see today's lateness. Everything works with no network (NFR-3): the
@@ -108,10 +109,14 @@ class _GateScreenState extends ConsumerState<GateScreen> {
                 style: theme.textTheme.bodyLarge?.copyWith(color: status.onHeaderMuted),
               ),
               const SizedBox(height: Gap.xs),
-              Text(
-                l.latenessToday(rows.length),
-                style: theme.textTheme.headlineSmall?.copyWith(color: status.onHeader, fontFeatures: tabular),
-              ),
+              // the count is not known yet: "no lateness today" would be wrong
+              if (day is AsyncLoading && rows.isEmpty)
+                const Skeleton(child: Bone(width: 220, height: 32, onDark: true))
+              else
+                Text(
+                  l.latenessToday(rows.length),
+                  style: theme.textTheme.headlineSmall?.copyWith(color: status.onHeader, fontFeatures: tabular),
+                ),
               if (day.value?.startTime case final start?)
                 Padding(
                   padding: const EdgeInsets.only(top: Gap.xs),
@@ -196,12 +201,7 @@ class _GateScreenState extends ConsumerState<GateScreen> {
       ];
     }
     if (students is AsyncLoading && results.isEmpty) {
-      return const [
-        Padding(
-          padding: EdgeInsets.all(Gap.xxl),
-          child: Center(child: CircularProgressIndicator()),
-        ),
-      ];
+      return const [SizedBox(height: Gap.l), Skeleton(child: SkeletonRows(count: 4, trailing: false))];
     }
     if (results.isEmpty) {
       return [EmptyState(icon: Icons.person_search_outlined, title: l.noStudentFound)];
@@ -261,10 +261,7 @@ class _GateScreenState extends ConsumerState<GateScreen> {
       if (day is AsyncError && rows.isEmpty)
         FailureView(message: failureText(day.error!, l), onRetry: () => ref.invalidate(latenessDayProvider))
       else if (day is AsyncLoading && rows.isEmpty)
-        const Padding(
-          padding: EdgeInsets.all(Gap.xxl),
-          child: Center(child: CircularProgressIndicator()),
-        )
+        const Skeleton(child: SkeletonRows(count: 4))
       else if (rows.isEmpty)
         EmptyState(icon: Icons.door_front_door_outlined, title: l.noLatenessToday, body: l.noLatenessTodayHint)
       else

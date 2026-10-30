@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:drift/drift.dart' hide isNull;
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
@@ -5,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:schoollink/core/cache/response_cache.dart';
 import 'package:schoollink/core/db/database.dart';
 import 'package:schoollink/core/storage/device_store.dart';
+import 'package:schoollink/core/ui/skeleton.dart';
 
 import '../support/fake_server.dart';
 import '../support/harness.dart';
@@ -77,6 +80,33 @@ void main() {
 
   List<Finder> inScreenOrder(WidgetTester tester, List<Finder> tiles) =>
       [...tiles]..sort((a, b) => tester.getTopLeft(a).dy.compareTo(tester.getTopLeft(b).dy));
+
+  testWidgets('while the day loads, a skeleton of it stands in, not a spinner', (tester) async {
+    final reply = Completer<Reply>();
+    final server = FakeServer()
+      ..on('GET /me', (_) => Reply.ok(teacher))
+      ..on('GET /me/sessions', (_) => reply.future)
+      ..on('GET /me/classes', (_) => const Reply.ok([]));
+    final semantics = tester.ensureSemantics();
+    await pumpApp(
+      tester,
+      server: server,
+      store: MemoryDeviceStore(signedIn(teacher)),
+      database: db,
+      clock: () => now,
+      settle: false,
+    );
+
+    expect(find.byType(Skeleton), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(find.bySemanticsLabel('Chargement…'), findsOneWidget);
+
+    reply.complete(Reply.ok(monday));
+    await tester.pumpAndSettle();
+    expect(find.byType(Skeleton), findsNothing);
+    expect(tile('5e B', 2), findsOneWidget);
+    semantics.dispose();
+  });
 
   testWidgets('the period under way comes first, then the others by time', (tester) async {
     await open(tester);

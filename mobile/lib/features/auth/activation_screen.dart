@@ -11,6 +11,7 @@ import 'auth_api.dart';
 import 'auth_controller.dart';
 import 'failure_text.dart';
 import 'login_screen.dart' show loginSchoolsProvider;
+import '../../core/ui/skeleton.dart';
 
 /// The nine digits of a Cameroon mobile number, from what the parent typed ("6 99 00 00 01",
 /// "+237699000001", "00237…"); null when it is not one (D15). The server checks it again.
@@ -376,7 +377,7 @@ class _SchoolPicker extends ConsumerWidget {
           TextButton(onPressed: () => ref.invalidate(loginSchoolsProvider), child: Text(l.retry)),
         ],
       ),
-      _ => const LinearProgressIndicator(),
+      _ => const SkeletonField(),
     };
   }
 }

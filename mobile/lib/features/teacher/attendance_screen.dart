@@ -10,6 +10,7 @@ import '../auth/auth_controller.dart';
 import '../auth/failure_text.dart';
 import 'attendance.dart';
 import 'teacher_sessions.dart';
+import '../../core/ui/skeleton.dart';
 
 /// UC-T1: the roll of one session. Every student is present until tapped (BR-2); saving asks
 /// twice (BR-3), and either "Back" returns to the roll with the marks kept. Once confirmed the
@@ -42,7 +43,7 @@ class AttendanceScreen extends ConsumerWidget {
     final teacherDay = day.value;
     final localSessions = local.value;
     if (teacherDay == null || localSessions == null) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const _RollSkeleton();
     }
     final session = teacherDay.sessions.where((s) => s.classId == classId && s.periodId == periodId).firstOrNull;
     if (session == null) {
@@ -55,7 +56,7 @@ class AttendanceScreen extends ConsumerWidget {
     }
     if (roster == null) {
       return rosters is AsyncLoading
-          ? const Scaffold(body: Center(child: CircularProgressIndicator()))
+          ? const _RollSkeleton()
           : message(l.rosterUnavailable, Icons.cloud_download_outlined);
     }
     return _Roll(session: session, date: teacherDay.date, roster: roster);
@@ -589,5 +590,36 @@ class _SyncStatus extends StatelessWidget {
       ),
     };
     return InfoBanner(icon: icon, text: text, background: background, foreground: foreground);
+  }
+}
+
+/// The roll's shape while the session or the class list loads: the counts, then the students.
+class _RollSkeleton extends StatelessWidget {
+  const _RollSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(),
+      body: Skeleton(
+        child: ListView(
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(Gap.l),
+          children: const [
+            Row(
+              children: [
+                Bone(width: 110, height: 32, radius: Radii.l),
+                SizedBox(width: Gap.s),
+                Bone(width: 100, height: 32, radius: Radii.l),
+              ],
+            ),
+            SizedBox(height: Gap.l),
+            Bone(height: 48, radius: Radii.m),
+            SizedBox(height: Gap.l),
+            SkeletonRows(count: 8, trailing: true),
+          ],
+        ),
+      ),
+    );
   }
 }

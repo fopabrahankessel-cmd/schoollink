@@ -8,6 +8,7 @@ import '../../l10n/app_localizations.dart';
 import 'auth_api.dart';
 import 'auth_controller.dart';
 import 'failure_text.dart';
+import '../../core/ui/skeleton.dart';
 
 /// The schools for the picker (D16) and the one to start on: the last school used on this device,
 /// or the only school there is.
@@ -125,7 +126,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             TextButton(onPressed: () => ref.invalidate(loginSchoolsProvider), child: Text(l.retry)),
                           ],
                         ),
-                        _ => const LinearProgressIndicator(),
+                        _ => const SkeletonField(),
                       },
                       const SizedBox(height: 16),
                       TextFormField(

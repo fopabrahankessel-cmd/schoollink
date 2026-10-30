@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:drift/drift.dart' hide isNull;
 import 'package:drift/native.dart';
 import 'package:flutter/material.dart';
@@ -5,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:schoollink/core/cache/response_cache.dart';
 import 'package:schoollink/core/db/database.dart';
 import 'package:schoollink/core/storage/device_store.dart';
+import 'package:schoollink/core/ui/skeleton.dart';
 
 import '../support/fake_server.dart';
 import '../support/harness.dart';
@@ -95,6 +98,32 @@ void main() {
   }
 
   final etoa = find.byKey(const ValueKey('gate-student-st-2'));
+
+  testWidgets('while the day loads, skeletons stand in and nothing claims there is no lateness', (tester) async {
+    final user = userJson(roles: ['ASSISTANT_DM']);
+    final day = Completer<Reply>();
+    final server = FakeServer()
+      ..on('GET /me', (_) => Reply.ok(user))
+      ..on('GET /lateness/students', (_) => Reply.ok(students))
+      ..on('GET /lateness', (_) => day.future);
+    app = await pumpApp(
+      tester,
+      server: server,
+      store: MemoryDeviceStore(signedIn(user)),
+      database: db,
+      clock: () => now,
+      settle: false,
+    );
+
+    expect(find.byType(Skeleton), findsNWidgets(2)); // the count and the list
+    expect(find.text("Aucun retard aujourd'hui"), findsNothing);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+
+    day.complete(Reply.ok(today([chantalLate])));
+    await tester.pumpAndSettle();
+    expect(find.byType(Skeleton), findsNothing);
+    expect(find.text("1 retard aujourd'hui"), findsOneWidget);
+  });
 
   testWidgets("opens on today's lateness, latest first, with the school's start time (UC-AD2)", (tester) async {
     await open(tester);
