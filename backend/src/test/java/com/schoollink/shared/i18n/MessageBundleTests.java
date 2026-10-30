@@ -36,7 +36,7 @@ class MessageBundleTests {
 			Properties p = load(bundle);
 			Locale locale = bundle.contains("_fr") ? Locale.FRENCH : Locale.ENGLISH;
 			assertThat(p.stringPropertyNames()).allSatisfy(key -> {
-				for (Object[] args : new Object[][] { { 1, 1, 1 }, { 2, 30, 5 } }) {
+				for (Object[] args : new Object[][] { { 1, 1, 1, 1, 1 }, { 2, 30, 5, 2, 7 } }) {
 					assertThat(new MessageFormat(p.getProperty(key), locale).format(args)).as(bundle + " " + key)
 						.doesNotContain("{");
 				}

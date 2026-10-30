@@ -64,6 +64,9 @@ class OutboxTests {
 	@Autowired
 	ApplicationEventPublisher events;
 
+	@Autowired
+	Templates templates;
+
 	TestWorld world;
 
 	/** Two students of 6e A, each with two guardians who have the app. */
@@ -133,6 +136,9 @@ class OutboxTests {
 		assertThat(payload.get("periodNumber").asInt()).isEqualTo(1);
 		assertThat(payload.get("periodStart").asString()).isEqualTo("07:30");
 		assertThat(payload.toString()).doesNotContain("690000101");
+		// the stored payload is what the push template reads (task 2.5)
+		assertThat(templates.push(Outbox.EventType.ABSENCE, "FR", payload).body())
+			.isEqualTo("Absence signalée pour Awa en période 1 (07:30), le 02/11.");
 	}
 
 	@Test
