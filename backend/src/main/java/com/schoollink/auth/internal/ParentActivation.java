@@ -18,6 +18,7 @@ import java.sql.Timestamp;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
@@ -36,9 +37,11 @@ import org.springframework.transaction.support.TransactionTemplate;
  * <li>a wrong code, a used, revoked or expired one, and a phone that is not the guardian's all get
  * the same answer, so nothing tells which codes exist;</li>
  * <li>the one-time code is stored as a BCrypt hash, lasts 10 minutes and allows 5 wrong tries, then
- * 429 (counted in the database, so a restart does not reset it); asking again replaces it;</li>
- * <li>at most 3 one-time codes per guardian per hour (SMS cost, and no flooding a phone), and per
- * IP address 10 activation and 30 verification requests per 15 minutes.</li>
+ * 429; asking again replaces it: only the newest one can be verified;</li>
+ * <li>at most 3 one-time codes per guardian per hour (SMS cost, and no flooding a phone), and 15
+ * wrong tries in all per invitation, after which the school must issue a new code. Both are
+ * counted in the database (V17), so a restart does not reset them;</li>
+ * <li>per IP address, 10 activation and 30 verification requests per 15 minutes.</li>
  * </ul>
  * NFR-9: the phone travels in the request body only and is never logged; the codes are never
  * logged or audited.
@@ -52,7 +55,13 @@ class ParentActivation {
 
 	static final RateLimitPolicy ACTIVATE_PER_IP = new RateLimitPolicy("activate-ip", 10, Duration.ofMinutes(15));
 
-	static final RateLimitPolicy OTP_PER_GUARDIAN = new RateLimitPolicy("activate-otp-guardian", 3, Duration.ofHours(1));
+	/** One-time codes per guardian per {@link #CODES_WINDOW}. */
+	static final int MAX_CODES = 3;
+
+	static final Duration CODES_WINDOW = Duration.ofHours(1);
+
+	/** Wrong tries in all, over every one-time code of an invitation. */
+	static final int MAX_FAILED_PER_INVITATION = 15;
 
 	static final RateLimitPolicy VERIFY_PER_IP = new RateLimitPolicy("verify-ip", 30, Duration.ofMinutes(15));
 
@@ -61,7 +70,7 @@ class ParentActivation {
 	}
 
 	private record Pending(UUID schoolId, UUID invitationId, String otpHash, Instant expiresAt, int failedAttempts,
-			boolean verified) {
+			boolean verified, boolean superseded) {
 	}
 
 	private final Invitations invitations;
@@ -121,8 +130,6 @@ class ParentActivation {
 		if (!normalized.get().equals(contact.phone())) {
 			throw invalidActivation();
 		}
-		checkRate(limiter.tryConsume(OTP_PER_GUARDIAN, pending.guardianId().toString()));
-
 		UUID id = UUID.randomUUID();
 		String otp = "%06d".formatted(random.nextInt(1_000_000));
 		Instant now = clock.instant();
@@ -133,9 +140,23 @@ class ParentActivation {
 				.addValue("guardian", pending.guardianId())
 				.addValue("hash", hashes.encode(otp))
 				.addValue("now", Timestamp.from(now))
-				.addValue("expires", Timestamp.from(expiresAt));
-			// a new code replaces the previous ones
-			jdbc.update("DELETE FROM parent_activation WHERE invitation_id = :invitation AND verified_at IS NULL", p);
+				.addValue("expires", Timestamp.from(expiresAt))
+				.addValue("windowStart", Timestamp.from(now.minus(CODES_WINDOW)));
+			// one guardian's requests are counted one after the other
+			jdbc.queryForList("SELECT pg_advisory_xact_lock(hashtextextended(CAST(:guardian AS text), 0))", p);
+			Integer failed = jdbc.queryForObject("""
+					SELECT COALESCE(sum(failed_attempts), 0) FROM parent_activation WHERE invitation_id = :invitation""",
+					p, Integer.class);
+			if (failed != null && failed >= MAX_FAILED_PER_INVITATION) {
+				throw invalidActivation();
+			}
+			List<Timestamp> recent = jdbc.queryForList("""
+					SELECT created_at FROM parent_activation WHERE guardian_id = :guardian AND created_at > :windowStart
+					ORDER BY created_at""", p, Timestamp.class);
+			if (recent.size() >= MAX_CODES) {
+				throw new RateLimitedException(Duration.between(now, recent.getFirst().toInstant().plus(CODES_WINDOW)));
+			}
+			// kept, not replaced: only the newest request of the invitation can be verified
 			jdbc.update("""
 					INSERT INTO parent_activation (id, school_id, invitation_id, guardian_id, otp_hash, created_at, expires_at)
 					VALUES (:id, :school, :invitation, :guardian, :hash, :now, :expires)""", p);
@@ -154,11 +175,14 @@ class ParentActivation {
 		Optional<TokenResponse> tokens = transactions.execute(tx -> {
 			// locked: concurrent tries on one activation are counted one after the other
 			Pending pending = jdbc.query("""
-					SELECT school_id, invitation_id, otp_hash, expires_at, failed_attempts, verified_at IS NOT NULL AS verified
-					FROM parent_activation WHERE id = :id FOR UPDATE""", p,
+					SELECT a.school_id, a.invitation_id, a.otp_hash, a.expires_at, a.failed_attempts,
+					       a.verified_at IS NOT NULL AS verified,
+					       EXISTS (SELECT 1 FROM parent_activation n WHERE n.invitation_id = a.invitation_id AND n.seq > a.seq)
+					           AS superseded
+					FROM parent_activation a WHERE a.id = :id FOR UPDATE OF a""", p,
 					(rs, n) -> new Pending(rs.getObject("school_id", UUID.class), rs.getObject("invitation_id", UUID.class),
 							rs.getString("otp_hash"), rs.getTimestamp("expires_at").toInstant(),
-							rs.getInt("failed_attempts"), rs.getBoolean("verified")))
+							rs.getInt("failed_attempts"), rs.getBoolean("verified"), rs.getBoolean("superseded")))
 				.stream()
 				.findFirst()
 				.orElseThrow(ParentActivation::invalidOtp);
@@ -168,7 +192,7 @@ class ParentActivation {
 				Duration left = Duration.between(now, pending.expiresAt());
 				throw new RateLimitedException(left.isNegative() ? Duration.ofMinutes(1) : left);
 			}
-			if (pending.verified() || !now.isBefore(pending.expiresAt())) {
+			if (pending.verified() || pending.superseded() || !now.isBefore(pending.expiresAt())) {
 				throw invalidOtp();
 			}
 			if (otp == null || !otp.strip().matches("[0-9]{6}") || !hashes.matches(otp.strip(), pending.otpHash())) {

@@ -233,11 +233,33 @@ class ParentActivationTests {
 		for (int i = 0; i < 3; i++) {
 			activate(CODE, PHONE).andExpect(status().isOk());
 		}
+		activate(CODE, PHONE).andExpect(status().isTooManyRequests())
+			.andExpect(header().string("Retry-After", "3600"));
+		// counted in the database: a restart (an empty rate limiter) does not reset it
+		limiter.clear();
 		activate(CODE, PHONE).andExpect(status().isTooManyRequests());
 		assertThat(sms.sent).hasSize(3);
 
-		clock.set(NOW.plus(Duration.ofMinutes(20)));
+		clock.set(NOW.plus(Duration.ofHours(1)).plusSeconds(1));
 		activate(CODE, PHONE).andExpect(status().isOk());
+	}
+
+	@Test
+	void fifteenWrongTriesInAllUseUpTheInvitation() throws Exception { // NFR-7: new codes give no new guesses
+		for (int round = 0; round < 3; round++) {
+			clock.set(NOW.plus(Duration.ofHours(round * 2L)));
+			String activation = start();
+			String otp = sms.sent.getLast().code();
+			String wrong = otp.equals("000000") ? "111111" : "000000";
+			for (int i = 0; i < 5; i++) {
+				verify(activation, wrong).andExpect(status().isBadRequest());
+			}
+		}
+		clock.set(NOW.plus(Duration.ofHours(6)));
+		limiter.clear();
+
+		expectInvalidActivation(activate(CODE, PHONE));
+		assertThat(sms.sent).hasSize(3);
 	}
 
 	@Test
