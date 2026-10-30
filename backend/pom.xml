@@ -98,6 +98,23 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		<!-- BR-21, task 2.7: push notifications through Firebase Cloud Messaging -->
+		<dependency>
+			<groupId>com.google.firebase</groupId>
+			<artifactId>firebase-admin</artifactId>
+			<version>9.11.0</version>
+			<exclusions>
+				<!-- only FirebaseMessaging is used; these bring gRPC and tens of MB -->
+				<exclusion>
+					<groupId>com.google.cloud</groupId>
+					<artifactId>google-cloud-storage</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.google.cloud</groupId>
+					<artifactId>google-cloud-firestore</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
 		<!-- Task 1.14: fake names for the dev profile seed only; left out of the packaged jar below -->
 		<dependency>
 			<groupId>net.datafaker</groupId>

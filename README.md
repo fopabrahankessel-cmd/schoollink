@@ -37,11 +37,14 @@ docker compose up -d db
 
 The school and its first administrator are created at startup from the `SCHOOLLINK_BOOTSTRAP_*` settings, once: when a school of that name exists, nothing happens. The password is temporary and must be changed at the first sign-in.
 
+Push notifications go through Firebase: `FIREBASE_CREDENTIALS` is the path of the Firebase project's service-account JSON file (Firebase console, Project settings, Service accounts, Generate new private key). Keep that file outside the repository. Without it, the backend refuses to start outside the `dev` profile.
+
 Bash:
 
 ```bash
 cd backend
 export JWT_SECRET="$(openssl rand -base64 48)"
+export FIREBASE_CREDENTIALS="$HOME/secrets/schoollink-firebase.json"
 export SCHOOLLINK_BOOTSTRAP_SCHOOL_NAME="Lycée Pilote (fictif)"
 export SCHOOLLINK_BOOTSTRAP_SCHOOL_LANGUAGE=FR      # FR or EN
 export SCHOOLLINK_BOOTSTRAP_ADMIN_EMAIL=admin@pilote.test
@@ -54,6 +57,7 @@ PowerShell:
 ```powershell
 cd backend
 $env:JWT_SECRET = [Convert]::ToBase64String([Security.Cryptography.RandomNumberGenerator]::GetBytes(48))
+$env:FIREBASE_CREDENTIALS = "$env:USERPROFILE\secrets\schoollink-firebase.json"
 $env:SCHOOLLINK_BOOTSTRAP_SCHOOL_NAME = 'Lycée Pilote (fictif)'
 $env:SCHOOLLINK_BOOTSTRAP_SCHOOL_LANGUAGE = 'FR'
 $env:SCHOOLLINK_BOOTSTRAP_ADMIN_EMAIL = 'admin@pilote.test'
@@ -87,4 +91,4 @@ Each step names the screen and the expected result. All steps were last checked 
 
   Expected: one `school_bootstrap` entry, the password change (`app_user UPDATE`), the structure, staff and timetable entries, two `student_import CREATE` and one `IMPORT`, and four `invitation_code CREATE`.
 
-Known limit: inviting the class queues one SMS per guardian in `notification_outbox` (event type `INVITATION`), but no SMS leaves yet: the dispatcher and the SMS provider come in Phase 2 (tasks 2.6 and later).
+Known limit: inviting the class queues one SMS per guardian in `notification_outbox` (event type `INVITATION`), and the dispatcher picks them up within seconds, but no SMS leaves yet: until the SMS gateway (task 3.7), SMS are only logged, then marked `SENT` and their code erased (D13). To give a parent a code during the pilot rehearsal, generate a new one.
