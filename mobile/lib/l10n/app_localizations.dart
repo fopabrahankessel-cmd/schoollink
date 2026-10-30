@@ -781,6 +781,132 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Absences, lateness and summons of your children, and school alerts.'**
   String get notificationChannelDescription;
+
+  /// No description provided for @parentQuestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Parent?'**
+  String get parentQuestion;
+
+  /// UC-P1: entry point on the sign-in screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Activate with my invitation code'**
+  String get activateWithCode;
+
+  /// No description provided for @activationTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Activate my account'**
+  String get activationTitle;
+
+  /// No description provided for @activationStep.
+  ///
+  /// In en, this message translates to:
+  /// **'Step {step} of 2'**
+  String activationStep(int step);
+
+  /// No description provided for @activationHeadline.
+  ///
+  /// In en, this message translates to:
+  /// **'Your invitation code'**
+  String get activationHeadline;
+
+  /// No description provided for @activationIntro.
+  ///
+  /// In en, this message translates to:
+  /// **'The school sent it to you by SMS. Enter it with the phone number you gave the school.'**
+  String get activationIntro;
+
+  /// No description provided for @invitationCodeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Invitation code'**
+  String get invitationCodeLabel;
+
+  /// No description provided for @invitationCodeHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'As written in the school\'s SMS'**
+  String get invitationCodeHelp;
+
+  /// No description provided for @phoneLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone number'**
+  String get phoneLabel;
+
+  /// No description provided for @phoneHelp.
+  ///
+  /// In en, this message translates to:
+  /// **'The number you gave the school'**
+  String get phoneHelp;
+
+  /// No description provided for @phoneInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a Cameroon number with 9 digits, for example 6 99 00 00 01.'**
+  String get phoneInvalid;
+
+  /// No description provided for @sendSmsCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Receive a code by SMS'**
+  String get sendSmsCode;
+
+  /// No description provided for @otpTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the code received'**
+  String get otpTitle;
+
+  /// No description provided for @otpSentTo.
+  ///
+  /// In en, this message translates to:
+  /// **'We sent a 6-digit code by SMS to {phone}.'**
+  String otpSentTo(String phone);
+
+  /// No description provided for @otpLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification code'**
+  String get otpLabel;
+
+  /// No description provided for @otpInvalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the 6 digits of the code.'**
+  String get otpInvalid;
+
+  /// No description provided for @otpValidUntil.
+  ///
+  /// In en, this message translates to:
+  /// **'The code works until {time}.'**
+  String otpValidUntil(String time);
+
+  /// No description provided for @otpResent.
+  ///
+  /// In en, this message translates to:
+  /// **'A new code was sent. It works until {time}.'**
+  String otpResent(String time);
+
+  /// No description provided for @activateAccount.
+  ///
+  /// In en, this message translates to:
+  /// **'Activate my account'**
+  String get activateAccount;
+
+  /// No description provided for @resendCode.
+  ///
+  /// In en, this message translates to:
+  /// **'Send a new code'**
+  String get resendCode;
+
+  /// No description provided for @changeNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Change the number'**
+  String get changeNumber;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

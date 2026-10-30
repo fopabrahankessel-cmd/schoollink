@@ -451,4 +451,75 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notificationChannelDescription => 'Absences, lateness and summons of your children, and school alerts.';
+
+  @override
+  String get parentQuestion => 'Parent?';
+
+  @override
+  String get activateWithCode => 'Activate with my invitation code';
+
+  @override
+  String get activationTitle => 'Activate my account';
+
+  @override
+  String activationStep(int step) {
+    return 'Step $step of 2';
+  }
+
+  @override
+  String get activationHeadline => 'Your invitation code';
+
+  @override
+  String get activationIntro => 'The school sent it to you by SMS. Enter it with the phone number you gave the school.';
+
+  @override
+  String get invitationCodeLabel => 'Invitation code';
+
+  @override
+  String get invitationCodeHelp => 'As written in the school\'s SMS';
+
+  @override
+  String get phoneLabel => 'Phone number';
+
+  @override
+  String get phoneHelp => 'The number you gave the school';
+
+  @override
+  String get phoneInvalid => 'Enter a Cameroon number with 9 digits, for example 6 99 00 00 01.';
+
+  @override
+  String get sendSmsCode => 'Receive a code by SMS';
+
+  @override
+  String get otpTitle => 'Enter the code received';
+
+  @override
+  String otpSentTo(String phone) {
+    return 'We sent a 6-digit code by SMS to $phone.';
+  }
+
+  @override
+  String get otpLabel => 'Verification code';
+
+  @override
+  String get otpInvalid => 'Enter the 6 digits of the code.';
+
+  @override
+  String otpValidUntil(String time) {
+    return 'The code works until $time.';
+  }
+
+  @override
+  String otpResent(String time) {
+    return 'A new code was sent. It works until $time.';
+  }
+
+  @override
+  String get activateAccount => 'Activate my account';
+
+  @override
+  String get resendCode => 'Send a new code';
+
+  @override
+  String get changeNumber => 'Change the number';
 }

@@ -14,6 +14,16 @@ class School {
   final String name;
 }
 
+/// UC-P1 step 1 done: the SMS one-time code is on its way to the phone.
+class ActivationStarted {
+  const ActivationStarted({required this.activationId, required this.expiresAt});
+
+  final String activationId;
+
+  /// When the one-time code stops working (10 minutes).
+  final DateTime expiresAt;
+}
+
 /// The auth endpoints of SPEC §9. Every failure is an [ApiFailure].
 class AuthApi {
   AuthApi(this._dio);
@@ -34,6 +44,24 @@ class AuthApi {
   /// never in the URL (NFR-9).
   Future<TokenResponse> login({String? schoolId, required String login, required String password}) =>
       _tokens('/auth/login', {'schoolId': schoolId, 'login': login, 'password': password}, _public);
+
+  /// UC-P1 step 1: the invitation code from the school's SMS and the guardian's phone (in the
+  /// body, never the URL, NFR-9). The server sends a one-time code by SMS.
+  Future<ActivationStarted> activateParent({required String code, required String phone}) => _call(() async {
+    final response = await _dio.post<Map<String, dynamic>>(
+      '/auth/parent/activate',
+      data: {'code': code, 'phone': phone},
+      options: _public,
+    );
+    return ActivationStarted(
+      activationId: response.data!['activationId'] as String,
+      expiresAt: DateTime.parse(response.data!['expiresAt'] as String).toLocal(),
+    );
+  });
+
+  /// UC-P1 step 2: the one-time code; the account is made and the parent signed in.
+  Future<TokenResponse> verifyParent({required String activationId, required String otp}) =>
+      _tokens('/auth/parent/verify', {'activationId': activationId, 'otp': otp}, _public);
 
   Future<UserInfo> me() => _call(() async {
     final response = await _dio.get<Map<String, dynamic>>('/me');

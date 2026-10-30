@@ -317,5 +317,57 @@
   "@notificationChannelName": {
     "description": "BR-21: Android notification channel, shown in the phone's settings."
   },
-  "notificationChannelDescription": "Absences, lateness and summons of your children, and school alerts."
+  "notificationChannelDescription": "Absences, lateness and summons of your children, and school alerts.",
+  "parentQuestion": "Parent?",
+  "activateWithCode": "Activate with my invitation code",
+  "@activateWithCode": {
+    "description": "UC-P1: entry point on the sign-in screen."
+  },
+  "activationTitle": "Activate my account",
+  "activationStep": "Step {step} of 2",
+  "@activationStep": {
+    "placeholders": {
+      "step": {
+        "type": "int"
+      }
+    }
+  },
+  "activationHeadline": "Your invitation code",
+  "activationIntro": "The school sent it to you by SMS. Enter it with the phone number you gave the school.",
+  "invitationCodeLabel": "Invitation code",
+  "invitationCodeHelp": "As written in the school's SMS",
+  "phoneLabel": "Phone number",
+  "phoneHelp": "The number you gave the school",
+  "phoneInvalid": "Enter a Cameroon number with 9 digits, for example 6 99 00 00 01.",
+  "sendSmsCode": "Receive a code by SMS",
+  "otpTitle": "Enter the code received",
+  "otpSentTo": "We sent a 6-digit code by SMS to {phone}.",
+  "@otpSentTo": {
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
+  "otpLabel": "Verification code",
+  "otpInvalid": "Enter the 6 digits of the code.",
+  "otpValidUntil": "The code works until {time}.",
+  "@otpValidUntil": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "otpResent": "A new code was sent. It works until {time}.",
+  "@otpResent": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "activateAccount": "Activate my account",
+  "resendCode": "Send a new code",
+  "changeNumber": "Change the number"
 }

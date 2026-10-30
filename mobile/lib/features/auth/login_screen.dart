@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/api/api_failure.dart';
 import '../../core/providers.dart';
@@ -167,6 +168,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         child: _busy
                             ? const SizedBox.square(dimension: 22, child: CircularProgressIndicator(strokeWidth: 2.5))
                             : Text(l.signIn),
+                      ),
+                      const SizedBox(height: 32),
+                      // UC-P1: parents have no password; they activate with the school's SMS code
+                      Row(
+                        children: [
+                          const Expanded(child: Divider()),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            child: Text(
+                              l.parentQuestion,
+                              style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                            ),
+                          ),
+                          const Expanded(child: Divider()),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      OutlinedButton.icon(
+                        onPressed: _busy ? null : () => context.push('/activate'),
+                        icon: const Icon(Icons.sms_outlined),
+                        label: Text(l.activateWithCode),
                       ),
                     ],
                   ),
