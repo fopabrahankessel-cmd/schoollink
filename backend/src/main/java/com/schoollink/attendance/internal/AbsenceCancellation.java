@@ -82,10 +82,10 @@ class AbsenceCancellation {
 			.findFirst()
 			// NFR-8: a record of another school is not found
 			.orElseThrow(() -> ApiException.notFound("not_found"));
-		// BR-13: the DM in charge of the student's class
+		// BR-13, D17: the DM in charge of the student's class; outside the scope the record is not found
 		boolean inScope = students.classOf(school, row.studentId()).filter(user.classesAs(Role.DM)::contains).isPresent();
 		if (!inScope) {
-			throw ApiException.forbidden();
+			throw ApiException.notFound("not_found");
 		}
 		if (!row.status().equals("ABSENT")) {
 			throw ApiException.invalid("cancel.not_an_absence", "id");

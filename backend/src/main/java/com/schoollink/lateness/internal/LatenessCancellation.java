@@ -81,9 +81,10 @@ class LatenessCancellation {
 			.findFirst()
 			// NFR-8: a record of another school is not found
 			.orElseThrow(() -> ApiException.notFound("not_found"));
+		// D17: outside the DM's scope the record is not found
 		boolean inScope = students.classOf(school, row.studentId()).filter(user.classesAs(Role.DM)::contains).isPresent();
 		if (!inScope) {
-			throw ApiException.forbidden();
+			throw ApiException.notFound("not_found");
 		}
 		if (row.cancelled()) {
 			throw ApiException.conflict("cancel.already_cancelled");

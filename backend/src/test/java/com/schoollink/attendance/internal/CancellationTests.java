@@ -124,7 +124,8 @@ class CancellationTests {
 		UUID absence = record(world.studentA, "ABSENT");
 		return PermissionMatrix.row("POST /records/{id}/cancel", w -> cancelRequest("records", absence, REASON))
 			.expect(200, DM_1)
-			.expect(403, ADMIN_X, TEACHER_A, ASSISTANT_DM_1, DM_2, COUNSELLOR_X, PARENT_A, RESEARCHER, ADMIN_Y)
+			.expect(403, ADMIN_X, TEACHER_A, ASSISTANT_DM_1, COUNSELLOR_X, PARENT_A, RESEARCHER, ADMIN_Y)
+			.expect(404, DM_2) // D17: outside the scope
 			.expect(401, ANONYMOUS)
 			.tests(mockMvc, world);
 	}
@@ -134,18 +135,19 @@ class CancellationTests {
 		UUID late = lateness(world.studentA);
 		return PermissionMatrix.row("POST /lateness/{id}/cancel", w -> cancelRequest("lateness", late, REASON))
 			.expect(200, DM_1)
-			.expect(403, ADMIN_X, TEACHER_A, ASSISTANT_DM_1, DM_2, COUNSELLOR_X, PARENT_A, RESEARCHER, ADMIN_Y)
+			.expect(403, ADMIN_X, TEACHER_A, ASSISTANT_DM_1, COUNSELLOR_X, PARENT_A, RESEARCHER, ADMIN_Y)
+			.expect(404, DM_2) // D17: outside the scope
 			.expect(401, ANONYMOUS)
 			.tests(mockMvc, world);
 	}
 
 	@Test
-	void aDmOutsideTheBlockChangesNothing() throws Exception { // BR-13, NFR-8
+	void aDmOutsideTheBlockChangesNothing() throws Exception { // BR-13, NFR-8, D17
 		UUID absence = record(world.studentA, "ABSENT");
 		UUID late = lateness(world.studentA);
 
-		cancel(DM_2, "records", absence, REASON).andExpect(status().isForbidden());
-		cancel(DM_2, "lateness", late, REASON).andExpect(status().isForbidden());
+		cancel(DM_2, "records", absence, REASON).andExpect(status().isNotFound());
+		cancel(DM_2, "lateness", late, REASON).andExpect(status().isNotFound());
 
 		assertThat(cancelledAt("attendance_record", absence)).isNull();
 		assertThat(cancelledAt("lateness_record", late)).isNull();

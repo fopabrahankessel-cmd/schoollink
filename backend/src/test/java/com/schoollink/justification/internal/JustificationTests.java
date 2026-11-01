@@ -173,12 +173,12 @@ class JustificationTests {
 	}
 
 	@Test
-	void aDmOutsideTheStudentsBlockGets403() throws Exception { // BR-11, NFR-8
+	void aDmOutsideTheStudentsBlockGets404() throws Exception { // BR-11, NFR-8, D17
 		UUID absence = absent(world.studentA, MONDAY, world.period1);
 		UUID late = late(world.studentA, MONDAY);
 
-		justify(DM_2, Map.of("reason", "FAMILY", "absenceIds", List.of(absence))).andExpect(status().isForbidden());
-		justify(DM_2, Map.of("reason", "FAMILY", "latenessIds", List.of(late))).andExpect(status().isForbidden());
+		justify(DM_2, Map.of("reason", "FAMILY", "absenceIds", List.of(absence))).andExpect(status().isNotFound());
+		justify(DM_2, Map.of("reason", "FAMILY", "latenessIds", List.of(late))).andExpect(status().isNotFound());
 
 		assertThat(justificationOf("attendance_record", absence)).isNull();
 		assertThat(justificationOf("lateness_record", late)).isNull();
@@ -191,7 +191,7 @@ class JustificationTests {
 		UUID other = late(studentB, MONDAY);
 
 		justify(DM_1, Map.of("reason", "FAMILY", "absenceIds", List.of(mine), "latenessIds", List.of(other)))
-			.andExpect(status().isForbidden());
+			.andExpect(status().isNotFound());
 
 		assertThat(justificationOf("attendance_record", mine)).isNull();
 		assertThat(jdbc.queryForObject("SELECT count(*) FROM audit_log WHERE action = 'JUSTIFY'", Integer.class)).isZero();

@@ -110,14 +110,14 @@ class Justifications {
 		if (absent.size() != absenceIds.size() || late.size() != latenessIds.size()) {
 			throw ApiException.notFound("not_found");
 		}
-		// BR-11: the DM in charge of the student's class, checked before anything about the records
+		// BR-11, D17: the DM in charge of the student's class; outside the scope a record is not found
 		Set<UUID> studentIds = new LinkedHashSet<>();
 		absent.forEach(r -> studentIds.add(r.studentId()));
 		late.forEach(r -> studentIds.add(r.studentId()));
 		Map<UUID, Card> cards = students.cards(school, studentIds);
 		Set<UUID> scope = user.classesAs(Role.DM);
 		if (!studentIds.stream().allMatch(id -> cards.containsKey(id) && scope.contains(cards.get(id).classId()))) {
-			throw ApiException.forbidden();
+			throw ApiException.notFound("not_found");
 		}
 		if (absent.stream().anyMatch(r -> !r.absent())) {
 			throw ApiException.invalid("justification.not_an_absence", "absenceIds");
