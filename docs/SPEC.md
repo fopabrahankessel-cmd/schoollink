@@ -311,7 +311,7 @@ One REST API under `/api/v1`, secured by JWT; the server derives the school and 
 | Detection | `GET /alerts?status=open` | DM | Alerts in scope |
 | Detection | `POST /alerts/{id}/decision` | DM | Dismiss, summon, disciplinary, refer (D30) |
 | Detection | `GET/PUT /settings/thresholds` | DM | Configure rules, school start time and SMS digest times (UC-D7, D28) |
-| Discipline | `POST /summons` | DM | Summon a parent |
+| Discipline | `POST /summons` | DM | Summon a parent; from an alert, decision SUMMON (D31) |
 | Counselling | `GET /cases`, `POST /cases`, `POST /cases/{id}/notes` | Counsellor | Case management |
 | Parent | `GET /me/children`, `GET /children/{id}/history` | Parent | Children and history |
 | Parent | `GET /me/notifications`, `POST /notifications/{id}/opened` | Parent | Inbox + open receipt for the research metrics |

@@ -5,6 +5,7 @@ import com.schoollink.audit.AuditEntry;
 import com.schoollink.audit.AuditLog;
 import com.schoollink.detection.RuleType;
 import com.schoollink.discipline.DisciplineOutcomes;
+import com.schoollink.discipline.Summonses;
 import com.schoollink.people.Students;
 import com.schoollink.people.Students.Card;
 import com.schoollink.school.SchoolClasses;
@@ -19,6 +20,7 @@ import java.sql.Timestamp;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
@@ -35,9 +37,8 @@ import tools.jackson.databind.json.JsonMapper;
 
 /**
  * UC-D2, BR-18: the DM in charge of the student's class reviews the risk alerts and decides on
- * each one, once: dismiss (with a reason), record a disciplinary issue, or refer to the counsellor.
- * The decision closes the alert and keeps who, when and why (NFR-11). Summoning from an alert comes
- * with the summons (task 3.6).
+ * each one, once: dismiss (with a reason), summon the parent, record a disciplinary issue, or refer
+ * to the counsellor. The decision closes the alert and keeps who, when and why (NFR-11).
  */
 @Service
 class Alerts {
@@ -52,11 +53,16 @@ class Alerts {
 	}
 
 	enum Decision {
-		DISMISS, DISCIPLINARY, REFER
+		DISMISS, SUMMON, DISCIPLINARY, REFER
 	}
 
-	/** {@code note}: the reason to dismiss, the issue to record, or what the counsellor should know. */
-	record DecisionRequest(@NotNull Decision decision, @Size(max = MAX_NOTE) String note) {
+	/**
+	 * {@code note}: the reason to dismiss, the issue to record, what the counsellor should know, or
+	 * why the parent is summoned. {@code meetingDate} and {@code meetingTime}: for SUMMON only; left
+	 * out, the next school day at the start of school (UC-D3: one tap after a full-day absence, D31).
+	 */
+	record DecisionRequest(@NotNull Decision decision, @Size(max = MAX_NOTE) String note, LocalDate meetingDate,
+			LocalTime meetingTime) {
 	}
 
 	record AlertView(UUID id, UUID studentId, String firstName, String lastName, String matricule, UUID classId,
@@ -82,6 +88,8 @@ class Alerts {
 
 	private final DisciplineOutcomes outcomes;
 
+	private final Summonses summonses;
+
 	private final AuditLog audit;
 
 	private final JsonMapper json;
@@ -89,11 +97,12 @@ class Alerts {
 	private final Clock clock;
 
 	Alerts(NamedParameterJdbcTemplate jdbc, Students students, SchoolClasses classes, DisciplineOutcomes outcomes,
-			AuditLog audit, JsonMapper json, Clock clock) {
+			Summonses summonses, AuditLog audit, JsonMapper json, Clock clock) {
 		this.jdbc = jdbc;
 		this.students = students;
 		this.classes = classes;
 		this.outcomes = outcomes;
+		this.summonses = summonses;
 		this.audit = audit;
 		this.json = json;
 		this.clock = clock;
@@ -120,8 +129,8 @@ class Alerts {
 	AlertView decide(CurrentUser user, UUID id, DecisionRequest request) {
 		UUID school = dmSchool(user);
 		String note = request.note() == null || request.note().isBlank() ? null : request.note().strip();
-		// BR-18: a dismissal says why; a disciplinary issue says what happened
-		if (note == null && request.decision() != Decision.REFER) {
+		// BR-18: a dismissal says why; a disciplinary issue says what happened; a summons has the alert
+		if (note == null && (request.decision() == Decision.DISMISS || request.decision() == Decision.DISCIPLINARY)) {
 			throw ApiException.invalid("alert.note_required", "note");
 		}
 		// locked: two decisions on the same alert are taken one after the other
@@ -138,6 +147,9 @@ class Alerts {
 
 		UUID outcome = switch (request.decision()) {
 			case DISMISS -> null;
+			// BR-23: sent at once, in this transaction
+			case SUMMON -> summonses.issue(school, alert.studentId(), id, user.userId(), request.meetingDate(),
+					request.meetingTime(), note);
 			case DISCIPLINARY -> outcomes.recordDisciplinary(school, alert.studentId(), id, user.userId(), note);
 			case REFER -> outcomes.refer(school, alert.studentId(), id, user.userId(), note);
 		};

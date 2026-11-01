@@ -3,6 +3,7 @@ package com.schoollink.notification.internal;
 import com.schoollink.attendance.AbsenceCancelled;
 import com.schoollink.attendance.AttendanceConfirmed;
 import com.schoollink.attendance.AttendanceConfirmed.Absence;
+import com.schoollink.discipline.SummonsIssued;
 import com.schoollink.lateness.LatenessCancelled;
 import com.schoollink.lateness.LatenessRecorded;
 import com.schoollink.notification.internal.Outbox.Channel;
@@ -97,6 +98,24 @@ class OutboxListeners {
 	@Transactional(propagation = Propagation.MANDATORY)
 	void on(LatenessCancelled event) {
 		corrections.correct(event.schoolId(), EventType.LATENESS, event.recordId());
+	}
+
+	/**
+	 * BR-23, D12: a summons goes at once to every guardian of the student, by push with the app and
+	 * by SMS without, never held for the digest.
+	 */
+	@EventListener
+	@Transactional(propagation = Propagation.MANDATORY)
+	void on(SummonsIssued event) {
+		List<Row> rows = guardians.ofStudents(event.schoolId(), Set.of(event.studentId())).stream().map(guardian -> {
+			Map<String, Object> payload = Map.of("studentId", guardian.studentId(), "firstName",
+					guardian.studentFirstName(), "meetingDate", event.meetingDate().toString(), "meetingTime",
+					event.meetingTime().toString());
+			return new Row(event.schoolId(), guardian.guardianId(), guardian.studentId(), EventType.SUMMONS,
+					event.summonsId(), guardian.hasAccount() ? Channel.PUSH : Channel.SMS, guardian.language(), payload,
+					Status.QUEUED);
+		}).toList();
+		outbox.write(rows);
 	}
 
 	/**
