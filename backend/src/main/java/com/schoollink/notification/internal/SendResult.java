@@ -6,7 +6,8 @@ package com.schoollink.notification.internal;
  */
 sealed interface SendResult {
 
-	record Sent() implements SendResult {
+	/** {@code providerId}: the provider's id for the message, to match its delivery reports; may be null. */
+	record Sent(String providerId) implements SendResult {
 	}
 
 	/** A failure that may pass: a network error, a timeout, a rate limit. Retried with backoff. */
@@ -18,7 +19,11 @@ sealed interface SendResult {
 	}
 
 	static SendResult sent() {
-		return new Sent();
+		return new Sent(null);
+	}
+
+	static SendResult sent(String providerId) {
+		return new Sent(providerId);
 	}
 
 }

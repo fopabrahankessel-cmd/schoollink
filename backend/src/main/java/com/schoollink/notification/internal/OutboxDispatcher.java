@@ -188,8 +188,11 @@ class OutboxDispatcher {
 			.addValue("eraseCode", row.eventType() == EventType.INVITATION);
 		String outcome = switch (result) {
 			case Sent sent -> {
-				p.addValue("status", "SENT").addValue("next", null).addValue("error", null);
-				yield "sent_at = :now, payload = CASE WHEN :eraseCode THEN payload - 'code' ELSE payload END";
+				// BR-24: the gateway's id, so its delivery report finds the row (task 3.7)
+				p.addValue("status", "SENT").addValue("next", null).addValue("error", null)
+					.addValue("providerRef", sent.providerId());
+				yield "sent_at = :now, provider_ref = :providerRef, "
+						+ "payload = CASE WHEN :eraseCode THEN payload - 'code' ELSE payload END";
 			}
 			case Retry retry when row.attempt() < MAX_ATTEMPTS -> {
 				p.addValue("status", "QUEUED")

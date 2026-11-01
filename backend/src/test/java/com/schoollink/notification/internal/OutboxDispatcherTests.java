@@ -154,6 +154,18 @@ class OutboxDispatcherTests {
 	}
 
 	@Test
+	void theGatewaysIdIsKeptForItsDeliveryReport() { // BR-24, D32
+		sms.script(SendResult.sent("SMfake0000000000000000000000000001"));
+		UUID row = correctionSms(withoutApp);
+
+		dispatcher.dispatchDue();
+
+		assertThat(state(row)).containsEntry("status", "SENT");
+		assertThat(jdbc.queryForObject("SELECT provider_ref FROM notification_outbox WHERE id = ?", String.class, row))
+			.isEqualTo("SMfake0000000000000000000000000001");
+	}
+
+	@Test
 	void aRefusalFailsAtOnce() { // BR-24: retrying would not help
 		push.script(new Rejected("no device registered"));
 		UUID row = absencePush(withApp);

@@ -3,8 +3,9 @@ package com.schoollink.notification.internal;
 import java.util.UUID;
 
 /**
- * Sends one SMS (BR-22, BR-23). A real gateway adapter comes with task 3.7; until then
- * {@link LoggingSmsProvider} stands in.
+ * Sends one SMS (BR-22, BR-23): {@link TwilioSmsProvider}, or {@link LoggingSmsProvider} in dev and
+ * tests without a gateway (see {@link SmsConfig}). A sent SMS carries the gateway's message id, which
+ * its delivery report quotes (BR-24).
  */
 interface SmsProvider {
 

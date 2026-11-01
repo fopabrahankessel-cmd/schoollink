@@ -42,6 +42,8 @@ class SecurityConfig {
 						"/api/v1/auth/logout", "/api/v1/auth/parent/activate", "/api/v1/auth/parent/verify",
 						"/api/v1/auth/parent/sign-in", "/api/v1/auth/parent/sign-in/verify").permitAll()
 				.requestMatchers(HttpMethod.GET, "/api/v1/auth/schools").permitAll()
+				// BR-24: the SMS gateway signs its delivery reports instead of signing in (D32)
+				.requestMatchers(HttpMethod.POST, "/api/v1/webhooks/sms/delivery").permitAll()
 				.anyRequest().authenticated())
 			.oauth2ResourceServer(o -> o.jwt(jwt -> jwt.jwtAuthenticationConverter(currentUser))
 				.authenticationEntryPoint(errors)

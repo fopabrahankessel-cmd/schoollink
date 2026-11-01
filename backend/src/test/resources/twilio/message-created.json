@@ -1,0 +1,16 @@
+{
+  "account_sid": "ACfake00000000000000000000000000",
+  "api_version": "2010-04-01",
+  "body": "Fake test message",
+  "date_created": "Mon, 02 Nov 2026 07:40:00 +0000",
+  "direction": "outbound-api",
+  "error_code": null,
+  "error_message": null,
+  "from": "SchoolLink",
+  "num_segments": "1",
+  "price": null,
+  "sid": "SMfake0000000000000000000000000001",
+  "status": "queued",
+  "to": "+237690000202",
+  "uri": "/2010-04-01/Accounts/ACfake00000000000000000000000000/Messages/SMfake0000000000000000000000000001.json"
+}
