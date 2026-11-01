@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -29,9 +30,12 @@ class LatenessController {
 
 	private final LatenessQueries queries;
 
-	LatenessController(LatenessRecorder recorder, LatenessQueries queries) {
+	private final LatenessCancellation cancellation;
+
+	LatenessController(LatenessRecorder recorder, LatenessQueries queries, LatenessCancellation cancellation) {
 		this.recorder = recorder;
 		this.queries = queries;
+		this.cancellation = cancellation;
 	}
 
 	/** {@code q}: part of a name or the start of a matricule; omitted, the whole scope (offline copy). */
@@ -53,6 +57,13 @@ class LatenessController {
 			@Valid @RequestBody LatenessRequest body) {
 		Saved saved = recorder.save(user, id, body);
 		return ResponseEntity.status(saved.created() ? HttpStatus.CREATED : HttpStatus.OK).body(saved.lateness());
+	}
+
+	/** D11: the DM cancels a lateness recorded by mistake; the parent who was told gets a correction. */
+	@PostMapping("/api/v1/lateness/{id}/cancel")
+	LatenessCancellation.CancelledView cancel(@AuthenticationPrincipal CurrentUser user, @PathVariable UUID id,
+			@Valid @RequestBody LatenessCancellation.CancelRequest body) {
+		return cancellation.cancel(user, id, body);
 	}
 
 }

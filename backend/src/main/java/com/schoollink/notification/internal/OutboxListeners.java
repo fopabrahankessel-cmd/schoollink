@@ -1,7 +1,9 @@
 package com.schoollink.notification.internal;
 
+import com.schoollink.attendance.AbsenceCancelled;
 import com.schoollink.attendance.AttendanceConfirmed;
 import com.schoollink.attendance.AttendanceConfirmed.Absence;
+import com.schoollink.lateness.LatenessCancelled;
 import com.schoollink.lateness.LatenessRecorded;
 import com.schoollink.notification.internal.Outbox.Channel;
 import com.schoollink.notification.internal.Outbox.EventType;
@@ -41,10 +43,13 @@ class OutboxListeners {
 
 	private final SchoolCalendar calendar;
 
-	OutboxListeners(Outbox outbox, Guardians guardians, SchoolCalendar calendar) {
+	private final Corrections corrections;
+
+	OutboxListeners(Outbox outbox, Guardians guardians, SchoolCalendar calendar, Corrections corrections) {
 		this.outbox = outbox;
 		this.guardians = guardians;
 		this.calendar = calendar;
+		this.corrections = corrections;
 	}
 
 	/** D2: one notification per absent period, to every guardian of the student; no absence, nothing. */
@@ -78,6 +83,20 @@ class OutboxListeners {
 			return childEvent(event.schoolId(), guardian, EventType.LATENESS, event.recordId(), payload);
 		}).toList();
 		outbox.write(rows);
+	}
+
+	/** BR-14: an absence cancelled by the DM; the parents who were told get a correction. */
+	@EventListener
+	@Transactional(propagation = Propagation.MANDATORY)
+	void on(AbsenceCancelled event) {
+		corrections.correct(event.schoolId(), EventType.ABSENCE, event.recordId());
+	}
+
+	/** BR-14, D11: the same for a lateness. */
+	@EventListener
+	@Transactional(propagation = Propagation.MANDATORY)
+	void on(LatenessCancelled event) {
+		corrections.correct(event.schoolId(), EventType.LATENESS, event.recordId());
 	}
 
 	/**

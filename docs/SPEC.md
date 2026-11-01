@@ -306,6 +306,7 @@ One REST API under `/api/v1`, secured by JWT; the server derives the school and 
 | Lateness | `GET /lateness/students?q=` | Assistant DM | Students of their scope for the gate search; without `q`, the whole scope for offline search |
 | Lateness | `PUT /lateness/{uuid}` | Assistant DM | Record lateness (idempotent) |
 | Lateness | `GET /lateness?date=` | Admin, Assistant DM, DM | The day's lateness in scope (UC-AD2) |
+| Lateness | `POST /lateness/{id}/cancel` | DM | Cancel an erroneous lateness with a reason (D11, D27) |
 | Discipline | `POST /justifications` | DM | Justify one or several records |
 | Detection | `GET /alerts?status=open` | DM | Alerts in scope |
 | Detection | `POST /alerts/{id}/decision` | DM | Dismiss, summon, disciplinary, refer |
