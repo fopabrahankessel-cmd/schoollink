@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 /** School days and the timetable (school module API). Everything is within {@code schoolId} only (NFR-8). */
@@ -29,6 +31,18 @@ public interface SchoolCalendar {
 	 * school day.
 	 */
 	List<Lesson> lessonsOf(UUID schoolId, UUID teacherId, LocalDate date);
+
+	/**
+	 * D2: the periods timetabled for the class on that date, whoever teaches them; empty when the
+	 * date is not a school day.
+	 */
+	Set<UUID> periodsOf(UUID schoolId, UUID classId, LocalDate date);
+
+	/** The term holding the date, its holidays included; empty between terms. */
+	Optional<Term> termOf(UUID schoolId, LocalDate date);
+
+	record Term(UUID id, LocalDate startDate, LocalDate endDate) {
+	}
 
 	record Period(UUID id, int number, LocalTime startTime, LocalTime endTime) {
 	}

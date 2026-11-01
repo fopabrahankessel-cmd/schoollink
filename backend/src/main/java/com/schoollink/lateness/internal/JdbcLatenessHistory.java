@@ -4,6 +4,7 @@ import com.schoollink.lateness.LatenessHistory;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -29,6 +30,14 @@ class JdbcLatenessHistory implements LatenessHistory {
 					.addValue("to", to),
 				(rs, n) -> new Lateness(rs.getObject("id", UUID.class), rs.getObject("date", LocalDate.class),
 						rs.getObject("arrival_time", LocalTime.class), rs.getBoolean("justified")));
+	}
+
+	@Override
+	public Set<UUID> studentsLate(UUID schoolId, LocalDate from, LocalDate to) {
+		return Set.copyOf(jdbc.queryForList("""
+				SELECT DISTINCT student_id FROM lateness_record
+				WHERE school_id = :school AND cancelled_at IS NULL AND date BETWEEN :from AND :to""",
+				new MapSqlParameterSource("school", schoolId).addValue("from", from).addValue("to", to), UUID.class));
 	}
 
 }

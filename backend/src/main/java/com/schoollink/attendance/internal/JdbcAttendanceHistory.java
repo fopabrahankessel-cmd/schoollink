@@ -3,6 +3,7 @@ package com.schoollink.attendance.internal;
 import com.schoollink.attendance.AttendanceHistory;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -30,6 +31,16 @@ class JdbcAttendanceHistory implements AttendanceHistory {
 					.addValue("to", to),
 				(rs, n) -> new Absence(rs.getObject("id", UUID.class), rs.getObject("date", LocalDate.class),
 						rs.getObject("period_id", UUID.class), rs.getBoolean("justified")));
+	}
+
+	@Override
+	public Set<UUID> studentsAbsent(UUID schoolId, LocalDate from, LocalDate to) {
+		return Set.copyOf(jdbc.queryForList("""
+				SELECT DISTINCT r.student_id
+				FROM attendance_record r JOIN attendance_session s ON s.id = r.session_id AND s.school_id = r.school_id
+				WHERE r.school_id = :school AND r.status = 'ABSENT' AND r.cancelled_at IS NULL
+				  AND s.date BETWEEN :from AND :to""",
+				new MapSqlParameterSource("school", schoolId).addValue("from", from).addValue("to", to), UUID.class));
 	}
 
 }

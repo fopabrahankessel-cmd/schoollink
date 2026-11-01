@@ -6,6 +6,8 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -77,6 +79,28 @@ class JdbcSchoolCalendar implements SchoolCalendar {
 						rs.getObject("period_id", UUID.class), rs.getInt("number"),
 						rs.getTime("start_time").toLocalTime(), rs.getTime("end_time").toLocalTime(),
 						rs.getString("subject")));
+	}
+
+	@Override
+	public Set<UUID> periodsOf(UUID schoolId, UUID classId, LocalDate date) {
+		if (!isSchoolDay(schoolId, date)) {
+			return Set.of();
+		}
+		return Set.copyOf(jdbc.queryForList("""
+				SELECT period_id FROM timetable_slot WHERE school_id = :school AND class_id = :class AND weekday = :weekday""",
+				params(schoolId, date).addValue("class", classId).addValue("weekday", date.getDayOfWeek().getValue()),
+				UUID.class));
+	}
+
+	@Override
+	public Optional<Term> termOf(UUID schoolId, LocalDate date) {
+		return jdbc.query("""
+				SELECT id, start_date, end_date FROM term
+				WHERE school_id = :school AND CAST(:date AS date) BETWEEN start_date AND end_date""",
+				params(schoolId, date), (rs, n) -> new Term(rs.getObject("id", UUID.class),
+						rs.getObject("start_date", LocalDate.class), rs.getObject("end_date", LocalDate.class)))
+			.stream()
+			.findFirst();
 	}
 
 	/** D3: Monday to Friday; timetable weekdays are ISO (1 = Monday). */
