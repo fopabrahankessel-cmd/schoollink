@@ -25,7 +25,8 @@ import tools.jackson.databind.json.JsonMapper;
  * of the error;</li>
  * <li>on its way or delivered (SENDING, SENT, DELIVERED, OPENED): a correction on the same channel,
  * at once, also by SMS (D11: it does not wait for the digest);</li>
- * <li>FAILED: nothing, the parent never got it.</li>
+ * <li>folded into an SMS digest (DIGESTED): as the digest, which is sent or about to be (D33);</li>
+ * <li>FAILED or SKIPPED (the push was opened, so no SMS): nothing on that channel.</li>
  * </ul>
  * Runs in the cancelling transaction (NFR-6). The correction's event id is the record's, so it is
  * written once per guardian and channel.
@@ -61,10 +62,13 @@ class Corrections {
 				UPDATE notification_outbox SET status = 'WITHDRAWN'
 				WHERE school_id = :school AND event_type = :type AND event_id = :event AND status IN ('QUEUED', 'HELD')""",
 				p);
+		// D33: an SMS folded into a digest was told if the digest is on its way or went
 		List<Notified> notified = jdbc.query("""
-				SELECT guardian_id, student_id, channel, payload::text AS payload FROM notification_outbox
-				WHERE school_id = :school AND event_type = :type AND event_id = :event
-				  AND status IN ('SENDING', 'SENT', 'DELIVERED', 'OPENED')""", p,
+				SELECT o.guardian_id, o.student_id, o.channel, o.payload::text AS payload
+				FROM notification_outbox o LEFT JOIN notification_outbox d ON d.id = o.digest_id
+				WHERE o.school_id = :school AND o.event_type = :type AND o.event_id = :event
+				  AND (o.status IN ('SENDING', 'SENT', 'DELIVERED', 'OPENED')
+				       OR (o.status = 'DIGESTED' AND d.status IN ('QUEUED', 'SENDING', 'SENT', 'DELIVERED', 'OPENED')))""", p,
 				(rs, n) -> new Notified(rs.getObject("guardian_id", UUID.class), rs.getObject("student_id", UUID.class),
 						Channel.valueOf(rs.getString("channel")), json.readTree(rs.getString("payload"))));
 		outbox.write(notified.stream().map(n -> {

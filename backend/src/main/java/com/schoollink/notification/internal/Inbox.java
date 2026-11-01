@@ -85,7 +85,7 @@ class Inbox {
 				SELECT id, event_type, student_id, payload::text AS payload, created_at, opened_at FROM (
 				    SELECT DISTINCT ON (event_type, event_id) id, event_type, student_id, payload, created_at, opened_at
 				    FROM notification_outbox
-				    WHERE school_id = :school AND guardian_id = :guardian AND event_type <> 'INVITATION'
+				    WHERE school_id = :school AND guardian_id = :guardian AND event_type NOT IN ('INVITATION', 'DIGEST')
 				      AND status <> 'WITHDRAWN'
 				    ORDER BY event_type, event_id, channel = 'PUSH' DESC) e
 				WHERE CAST(:before AS uuid) IS NULL

@@ -181,23 +181,29 @@ class LatenessTests {
 	}
 
 	@Test
-	void eachGuardianIsNotifiedInTheSameTransaction() throws Exception { // BR-20, BR-21, BR-22, NFR-6
+	void eachGuardianIsNotifiedInTheSameTransaction() throws Exception { // BR-20, BR-21, BR-22, NFR-6, D33
 		UUID id = UUID.randomUUID();
 		save(id, Map.of()).andExpect(status().isCreated());
 
 		List<Map<String, Object>> rows = jdbc.queryForList("""
-				SELECT guardian_id, student_id, event_type, event_id, channel, language, status, payload::text AS payload
-				FROM notification_outbox WHERE event_id = ? ORDER BY channel""", id);
+				SELECT o.guardian_id, o.student_id, o.event_type, o.event_id, o.channel, o.language, o.status,
+				       o.payload::text AS payload
+				FROM notification_outbox o JOIN guardian g ON g.id = o.guardian_id
+				WHERE o.event_id = ? ORDER BY o.channel, g.user_id IS NULL""", id);
 		UUID parentGuardian = jdbc.queryForObject("SELECT id FROM guardian WHERE user_id = ?", UUID.class,
 				world.user(PARENT_A));
-		assertThat(rows).hasSize(2);
+		assertThat(rows).hasSize(3);
+		// D33: the app user's SMS is held too, in case the push is not opened
+		assertThat(rows.get(1)).containsEntry("guardian_id", parentGuardian)
+			.containsEntry("channel", "SMS")
+			.containsEntry("status", "HELD");
 		assertThat(rows.get(0)).containsEntry("guardian_id", parentGuardian)
 			.containsEntry("student_id", world.studentA)
 			.containsEntry("event_type", "LATENESS")
 			.containsEntry("channel", "PUSH")
 			.containsEntry("language", "FR")
 			.containsEntry("status", "QUEUED");
-		assertThat(rows.get(1)).containsEntry("guardian_id", smsGuardian)
+		assertThat(rows.get(2)).containsEntry("guardian_id", smsGuardian)
 			.containsEntry("channel", "SMS")
 			.containsEntry("language", "EN")
 			.containsEntry("status", "HELD");
@@ -216,7 +222,7 @@ class LatenessTests {
 
 		assertThat(jdbc.queryForObject("SELECT count(*) FROM lateness_record", Integer.class)).isOne();
 		assertThat(jdbc.queryForObject("SELECT count(*) FROM notification_outbox WHERE event_id = ?", Integer.class, id))
-			.isEqualTo(2);
+			.isEqualTo(3);
 		assertThat(events.stream(LatenessRecorded.class)).hasSize(1);
 	}
 

@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.SortedSet;
+import java.util.TreeSet;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.JsonNode;
@@ -26,6 +27,7 @@ import tools.jackson.databind.JsonNode;
  * <li>CORRECTION: firstName, date, kind (ABSENCE or LATENESS), periodNumber for an absence</li>
  * <li>SUMMONS: firstName, meetingDate, meetingTime</li>
  * <li>INVITATION: code, expiresAt (an instant)</li>
+ * <li>DIGEST (SMS only): firstName, date, absentPeriods (a list, may be empty), arrivalTime if late</li>
  * </ul>
  * Absence and lateness never go by SMS one by one: guardians without the app get the daily
  * {@link #digest} (BR-22, D6).
@@ -70,7 +72,7 @@ class Templates {
 		};
 	}
 
-	/** The SMS sent at once: corrections (D11), summons (BR-23, D12) and invitations (D13). */
+	/** The SMS: corrections (D11), summons (BR-23, D12), invitations (D13) and digests (BR-22). */
 	String sms(EventType type, String language, JsonNode payload, School school) {
 		return switch (type) {
 			case CORRECTION -> message(language, correctionKey(payload, "sms"), text(payload, "firstName"),
@@ -79,6 +81,12 @@ class Templates {
 					day(payload, "meetingDate"), text(payload, "meetingTime"), school.name());
 			case INVITATION -> message(language, "notification.invitation.sms", text(payload, "code"), school.name(),
 					Instant.parse(text(payload, "expiresAt")).atZone(school.zone()).format(DAY));
+			case DIGEST -> {
+				SortedSet<Integer> periods = new TreeSet<>();
+				payload.get("absentPeriods").forEach(n -> periods.add(n.asInt()));
+				yield digest(language, new Digest(text(payload, "firstName"), LocalDate.parse(text(payload, "date")),
+						periods, payload.hasNonNull("arrivalTime") ? text(payload, "arrivalTime") : null), school);
+			}
 			default -> throw new IllegalArgumentException("No immediate SMS for " + type + ": it goes in the digest");
 		};
 	}

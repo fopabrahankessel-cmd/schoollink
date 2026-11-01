@@ -41,7 +41,8 @@ import tools.jackson.databind.json.JsonMapper;
  * <p>BR-24: a failed send is retried with backoff, up to 3 times ({@link #MAX_ATTEMPTS} in all),
  * then the row is FAILED. A refusal that cannot pass (no app account any more, an unknown number)
  * fails it at once. An invitation code leaves the row once the SMS is sent or has failed, and a
- * code revoked or expired in the meantime is not sent (D13, NFR-9).
+ * code revoked or expired in the meantime is not sent (D13, NFR-9). Once the school's monthly SMS
+ * cap is reached, an SMS other than a summons fails without being sent (BR-25, D12, D33).
  */
 @Component
 class OutboxDispatcher {
@@ -82,13 +83,15 @@ class OutboxDispatcher {
 
 	private final SchoolCalendar calendar;
 
+	private final SmsUsage usage;
+
 	private final JsonMapper json;
 
 	private final Clock clock;
 
 	OutboxDispatcher(NamedParameterJdbcTemplate jdbc, PlatformTransactionManager transactionManager,
 			Templates templates, PushProvider push, SmsProvider sms, Guardians guardians, Invitations invitations,
-			Schools schools, SchoolCalendar calendar, JsonMapper json, Clock clock) {
+			Schools schools, SchoolCalendar calendar, SmsUsage usage, JsonMapper json, Clock clock) {
 		this.jdbc = jdbc;
 		this.transactions = new TransactionTemplate(transactionManager);
 		this.templates = templates;
@@ -98,6 +101,7 @@ class OutboxDispatcher {
 		this.invitations = invitations;
 		this.schools = schools;
 		this.calendar = calendar;
+		this.usage = usage;
 		this.json = json;
 		this.clock = clock;
 	}
@@ -151,6 +155,10 @@ class OutboxDispatcher {
 				text = null;
 			}
 			else {
+				if (row.eventType() != EventType.SUMMONS && usage.capReached(row.schoolId())) {
+					// BR-25, D12: at the cap only summons go by SMS; the rest is not sent this month
+					return new Rejected("monthly SMS cap reached");
+				}
 				if (row.eventType() == EventType.INVITATION && !invitations.isLive(row.schoolId(), row.eventId())) {
 					return new Rejected("the invitation code was revoked or has expired");
 				}

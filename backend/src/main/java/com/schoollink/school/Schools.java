@@ -12,4 +12,7 @@ public interface Schools {
 	/** The school's name, as parents know it (it ends every SMS, BR-22). */
 	String name(UUID schoolId);
 
+	/** BR-25: the most SMS the school sends in a calendar month; at it, only summons go by SMS. */
+	int smsMonthlyCap(UUID schoolId);
+
 }

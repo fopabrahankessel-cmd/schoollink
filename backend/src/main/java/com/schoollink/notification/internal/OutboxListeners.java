@@ -31,7 +31,8 @@ import org.springframework.transaction.annotation.Transactional;
  * failure here rolls the event back. Never sends anything itself: the dispatcher does (task 2.6).
  *
  * <p>Channel (D7): a guardian with an app account gets a push, sent at once (BR-21); one without gets
- * an SMS. An absence's or a lateness's SMS is held for the daily digest (BR-22, D6); an invitation goes at once (D13).
+ * an SMS. An absence's or a lateness's SMS is held for the daily digest (BR-22, D6), for app users
+ * too, in case they do not open the push (D33); an invitation goes at once (D13).
  * Each row is in the guardian's language (BR-20). The payload holds what the templates need (task
  * 2.5), captured now, so a later rename does not change a sent message.
  */
@@ -63,12 +64,12 @@ class OutboxListeners {
 		Map<UUID, UUID> recordOf = event.absences().stream()
 			.collect(Collectors.toMap(Absence::studentId, Absence::recordId));
 		Period period = calendar.period(event.schoolId(), event.periodId());
-		List<Row> rows = guardians.ofStudents(event.schoolId(), recordOf.keySet()).stream().map(guardian -> {
+		List<Row> rows = guardians.ofStudents(event.schoolId(), recordOf.keySet()).stream().flatMap(guardian -> {
 			Map<String, Object> payload = Map.of("studentId", guardian.studentId(), "firstName",
 					guardian.studentFirstName(), "date", event.date().toString(), "periodNumber", period.number(),
 					"periodStart", period.startTime().toString());
 			return childEvent(event.schoolId(), guardian, EventType.ABSENCE, recordOf.get(guardian.studentId()),
-					payload);
+					payload).stream();
 		}).toList();
 		outbox.write(rows);
 	}
@@ -77,11 +78,11 @@ class OutboxListeners {
 	@EventListener
 	@Transactional(propagation = Propagation.MANDATORY)
 	void on(LatenessRecorded event) {
-		List<Row> rows = guardians.ofStudents(event.schoolId(), Set.of(event.studentId())).stream().map(guardian -> {
+		List<Row> rows = guardians.ofStudents(event.schoolId(), Set.of(event.studentId())).stream().flatMap(guardian -> {
 			Map<String, Object> payload = Map.of("studentId", guardian.studentId(), "firstName",
 					guardian.studentFirstName(), "date", event.date().toString(), "arrivalTime",
 					event.arrivalTime().toString());
-			return childEvent(event.schoolId(), guardian, EventType.LATENESS, event.recordId(), payload);
+			return childEvent(event.schoolId(), guardian, EventType.LATENESS, event.recordId(), payload).stream();
 		}).toList();
 		outbox.write(rows);
 	}
@@ -130,14 +131,16 @@ class OutboxListeners {
 				Map.of("code", event.code(), "expiresAt", event.expiresAt().toString()), Status.QUEUED)));
 	}
 
-	/** Absence and lateness: push now for app users, SMS held for the digest otherwise (D7, BR-21, BR-22). */
-	private static Row childEvent(UUID school, StudentGuardian guardian, EventType type, UUID eventId,
+	/**
+	 * Absence and lateness: a push now for app users (D7, BR-21), and for every guardian an SMS held
+	 * for the digest, which leaves out the app users who opened the push (BR-22, D33).
+	 */
+	private static List<Row> childEvent(UUID school, StudentGuardian guardian, EventType type, UUID eventId,
 			Map<String, Object> payload) {
-		return guardian.hasAccount()
-				? new Row(school, guardian.guardianId(), guardian.studentId(), type, eventId, Channel.PUSH,
-						guardian.language(), payload, Status.QUEUED)
-				: new Row(school, guardian.guardianId(), guardian.studentId(), type, eventId, Channel.SMS,
-						guardian.language(), payload, Status.HELD);
+		Row sms = new Row(school, guardian.guardianId(), guardian.studentId(), type, eventId, Channel.SMS,
+				guardian.language(), payload, Status.HELD);
+		return guardian.hasAccount() ? List.of(new Row(school, guardian.guardianId(), guardian.studentId(), type,
+				eventId, Channel.PUSH, guardian.language(), payload, Status.QUEUED), sms) : List.of(sms);
 	}
 
 }

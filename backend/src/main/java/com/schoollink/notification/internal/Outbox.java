@@ -21,7 +21,10 @@ class Outbox {
 
 	enum EventType {
 
-		ABSENCE, LATENESS, CORRECTION, SUMMONS, DM_MESSAGE, ANNOUNCEMENT, INVITATION
+		ABSENCE, LATENESS, CORRECTION, SUMMONS, DM_MESSAGE, ANNOUNCEMENT, INVITATION,
+
+		/** BR-22: one SMS for a guardian, student and day, built by the digest run (task 3.8). */
+		DIGEST
 
 	}
 

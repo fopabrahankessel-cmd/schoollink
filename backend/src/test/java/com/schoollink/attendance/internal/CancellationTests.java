@@ -357,9 +357,10 @@ class CancellationTests {
 
 		cancel(DM_1, "lateness", late, REASON).andExpect(status().isOk());
 
-		assertThat(jdbc.queryForObject("""
+		// both held SMS, the app user's too (D33)
+		assertThat(jdbc.queryForList("""
 				SELECT status FROM notification_outbox WHERE event_type = 'LATENESS' AND event_id = ? AND channel = 'SMS'""",
-				String.class, late)).isEqualTo("WITHDRAWN");
+				String.class, late)).containsExactly("WITHDRAWN", "WITHDRAWN");
 		List<Map<String, Object>> rows = corrections(late);
 		assertThat(rows).singleElement()
 			.satisfies(row -> assertThat(row).containsEntry("guardian_id", parentGuardian)

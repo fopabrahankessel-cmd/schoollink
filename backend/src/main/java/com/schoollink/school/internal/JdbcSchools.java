@@ -27,4 +27,9 @@ class JdbcSchools implements Schools {
 		return jdbc.queryForObject("SELECT name FROM school WHERE id = ?", String.class, schoolId);
 	}
 
+	@Override
+	public int smsMonthlyCap(UUID schoolId) {
+		return jdbc.queryForObject("SELECT sms_monthly_cap FROM school WHERE id = ?", Integer.class, schoolId);
+	}
+
 }

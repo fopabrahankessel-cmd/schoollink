@@ -88,7 +88,7 @@ class OutboxTests {
 	}
 
 	@Test
-	void twoAbsenteesWithTwoGuardiansEachGiveFourPushRows() throws Exception { // BR-20, BR-21, D7
+	void twoAbsenteesWithTwoGuardiansEachGiveFourPushRows() throws Exception { // BR-20, BR-21, D7, D33
 		guardian(awa, "+237690000101", "FR", true);
 		guardian(awa, "+237690000102", "EN", true);
 		guardian(paul, "+237690000103", "FR", true);
@@ -100,7 +100,7 @@ class OutboxTests {
 				SELECT o.channel, o.status, o.event_type, o.language, o.student_id, o.attempts,
 				       o.event_id = r.id AS event_is_the_absence
 				FROM notification_outbox o JOIN attendance_record r ON r.student_id = o.student_id
-				WHERE o.school_id = ?""", world.schoolX);
+				WHERE o.school_id = ? AND o.channel = 'PUSH'""", world.schoolX);
 		assertThat(rows).hasSize(4).allSatisfy(row -> {
 			assertThat(row.get("channel")).isEqualTo("PUSH");
 			assertThat(row.get("status")).isEqualTo("QUEUED");
@@ -110,16 +110,21 @@ class OutboxTests {
 		});
 		// BR-20: each in the guardian's own language
 		assertThat(rows).extracting(row -> row.get("language")).containsExactlyInAnyOrder("FR", "EN", "FR", "FR");
+		// D33: and each an SMS held for the digest, in case the push is not opened
+		assertThat(jdbc.queryForObject("""
+				SELECT count(*) FROM notification_outbox WHERE school_id = ? AND channel = 'SMS' AND status = 'HELD'""",
+				Integer.class, world.schoolX)).isEqualTo(4);
 	}
 
 	@Test
-	void guardiansWithoutTheAppGetAnSmsHeldForTheDigest() throws Exception { // D7, BR-22
+	void guardiansWithoutTheAppGetAnSmsHeldForTheDigest() throws Exception { // D7, BR-22, D33
 		UUID withApp = guardian(awa, "+237690000101", "FR", true);
 		UUID withoutApp = guardian(awa, "+237690000102", "FR", false);
 
 		saveSession(List.of(awa)).andExpect(status().isCreated());
 
-		assertThat(outboxOf(withApp)).containsExactly("PUSH QUEUED");
+		// D33: the app user's SMS waits too, and goes only if the push is not opened
+		assertThat(outboxOf(withApp)).containsExactlyInAnyOrder("PUSH QUEUED", "SMS HELD");
 		assertThat(outboxOf(withoutApp)).containsExactly("SMS HELD");
 	}
 
@@ -130,7 +135,8 @@ class OutboxTests {
 		saveSession(List.of(awa)).andExpect(status().isCreated());
 
 		JsonNode payload = json.readTree(
-				jdbc.queryForObject("SELECT payload::text FROM notification_outbox WHERE student_id = ?", String.class, awa));
+				jdbc.queryForObject("SELECT payload::text FROM notification_outbox WHERE student_id = ? AND channel = 'PUSH'",
+						String.class, awa));
 		assertThat(payload.get("firstName").asString()).isEqualTo("Awa");
 		assertThat(payload.get("date").asString()).isEqualTo(MONDAY);
 		assertThat(payload.get("periodNumber").asInt()).isEqualTo(1);
@@ -159,7 +165,8 @@ class OutboxTests {
 
 		saveSession(id, List.of(awa)).andExpect(status().isOk());
 
-		assertThat(jdbc.queryForObject("SELECT count(*) FROM notification_outbox", Integer.class)).isOne();
+		// a push and an SMS held for the digest (D33), once
+		assertThat(jdbc.queryForObject("SELECT count(*) FROM notification_outbox", Integer.class)).isEqualTo(2);
 	}
 
 	@Test
@@ -170,7 +177,8 @@ class OutboxTests {
 		events.publishEvent(event);
 		events.publishEvent(event);
 
-		assertThat(jdbc.queryForObject("SELECT count(*) FROM notification_outbox", Integer.class)).isOne();
+		// a push and an SMS held for the digest (D33), once
+		assertThat(jdbc.queryForObject("SELECT count(*) FROM notification_outbox", Integer.class)).isEqualTo(2);
 	}
 
 	@Test
@@ -181,7 +189,7 @@ class OutboxTests {
 		// the request joins the test transaction; rolling back to the savepoint undoes all it wrote
 		jdbc.execute("SAVEPOINT before_session");
 		saveSession(id, List.of(awa, paul)).andExpect(status().isCreated());
-		assertThat(jdbc.queryForObject("SELECT count(*) FROM notification_outbox", Integer.class)).isEqualTo(2);
+		assertThat(jdbc.queryForObject("SELECT count(*) FROM notification_outbox", Integer.class)).isEqualTo(3);
 
 		jdbc.execute("ROLLBACK TO SAVEPOINT before_session");
 
