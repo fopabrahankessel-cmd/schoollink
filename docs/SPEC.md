@@ -310,7 +310,7 @@ One REST API under `/api/v1`, secured by JWT; the server derives the school and 
 | Discipline | `POST /justifications` | DM | Justify one or several records |
 | Detection | `GET /alerts?status=open` | DM | Alerts in scope |
 | Detection | `POST /alerts/{id}/decision` | DM | Dismiss, summon, disciplinary, refer |
-| Detection | `GET/PUT /settings/thresholds` | DM | Configure rules |
+| Detection | `GET/PUT /settings/thresholds` | DM | Configure rules, school start time and SMS digest times (UC-D7, D28) |
 | Discipline | `POST /summons` | DM | Summon a parent |
 | Counselling | `GET /cases`, `POST /cases`, `POST /cases/{id}/notes` | Counsellor | Case management |
 | Parent | `GET /me/children`, `GET /children/{id}/history` | Parent | Children and history |
