@@ -209,8 +209,10 @@ class DetectionTests {
 		absent(MONDAY, world.period1);
 		absent(MONDAY, period2);
 		detection.evaluate(world.schoolX, world.studentA, MONDAY, ALL);
-		jdbc.update("UPDATE risk_alert SET status = 'CLOSED', closed_at = now(), closed_by = ? WHERE school_id = ?",
-				world.user(DM_1), world.schoolX);
+		jdbc.update("""
+				UPDATE risk_alert SET status = 'CLOSED', decision = 'DISMISS', decision_note = 'Vu avec la famille',
+				       closed_at = now(), closed_by = ?
+				WHERE school_id = ?""", world.user(DM_1), world.schoolX);
 
 		assertThat(detection.evaluate(world.schoolX, world.studentA, MONDAY, ALL)).isZero();
 
