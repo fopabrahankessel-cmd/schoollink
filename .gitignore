@@ -31,3 +31,6 @@ desktop.ini
 
 # Browser automation scratch files (screenshots, snapshots)
 .playwright-mcp/
+
+# brainstorming mockups (visual companion)
+.superpowers/
