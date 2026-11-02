@@ -6,7 +6,7 @@ import 'package:dio/dio.dart';
 
 /// A canned answer: status and JSON body.
 class Reply {
-  const Reply(this.status, [this.body]);
+  const Reply(this.status, [this.body]) : contentType = null;
 
   const Reply.ok([Object? body]) : this(200, body);
 
@@ -14,11 +14,15 @@ class Reply {
   Reply.error(int status, String code, String message, {String? field})
     : this(status, {'code': code, 'message': message, 'field': ?field});
 
+  /// A file (e.g. the school logo): [body] holds the bytes, sent as they are.
+  const Reply.bytes(List<int> bytes, String this.contentType) : status = 200, body = bytes;
+
   /// The request never reaches the server.
   static const unreachable = Reply(-1);
 
   final int status;
   final Object? body;
+  final String? contentType;
 }
 
 /// What the app sent.
@@ -77,6 +81,15 @@ class FakeServer implements HttpClientAdapter {
     final reply = await handler(request);
     if (identical(reply, Reply.unreachable)) {
       throw DioException.connectionError(requestOptions: options, reason: 'unreachable');
+    }
+    if (reply.contentType case final type?) {
+      return ResponseBody.fromBytes(
+        reply.body! as List<int>,
+        reply.status,
+        headers: {
+          Headers.contentTypeHeader: [type],
+        },
+      );
     }
     return ResponseBody.fromString(
       reply.body == null ? '' : jsonEncode(reply.body),

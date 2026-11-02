@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -6,6 +8,7 @@ import '../../core/providers.dart';
 import '../parent/parent.dart' show HistoryDay;
 import '../teacher/attendance.dart' show isoDate;
 import '../teacher/teacher_sessions.dart' show DayTime;
+import 'full_day/full_day_models.dart';
 
 /// The three threshold rules (BR-16); [other] for a rule this version of the app does not know.
 enum AlertRule {
@@ -263,6 +266,40 @@ class DmRepository {
       ),
     );
     return SummonsSent.fromJson(response.data!);
+  }
+
+  /// UC-D9: the day the report screen opens on: today from 17:00, otherwise the previous school day.
+  Future<DateTime> defaultReportDate() async {
+    final response = await _call(() => _dio.get<Map<String, dynamic>>('/reports/full-day-absences/default-date'));
+    return DateTime.parse(response.data!['date'] as String);
+  }
+
+  /// UC-D9, D2: the students of the DM's classes absent the whole of [date]; a day not over, not a
+  /// school day or in the future is refused with the server's message.
+  Future<FullDayReport> fullDayReport(DateTime date) async {
+    final response = await _call(
+      () => _dio.get<Map<String, dynamic>>('/reports/full-day-absences', queryParameters: {'date': isoDate(date)}),
+    );
+    return FullDayReport.fromJson(response.data!);
+  }
+
+  /// UC-A7, D36: the header the report is printed under.
+  Future<Letterhead> letterhead() async {
+    final response = await _call(() => _dio.get<Map<String, dynamic>>('/school/letterhead'));
+    return Letterhead.fromJson(response.data!);
+  }
+
+  /// The school's logo as stored (PNG or JPEG), or null when it has none.
+  Future<Uint8List?> letterheadLogo() async {
+    try {
+      final response = await _call(
+        () => _dio.get<List<int>>('/school/letterhead/logo', options: Options(responseType: ResponseType.bytes)),
+      );
+      return Uint8List.fromList(response.data!);
+    } on ApiFailure catch (e) {
+      if (e.status == 404) return null;
+      rethrow;
+    }
   }
 
   static String? _blankToNull(String? text) => text == null || text.trim().isEmpty ? null : text.trim();
