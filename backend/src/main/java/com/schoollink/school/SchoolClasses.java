@@ -7,6 +7,9 @@ import java.util.UUID;
 /** Classes and blocks of a school (school module API). Everything is within {@code schoolId} only (NFR-8). */
 public interface SchoolClasses {
 
+	/** Every class of the school, whatever its year (UC-A6: the school dashboard). */
+	Set<UUID> ids(UUID schoolId);
+
 	/** D5: the classes of the given blocks. */
 	Set<UUID> idsInBlocks(UUID schoolId, Set<UUID> blockIds);
 

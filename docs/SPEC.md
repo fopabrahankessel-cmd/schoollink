@@ -316,7 +316,8 @@ One REST API under `/api/v1`, secured by JWT; the server derives the school and 
 | Parent | `GET /me/children`, `GET /children/{id}/history` | Parent | Children and history |
 | Parent | `GET /me/notifications`, `POST /notifications/{id}/opened` | Parent | Inbox + open receipt for the research metrics |
 | Devices | `PUT /me/device-token` | All app users | Register FCM token |
-| Reporting | `GET /dashboard/school`, `GET /dashboard/scope` | Admin, DM | Counts and trends |
+| Reporting | `GET /dashboard/school`, `GET /dashboard/scope` | Admin, DM | Counts and trends (D34) |
+| Reporting | `GET /students/{id}/history` | DM, Admin | A student's attendance and lateness history (UC-D8, D34) |
 | Research | `GET /research/summary`, `GET /research/export?dataset=` | Researcher | Anonymised statistics and CSV |
 | Webhooks | `POST /webhooks/sms/delivery` | SMS gateway | Delivery reports |
 

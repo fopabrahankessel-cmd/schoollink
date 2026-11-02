@@ -18,6 +18,12 @@ class JdbcSchoolClasses implements SchoolClasses {
 	}
 
 	@Override
+	public Set<UUID> ids(UUID schoolId) {
+		return Set.copyOf(jdbc.queryForList("SELECT id FROM school_class WHERE school_id = :school",
+				Map.of("school", schoolId), UUID.class));
+	}
+
+	@Override
 	public Set<UUID> idsInBlocks(UUID schoolId, Set<UUID> blockIds) {
 		if (blockIds.isEmpty()) {
 			return Set.of();

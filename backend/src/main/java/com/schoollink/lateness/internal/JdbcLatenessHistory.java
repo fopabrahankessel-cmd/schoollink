@@ -3,6 +3,7 @@ package com.schoollink.lateness.internal;
 import com.schoollink.lateness.LatenessHistory;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -30,6 +31,22 @@ class JdbcLatenessHistory implements LatenessHistory {
 					.addValue("to", to),
 				(rs, n) -> new Lateness(rs.getObject("id", UUID.class), rs.getObject("date", LocalDate.class),
 						rs.getObject("arrival_time", LocalTime.class), rs.getBoolean("justified")));
+	}
+
+	@Override
+	public List<StudentLateness> latenessOf(UUID schoolId, Collection<UUID> studentIds, LocalDate from, LocalDate to) {
+		if (studentIds.isEmpty()) {
+			return List.of();
+		}
+		return jdbc.query("""
+				SELECT student_id, date, justification_id IS NOT NULL AS justified FROM lateness_record
+				WHERE school_id = :school AND student_id IN (:students) AND cancelled_at IS NULL
+				  AND date BETWEEN :from AND :to""",
+				new MapSqlParameterSource("school", schoolId).addValue("students", studentIds)
+					.addValue("from", from)
+					.addValue("to", to),
+				(rs, n) -> new StudentLateness(rs.getObject("student_id", UUID.class),
+						rs.getObject("date", LocalDate.class), rs.getBoolean("justified")));
 	}
 
 	@Override
