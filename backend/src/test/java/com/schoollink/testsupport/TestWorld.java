@@ -12,6 +12,8 @@ import org.springframework.security.oauth2.jwt.JwsHeader;
 import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * Two fake schools with one user per {@link Actor}, for scope and permission tests (NFR-8).
@@ -26,7 +28,8 @@ import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
  * RESEARCHER: no school
  * </pre>
  *
- * Create it inside a {@code @Transactional} test so that everything is rolled back.
+ * Create it inside a {@code @Transactional} test so that everything is rolled back, or call
+ * {@link #remove} after a test that needs real commits.
  */
 public final class TestWorld {
 
@@ -108,6 +111,27 @@ public final class TestWorld {
 
 	public static TestWorld create(JdbcTemplate jdbc, JwtEncoder encoder) {
 		return new TestWorld(jdbc, encoder);
+	}
+
+	/**
+	 * Deletes both schools and everything in them, for tests without a test transaction. The records,
+	 * the audit log and the outbox refuse deletes (D20, NFR-11): triggers are off for the cleanup only.
+	 */
+	public void remove(PlatformTransactionManager transactions) {
+		new TransactionTemplate(transactions).executeWithoutResult(status -> {
+			jdbc.execute("SET LOCAL session_replication_role = replica");
+			List<String> tables = jdbc.queryForList("""
+					SELECT table_name FROM information_schema.columns
+					WHERE table_schema = 'public' AND column_name = 'school_id' AND table_name <> 'school'""",
+					String.class);
+			for (String table : tables) {
+				jdbc.update("DELETE FROM " + table + " WHERE school_id IN (?, ?)", schoolX, schoolY);
+			}
+			UUID researcher = users.get(Actor.RESEARCHER);
+			jdbc.update("DELETE FROM role_assignment WHERE user_id = ?", researcher);
+			jdbc.update("DELETE FROM app_user WHERE id = ?", researcher);
+			jdbc.update("DELETE FROM school WHERE id IN (?, ?)", schoolX, schoolY);
+		});
 	}
 
 	public UUID user(Actor actor) {

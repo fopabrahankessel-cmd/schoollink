@@ -3,7 +3,6 @@ package com.schoollink.detection.internal;
 import com.schoollink.TestcontainersConfiguration;
 import com.schoollink.attendance.AttendanceConfirmed;
 import com.schoollink.detection.RuleType;
-import com.schoollink.testsupport.Actor;
 import com.schoollink.testsupport.TestClock;
 import com.schoollink.testsupport.TestWorld;
 import java.sql.Timestamp;
@@ -91,21 +90,7 @@ class DetectionCommitTests {
 	@AfterEach
 	void removeWorld() {
 		clock.reset();
-		// the records, the audit log and the outbox refuse deletes (D20, NFR-11): triggers off for the cleanup only
-		new TransactionTemplate(transactions).executeWithoutResult(status -> {
-			jdbc.execute("SET LOCAL session_replication_role = replica");
-			List<String> tables = jdbc.queryForList("""
-					SELECT table_name FROM information_schema.columns
-					WHERE table_schema = 'public' AND column_name = 'school_id' AND table_name <> 'school'""",
-					String.class);
-			for (String table : tables) {
-				jdbc.update("DELETE FROM " + table + " WHERE school_id IN (?, ?)", world.schoolX, world.schoolY);
-			}
-			UUID researcher = world.user(Actor.RESEARCHER);
-			jdbc.update("DELETE FROM role_assignment WHERE user_id = ?", researcher);
-			jdbc.update("DELETE FROM app_user WHERE id = ?", researcher);
-			jdbc.update("DELETE FROM school WHERE id IN (?, ?)", world.schoolX, world.schoolY);
-		});
+		world.remove(transactions);
 	}
 
 	@Test
