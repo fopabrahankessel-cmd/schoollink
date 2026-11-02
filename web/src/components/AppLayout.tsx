@@ -16,6 +16,7 @@ import {
   ListIcon,
   SlidersIcon,
   SquaresFourIcon,
+  StampIcon,
   StudentIcon,
   SignOutIcon,
   TableIcon,
@@ -49,6 +50,7 @@ const ADMIN_NAV: { group?: string; items: NavItem[] }[] = [
       { to: '/structure/periods', label: 'nav.periods', icon: ClockIcon },
       { to: '/structure/classes', label: 'nav.classes', icon: ChalkboardTeacherIcon },
       { to: '/structure/timetable', label: 'nav.timetable', icon: TableIcon },
+      { to: '/structure/letterhead', label: 'nav.letterhead', icon: StampIcon },
     ],
   },
   {

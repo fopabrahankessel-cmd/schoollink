@@ -99,6 +99,23 @@ describe('ApiClient', () => {
     expect(api.calls[0].body).toEqual({ file: 'eleves.csv' })
   })
 
+  it('fetches a file with the token, refreshing once, and gives null when there is none', async () => {
+    const png = () => new Response('png-bytes', { headers: { 'Content-Type': 'image/png' } })
+    const api = fakeFetch({
+      'GET /school/letterhead/logo': [expired, png, json(404, { code: 'not_found', message: 'Introuvable.' })],
+      'POST /auth/refresh': json(200, tokens({}, 2)),
+    })
+    const client = newClient(api.fetch)
+    client.startSession(tokens({}, 1))
+
+    const logo = await client.blob('/school/letterhead/logo')
+
+    expect(logo?.type).toBe('image/png')
+    expect(await logo?.text()).toBe('png-bytes')
+    expect(api.calls.at(-1)?.headers).toMatchObject({ Authorization: 'Bearer access-2', Accept: '*/*' })
+    expect(await client.blob('/school/letterhead/logo')).toBeNull()
+  })
+
   it('reports network failures and non-API answers with their own codes', async () => {
     const offline = newClient(fakeFetch({ 'GET /auth/schools': new TypeError('Failed to fetch') }).fetch)
     await expect(offline.request('/auth/schools', { auth: false })).rejects.toMatchObject({ code: NETWORK_ERROR })

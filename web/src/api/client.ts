@@ -64,6 +64,8 @@ export interface RequestOptions {
   body?: unknown
   /** false for the sign-in endpoints: no token, and a 401 is an answer, not an expired session. */
   auth?: boolean
+  /** The Accept header; JSON unless a file is asked for. */
+  accept?: string
 }
 
 export interface ApiClientOptions {
@@ -138,6 +140,22 @@ export class ApiClient {
   }
 
   async request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+    const response = await this.exchange(path, options)
+    return (response.status === 204 ? undefined : await response.json()) as T
+  }
+
+  /** A file the API serves (e.g. the school logo), or null when there is none (404). */
+  async blob(path: string): Promise<Blob | null> {
+    try {
+      return await (await this.exchange(path, { accept: '*/*' })).blob()
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 404) return null
+      throw error
+    }
+  }
+
+  /** Sends with the token; on a 401 refreshes once and retries. A refusal is thrown as an ApiError. */
+  private async exchange(path: string, options: RequestOptions): Promise<Response> {
     const auth = options.auth ?? true
     const sentWith = this.accessToken
     let response = await this.send(path, options, auth ? sentWith : null)
@@ -151,7 +169,7 @@ export class ApiClient {
     if (!response.ok) {
       throw await toApiError(response)
     }
-    return (response.status === 204 ? undefined : await response.json()) as T
+    return response
   }
 
   /** Renews the token pair with the refresh token; ends the session if it is refused. */
@@ -183,7 +201,7 @@ export class ApiClient {
   }
 
   private async send(path: string, options: RequestOptions, token: string | null): Promise<Response> {
-    const headers: Record<string, string> = { Accept: 'application/json', 'Accept-Language': this.language() }
+    const headers: Record<string, string> = { Accept: options.accept ?? 'application/json', 'Accept-Language': this.language() }
     // a file upload goes as multipart: fetch sets the Content-Type with its boundary
     const multipart = options.body instanceof FormData
     if (options.body !== undefined && !multipart) headers['Content-Type'] = 'application/json'

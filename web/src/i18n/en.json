@@ -60,7 +60,8 @@
     "alerts": "Alerts",
     "students": "Students",
     "settings": "Alert settings",
-    "schoolDashboard": "School dashboard"
+    "schoolDashboard": "School dashboard",
+    "letterhead": "Document letterhead"
   },
   "home": {
     "welcome": "Welcome to SchoolLink",
@@ -561,5 +562,56 @@
     "capLeft_one": "{{left}} SMS left before the cap.",
     "capLeft_other": "{{left}} SMS left before the cap.",
     "capReached": "Cap reached: until the end of the month, only summons go out by SMS. Parents with the app still get notifications."
+  },
+  "letterhead": {
+    "title": "Document letterhead",
+    "intro": "The official header printed at the top of the reports the Discipline Master shares. It applies to the whole school.",
+    "preview": "Letterhead preview",
+    "previewFrench": "French part",
+    "previewEnglish": "English part",
+    "previewLogo": "Logo",
+    "layout": "Layout",
+    "layouts": {
+      "BILINGUAL": "Both languages",
+      "FRENCH": "French only",
+      "ENGLISH": "English only"
+    },
+    "layoutHelp": {
+      "BILINGUAL": "French on the left, logo in the centre, English on the right",
+      "FRENCH": "The logo, then the French text centred",
+      "ENGLISH": "The logo, then the English text centred"
+    },
+    "column": {
+      "french": "French column",
+      "english": "English column"
+    },
+    "lineCount": "{{count}} / {{max}} lines",
+    "noLines": "No lines yet.",
+    "notPrinted": "This column is kept but not printed with the chosen layout.",
+    "line": "Line {{n}}",
+    "text": "Text",
+    "emptyLine": "Type the line's text, or delete the line.",
+    "bold": "Bold",
+    "size": "Size",
+    "sizes": {
+      "SMALL": "Small",
+      "NORMAL": "Normal",
+      "LARGE": "Large"
+    },
+    "moveUp": "Move up",
+    "moveDown": "Move down",
+    "remove": "Delete the line",
+    "addLine": "Add a line",
+    "logo": "Logo",
+    "chooseLogo": "Choose a logo",
+    "replaceLogo": "Replace the logo",
+    "removeLogo": "Remove the logo",
+    "logoHelp": "PNG or JPEG, at most 1 MB. The logo is saved as soon as it is chosen.",
+    "logoType": "The logo must be a PNG or JPEG image.",
+    "logoTooLarge": "The logo must not be larger than 1 MB.",
+    "unsaved": "Unsaved changes",
+    "upToDate": "Everything is saved",
+    "revert": "Discard changes",
+    "saved": "The letterhead is saved."
   }
 }

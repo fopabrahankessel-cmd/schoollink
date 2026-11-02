@@ -16,6 +16,7 @@ import { StudentHistoryPage } from './pages/dm/StudentHistoryPage'
 import { StudentsPage } from './pages/dm/StudentsPage'
 import { CalendarPage } from './pages/structure/CalendarPage'
 import { ClassesPage } from './pages/structure/ClassesPage'
+import { LetterheadPage } from './pages/structure/LetterheadPage'
 import { PeriodsPage } from './pages/structure/PeriodsPage'
 import { TimetablePage } from './pages/structure/TimetablePage'
 import { StaffDetailPage } from './pages/staff/StaffDetailPage'
@@ -42,6 +43,8 @@ export const routes: RouteObject[] = [
       { path: '/structure/periods', element: admin(<PeriodsPage />) },
       { path: '/structure/classes', element: admin(<ClassesPage />) },
       { path: '/structure/timetable', element: admin(<TimetablePage />) },
+      // UC-A7: the letterhead of the DM's reports, admin only
+      { path: '/structure/letterhead', element: admin(<LetterheadPage />) },
       // UC-A2: staff accounts and assignments, admin only
       { path: '/staff', element: admin(<StaffListPage />) },
       { path: '/staff/:id', element: admin(<StaffDetailPage />) },
