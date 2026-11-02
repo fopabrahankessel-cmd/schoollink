@@ -44,7 +44,7 @@ export function LetterheadPreview({ schoolName, layout, french, english, logoUrl
     header = (
       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: pt(6) }}>
         {logo}
-        <Box style={{ fontWeight: 700, fontSize: pt(POINTS.LARGE + 2), textAlign: 'center' }}>{schoolName}</Box>
+        <Box style={{ fontWeight: 700, fontSize: pt(POINTS.LARGE), textAlign: 'center' }}>{schoolName}</Box>
       </Box>
     )
   } else if (layout === 'BILINGUAL') {
@@ -98,7 +98,10 @@ export function LetterheadPreview({ schoolName, layout, french, english, logoUrl
           }}
         >
           {header}
-          <Box aria-hidden sx={{ mt: pt(10), borderTop: `${pt(0.8)} solid #111` }} />
+          {/* a thick rule over a thin one, as on the PDF */}
+          <Box aria-hidden sx={{ mt: pt(10), borderTop: `${pt(1.4)} solid #111`, pt: pt(1.6) }}>
+            <Box sx={{ borderTop: `${pt(0.5)} solid #111` }} />
+          </Box>
           <ReportGhost />
         </Box>
       </Box>

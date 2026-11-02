@@ -950,4 +950,54 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get recordCancelled => 'Enregistrement annulé';
+
+  @override
+  String get reportTitle => 'Élèves absents toute la journée';
+
+  @override
+  String reportSummary(int students, int classes) {
+    String _temp0 = intl.Intl.pluralLogic(students, locale: localeName, other: '$students élèves', one: '1 élève');
+    String _temp1 = intl.Intl.pluralLogic(classes, locale: localeName, other: '$classes classes', one: '1 classe');
+    return '$_temp0 dans $_temp1';
+  }
+
+  @override
+  String reportBy(String name) {
+    return 'Surveillant Général : $name';
+  }
+
+  @override
+  String reportClassHeading(String className, int count) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count élèves', one: '1 élève');
+    return '$className : $_temp0';
+  }
+
+  @override
+  String get reportColumnNumber => 'N°';
+
+  @override
+  String get reportColumnName => 'Nom et prénom';
+
+  @override
+  String get reportColumnMatricule => 'Matricule';
+
+  @override
+  String reportUnrecorded(String list) {
+    return 'Heures non saisies, les absences de toute la journée y sont donc inconnues : $list';
+  }
+
+  @override
+  String reportPeriod(int number) {
+    return 'H$number';
+  }
+
+  @override
+  String reportFooter(String date, String time) {
+    return 'Généré par SchoolLink le $date à $time';
+  }
+
+  @override
+  String reportPage(int page, int pages) {
+    return 'Page $page/$pages';
+  }
 }

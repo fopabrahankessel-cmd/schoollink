@@ -237,5 +237,16 @@
   "cancelRecordBody": "Seulement pour une erreur. L'enregistrement reste dans les dossiers de l'école mais ne compte plus. Les parents déjà prévenus reçoivent une correction.",
   "cancelReason": "Motif de l'annulation",
   "confirmCancelRecord": "Annuler l'enregistrement",
-  "recordCancelled": "Enregistrement annulé"
+  "recordCancelled": "Enregistrement annulé",
+  "reportTitle": "Élèves absents toute la journée",
+  "reportSummary": "{students, plural, =1{1 élève} other{{students} élèves}} dans {classes, plural, =1{1 classe} other{{classes} classes}}",
+  "reportBy": "Surveillant Général : {name}",
+  "reportClassHeading": "{className} : {count, plural, =1{1 élève} other{{count} élèves}}",
+  "reportColumnNumber": "N°",
+  "reportColumnName": "Nom et prénom",
+  "reportColumnMatricule": "Matricule",
+  "reportUnrecorded": "Heures non saisies, les absences de toute la journée y sont donc inconnues : {list}",
+  "reportPeriod": "H{number}",
+  "reportFooter": "Généré par SchoolLink le {date} à {time}",
+  "reportPage": "Page {page}/{pages}"
 }
