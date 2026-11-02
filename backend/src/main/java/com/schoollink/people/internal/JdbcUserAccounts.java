@@ -54,6 +54,14 @@ class JdbcUserAccounts implements UserAccounts {
 	}
 
 	@Override
+	public Optional<String> fullName(UUID schoolId, UUID userId) {
+		return jdbc.queryForList("SELECT first_name || ' ' || last_name FROM app_user WHERE id = ? AND school_id = ?",
+				String.class, userId, schoolId)
+			.stream()
+			.findFirst();
+	}
+
+	@Override
 	public ScopeAssignments assignmentsOf(UUID userId, UUID schoolId) {
 		return new ScopeAssignments(
 				ids("SELECT class_id FROM teaching_assignment WHERE teacher_id = ? AND school_id = ?", userId, schoolId),

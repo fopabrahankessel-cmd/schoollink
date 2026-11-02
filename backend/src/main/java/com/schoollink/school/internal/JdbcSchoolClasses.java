@@ -43,6 +43,30 @@ class JdbcSchoolClasses implements SchoolClasses {
 	}
 
 	@Override
+	public Map<UUID, UUID> blockOf(UUID schoolId, Set<UUID> classIds) {
+		Map<UUID, UUID> blocks = new HashMap<>();
+		if (!classIds.isEmpty()) {
+			jdbc.query("SELECT id, block_id FROM school_class WHERE school_id = :school AND id IN (:classes)",
+					Map.of("school", schoolId, "classes", classIds), rs -> {
+						blocks.put(rs.getObject("id", UUID.class), rs.getObject("block_id", UUID.class));
+					});
+		}
+		return blocks;
+	}
+
+	@Override
+	public Map<UUID, String> blockNames(UUID schoolId, Set<UUID> blockIds) {
+		Map<UUID, String> names = new HashMap<>();
+		if (!blockIds.isEmpty()) {
+			jdbc.query("SELECT id, name FROM block WHERE school_id = :school AND id IN (:blocks)",
+					Map.of("school", schoolId, "blocks", blockIds), rs -> {
+						names.put(rs.getObject("id", UUID.class), rs.getString("name"));
+					});
+		}
+		return names;
+	}
+
+	@Override
 	public Map<UUID, String> names(UUID schoolId, Set<UUID> classIds) {
 		Map<UUID, String> names = new HashMap<>();
 		if (!classIds.isEmpty()) {

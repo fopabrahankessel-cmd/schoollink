@@ -16,6 +16,12 @@ public interface SchoolClasses {
 	/** D5: the blocks the given classes belong to. */
 	Set<UUID> blocksOf(UUID schoolId, Set<UUID> classIds);
 
+	/** D5: the block of each given class (classId -> blockId); classes of other schools are left out. */
+	Map<UUID, UUID> blockOf(UUID schoolId, Set<UUID> classIds);
+
+	/** The names of the given blocks of the school: id -> name; blocks of other schools are left out. */
+	Map<UUID, String> blockNames(UUID schoolId, Set<UUID> blockIds);
+
 	boolean classExists(UUID schoolId, UUID classId);
 
 	/** The names of the given classes of the school: id -> name; ids of other schools are left out. */

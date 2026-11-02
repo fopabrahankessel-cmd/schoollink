@@ -158,6 +158,7 @@ The use cases are numbered by actor; the MVP column says which ones the first pi
 | UC-A4 | Administrator | Generate parent invitation codes, link guardians to children, print or SMS the codes | Yes |
 | UC-A5 | Administrator | Send a school-wide or class announcement | Wave 2 |
 | UC-A6 | Administrator | Consult the school dashboard: attendance trends, alerts, delivery rate, SMS usage | Yes |
+| UC-A7 | Administrator | Set the school letterhead (French and English lines, layout, logo) used on generated documents (D36) | Yes |
 | UC-T1 | Teacher | Open today's session for a class and period, mark absentees, confirm twice, save | Yes |
 | UC-T2 | Teacher | Record attendance offline and sync later | Yes |
 | UC-T3 | Teacher | See which of today's sessions are not yet recorded | Yes |
@@ -171,6 +172,7 @@ The use cases are numbered by actor; the MVP column says which ones the first pi
 | UC-D6 | DM | Cancel an erroneous locked absence with a reason | Yes |
 | UC-D7 | DM | Configure thresholds, school start time and SMS digest times | Yes |
 | UC-D8 | DM | Consult a student's attendance and lateness history and the scope dashboard | Yes |
+| UC-D9 | DM | Generate the day's list of students absent the whole day in their blocks as a PDF under the school letterhead, preview it and share it from the phone (D36) | Yes |
 | UC-C1 | Counsellor | See referrals from DMs and open a case | Wave 2 |
 | UC-C2 | Counsellor | Study a student's attendance pattern (by day of week, period, subject) | Wave 2 |
 | UC-C3 | Counsellor | Write private case notes, set follow-up dates, close a case | Wave 2 |
@@ -318,6 +320,8 @@ One REST API under `/api/v1`, secured by JWT; the server derives the school and 
 | Devices | `PUT /me/device-token` | All app users | Register FCM token |
 | Reporting | `GET /dashboard/school`, `GET /dashboard/scope` | Admin, DM | Counts and trends (D34) |
 | Reporting | `GET /students/{id}/history` | DM, Admin | A student's attendance and lateness history (UC-D8, D34) |
+| Reporting | `GET /reports/full-day-absences?date=`, `GET /reports/full-day-absences/default-date` | DM | Students absent the whole day in the DM's blocks, and the default day (UC-D9, D36) |
+| School | `GET/PUT /school/letterhead`, `GET/PUT/DELETE /school/letterhead/logo` | Admin (write), Admin and DM (read) | The school letterhead and logo (UC-A7, D36) |
 | Research | `GET /research/summary`, `GET /research/export?dataset=` | Researcher | Anonymised statistics and CSV |
 | Webhooks | `POST /webhooks/sms/delivery` | SMS gateway | Delivery reports |
 

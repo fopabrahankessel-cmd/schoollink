@@ -16,6 +16,9 @@ public interface UserAccounts {
 
 	Optional<UserAccount> findById(UUID id);
 
+	/** UC-D9: "First Last" of a user of the school; empty for a user of another school. */
+	Optional<String> fullName(UUID schoolId, UUID userId);
+
 	/** The assignments behind a user's scope (NFR-8), all within {@code schoolId}. */
 	ScopeAssignments assignmentsOf(UUID userId, UUID schoolId);
 
