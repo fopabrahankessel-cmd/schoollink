@@ -49,7 +49,8 @@ export interface ImportCommit {
 }
 
 export function importPath(id: string): string {
-  return `${IMPORT_PATH}/${id}`
+  // the id comes from the address bar: encoded, so it cannot point at another endpoint
+  return `${IMPORT_PATH}/${encodeURIComponent(id)}`
 }
 
 /** null when the file can go to the server, otherwise the i18n key saying why not. */

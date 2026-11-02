@@ -173,16 +173,17 @@ export interface SettingsRequest {
   rules: { type: RuleType; count: number; active: boolean }[]
 }
 
+// Every parameter is encoded, path ones too: an id from the address bar must not reach another endpoint.
 const q = encodeURIComponent
 
 export const DM_PATHS = {
   alerts: (status: 'open' | 'closed') => `/alerts?status=${status}`,
-  decision: (alertId: string) => `/alerts/${alertId}/decision`,
+  decision: (alertId: string) => `/alerts/${q(alertId)}/decision`,
   summons: '/summons',
   justifications: '/justifications',
-  cancelAbsence: (recordId: string) => `/records/${recordId}/cancel`,
-  cancelLateness: (recordId: string) => `/lateness/${recordId}/cancel`,
-  history: (studentId: string) => `/students/${studentId}/history`,
+  cancelAbsence: (recordId: string) => `/records/${q(recordId)}/cancel`,
+  cancelLateness: (recordId: string) => `/lateness/${q(recordId)}/cancel`,
+  history: (studentId: string) => `/students/${q(studentId)}/history`,
   students: (query: string) => `/lateness/students?q=${q(query)}`,
   dashboard: (from: string, to: string) => `/dashboard/scope?from=${q(from)}&to=${q(to)}`,
   settings: '/settings/thresholds',

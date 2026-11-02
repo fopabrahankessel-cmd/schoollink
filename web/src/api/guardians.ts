@@ -34,7 +34,7 @@ export interface ClassInvitations {
 }
 
 export const guardiansPath = (classId: string) => `/guardians?classId=${encodeURIComponent(classId)}`
-export const guardianInvitationPath = (guardianId: string) => `/guardians/${guardianId}/invitations`
-export const classInvitationsPath = (classId: string) => `/classes/${classId}/invitations`
+export const guardianInvitationPath = (guardianId: string) => `/guardians/${encodeURIComponent(guardianId)}/invitations`
+export const classInvitationsPath = (classId: string) => `/classes/${encodeURIComponent(classId)}/invitations`
 
 export const STATUSES: GuardianStatus[] = ['NOT_INVITED', 'EXPIRED', 'INVITED', 'ACCOUNT']

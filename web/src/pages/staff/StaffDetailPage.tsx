@@ -77,7 +77,7 @@ export function StaffDetailPage() {
     const request = ++latest.current
     let next: Loaded
     try {
-      next = { id, staff: await client.request<StaffMember>(`${STAFF_PATH}/${id}`), error: null }
+      next = { id, staff: await client.request<StaffMember>(`${STAFF_PATH}/${encodeURIComponent(id)}`), error: null }
     } catch (error) {
       next = { id, staff: null, error }
     }
