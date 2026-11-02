@@ -94,14 +94,17 @@ class InboxEntry {
 
 /// One absent period of a day; cancelled records are left out by the server (BR-15).
 class PeriodAbsence {
-  const PeriodAbsence({required this.periodNumber, required this.startTime, required this.justified});
+  const PeriodAbsence({this.recordId, required this.periodNumber, required this.startTime, required this.justified});
 
   factory PeriodAbsence.fromJson(Map<String, dynamic> json) => PeriodAbsence(
+    recordId: json['recordId'] as String?,
     periodNumber: json['periodNumber'] as int,
     startTime: DayTime.parse(json['startTime'] as String),
     justified: json['justified'] as bool,
   );
 
+  /// The record the DM justifies or cancels (UC-D1, UC-D6).
+  final String? recordId;
   final int periodNumber;
   final DayTime startTime;
   final bool justified;
@@ -109,11 +112,16 @@ class PeriodAbsence {
 
 /// The day's lateness at the gate, recorded apart from attendance (BR-8, BR-9).
 class DayLateness {
-  const DayLateness({required this.arrivalTime, required this.justified});
+  const DayLateness({this.recordId, required this.arrivalTime, required this.justified});
 
-  factory DayLateness.fromJson(Map<String, dynamic> json) =>
-      DayLateness(arrivalTime: DayTime.parse(json['arrivalTime'] as String), justified: json['justified'] as bool);
+  factory DayLateness.fromJson(Map<String, dynamic> json) => DayLateness(
+    recordId: json['recordId'] as String?,
+    arrivalTime: DayTime.parse(json['arrivalTime'] as String),
+    justified: json['justified'] as bool,
+  );
 
+  /// The record the DM justifies or cancels (UC-D1, UC-D6).
+  final String? recordId;
   final DayTime arrivalTime;
   final bool justified;
 }

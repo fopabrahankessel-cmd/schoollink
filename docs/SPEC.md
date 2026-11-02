@@ -303,7 +303,7 @@ One REST API under `/api/v1`, secured by JWT; the server derives the school and 
 | Attendance | `GET /me/classes` | Teacher | The classes they teach with their students, kept on the device for offline recording |
 | Attendance | `PUT /sessions/{uuid}` | Teacher | Create or sync a confirmed session (idempotent by device UUID) |
 | Attendance | `POST /records/{id}/cancel` | DM | Cancel an erroneous absence with a reason |
-| Lateness | `GET /lateness/students?q=` | Assistant DM | Students of their scope for the gate search; without `q`, the whole scope for offline search |
+| Lateness | `GET /lateness/students?q=` | Assistant DM, DM | Students of their scope for the gate search; without `q`, the whole scope for offline search; the DM's student search (D35) |
 | Lateness | `PUT /lateness/{uuid}` | Assistant DM | Record lateness (idempotent) |
 | Lateness | `GET /lateness?date=` | Admin, Assistant DM, DM | The day's lateness in scope (UC-AD2) |
 | Lateness | `POST /lateness/{id}/cancel` | DM | Cancel an erroneous lateness with a reason (D11, D27) |

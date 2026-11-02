@@ -66,11 +66,12 @@ class LatenessQueries {
 
 	/**
 	 * UC-AD1: the students the assistant DM may record, by name or matricule. Without a query, all
-	 * of them, so the app can search offline (NFR-3).
+	 * of them, so the app can search offline (NFR-3). The DM searches their own classes the same
+	 * way, to open a student's history (UC-D1, UC-D8, D35).
 	 */
 	@Transactional(readOnly = true)
 	List<GateStudent> gateStudents(CurrentUser user, String query) {
-		if (user.schoolId() == null || !user.has(Role.ASSISTANT_DM)) {
+		if (user.schoolId() == null || !user.hasAny(Role.ASSISTANT_DM, Role.DM)) {
 			throw ApiException.forbidden();
 		}
 		String q = query == null || query.isBlank() ? null : query.strip();
@@ -78,7 +79,7 @@ class LatenessQueries {
 			// same arguments as @Size: {1} max, {2} min
 			throw ApiException.invalid("validation.size", "q", "q", 100, 1);
 		}
-		Set<UUID> scope = user.classesAs(Role.ASSISTANT_DM);
+		Set<UUID> scope = user.classesAs(Role.ASSISTANT_DM, Role.DM);
 		List<Card> found = students.inClasses(user.schoolId(), scope, q, SEARCH_LIMIT);
 		Map<UUID, String> names = classes.names(user.schoolId(), scope);
 		return found.stream()

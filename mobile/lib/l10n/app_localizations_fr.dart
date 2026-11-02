@@ -443,13 +443,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get alertsTitle => 'Alertes à traiter';
 
   @override
-  String get alertsSoonTitle => 'Les alertes de risque arrivent dans une prochaine mise à jour';
-
-  @override
-  String get alertsSoonBody =>
-      'Les absences et retards répétés de vos classes apparaîtront ici pour décision. L\'application ne décide jamais à votre place.';
-
-  @override
   String get notificationChannelName => 'Absences et retards';
 
   @override
@@ -727,4 +720,234 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get latenessUnjustified => 'Non justifié';
+
+  @override
+  String alertsToDecide(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count alertes à traiter',
+      one: '1 alerte à traiter',
+      zero: 'Aucune alerte à traiter',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get noAlertsTitle => 'Aucune alerte à traiter';
+
+  @override
+  String get noAlertsBody =>
+      'Les absences et retards répétés de vos classes apparaissent ici pour votre décision. L\'application ne décide jamais à votre place.';
+
+  @override
+  String get ruleFullDayAbsence => 'Absent toute la journée';
+
+  @override
+  String get ruleConsecutiveLateness => 'En retard plusieurs jours de suite';
+
+  @override
+  String get ruleUnjustifiedAbsences => 'Absences non justifiées';
+
+  @override
+  String get ruleOther => 'Alerte';
+
+  @override
+  String evidenceFullDay(int count, String dates) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Absent à tous les cours $count jours de suite : $dates',
+      one: 'Absent à tous les cours le $dates',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String evidenceLateness(int count, String dates) {
+    return 'En retard $count jours de classe de suite : $dates';
+  }
+
+  @override
+  String evidenceUnjustified(int count, String from, String to) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count cours manqués sans justification du $from au $to',
+      one: '1 cours manqué sans justification du $from au $to',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String alertRaisedOn(String date) {
+    return 'Signalée le $date';
+  }
+
+  @override
+  String get alertTitle => 'Alerte';
+
+  @override
+  String get whatTheRuleFound => 'Ce que la règle a relevé';
+
+  @override
+  String get yourDecision => 'Votre décision';
+
+  @override
+  String get decisionHint => 'SchoolLink ne fait que signaler. C\'est vous qui décidez de la suite.';
+
+  @override
+  String get decisionSummon => 'Convoquer les parents';
+
+  @override
+  String get decisionSummonDetail => 'Ils sont prévenus tout de suite, par l\'application ou par SMS';
+
+  @override
+  String get decisionDismiss => 'Classer sans suite';
+
+  @override
+  String get decisionDismissDetail => 'Fermer l\'alerte, avec le motif';
+
+  @override
+  String get decisionDisciplinary => 'Ouvrir un dossier disciplinaire';
+
+  @override
+  String get decisionDisciplinaryDetail => 'Décrivez le problème à consigner';
+
+  @override
+  String get decisionRefer => 'Orienter vers le conseiller';
+
+  @override
+  String get decisionReferDetail => 'Un dossier est ouvert pour le conseiller';
+
+  @override
+  String get noteDismissLabel => 'Motif du classement';
+
+  @override
+  String get noteDisciplinaryLabel => 'Le problème à consigner';
+
+  @override
+  String get noteReferLabel => 'Pour le conseiller (facultatif)';
+
+  @override
+  String get noteRequired => 'Écrivez quelques mots.';
+
+  @override
+  String get decisionRecorded => 'Décision enregistrée';
+
+  @override
+  String get alertAlreadyDecided => 'Cette alerte n\'est plus ouverte : elle a été traitée.';
+
+  @override
+  String summonTitle(String name) {
+    return 'Convoquer les parents de $name';
+  }
+
+  @override
+  String get meetingLabel => 'Rendez-vous';
+
+  @override
+  String get meetingNextSchoolDay => 'Prochain jour de classe, à l\'heure de la rentrée des cours';
+
+  @override
+  String get meetingChoose => 'Choisir le jour et l\'heure';
+
+  @override
+  String meetingAt(String date, String time) {
+    return '$date à $time';
+  }
+
+  @override
+  String get summonReasonLabel => 'Motif';
+
+  @override
+  String get summonReasonOptional => 'Motif (facultatif, l\'alerte dit pourquoi)';
+
+  @override
+  String get summonReasonHelp => 'Gardé dans vos dossiers. Les parents reçoivent le jour et l\'heure, pas le motif.';
+
+  @override
+  String get sendSummons => 'Envoyer la convocation';
+
+  @override
+  String summonsSent(String date, String time) {
+    return 'Parents convoqués le $date à $time';
+  }
+
+  @override
+  String get parentsSummoned => 'Parents convoqués';
+
+  @override
+  String get selectToJustify => 'Touchez les absences et retards pour les choisir, puis justifiez-les ensemble.';
+
+  @override
+  String justifyCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Justifier $count éléments',
+      one: 'Justifier 1 élément',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get clearSelection => 'Effacer la sélection';
+
+  @override
+  String get recordMenu => 'Autres actions';
+
+  @override
+  String get cancelRecordAction => 'Annuler cet enregistrement';
+
+  @override
+  String get justificationReason => 'Motif';
+
+  @override
+  String get reasonIllness => 'Maladie';
+
+  @override
+  String get reasonFamily => 'Raison familiale';
+
+  @override
+  String get reasonSchoolActivity => 'Activité scolaire';
+
+  @override
+  String get reasonOther => 'Autre motif';
+
+  @override
+  String get justificationNote => 'Note (facultative)';
+
+  @override
+  String get illnessNoNote => '« Maladie » suffit : aucun détail de santé n\'est conservé.';
+
+  @override
+  String get justify => 'Justifier';
+
+  @override
+  String justifiedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count éléments justifiés',
+      one: '1 élément justifié',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get cancelRecordTitle => 'Annuler cet enregistrement ?';
+
+  @override
+  String get cancelRecordBody =>
+      'Seulement pour une erreur. L\'enregistrement reste dans les dossiers de l\'école mais ne compte plus. Les parents déjà prévenus reçoivent une correction.';
+
+  @override
+  String get cancelReason => 'Motif de l\'annulation';
+
+  @override
+  String get confirmCancelRecord => 'Annuler l\'enregistrement';
+
+  @override
+  String get recordCancelled => 'Enregistrement annulé';
 }

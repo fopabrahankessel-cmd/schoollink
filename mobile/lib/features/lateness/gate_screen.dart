@@ -309,9 +309,12 @@ class _StudentResult extends StatelessWidget {
 /// The day's lateness, latest first: who, which class, at what time, and whether it is sent.
 /// Shared by the gate and the DM's home.
 class LatenessList extends StatelessWidget {
-  const LatenessList({super.key, required this.rows});
+  const LatenessList({super.key, required this.rows, this.onTap});
 
   final List<GateRow> rows;
+
+  /// The DM opens the student's history from a row (UC-D8); the gate list has no action.
+  final void Function(GateRow row)? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -320,67 +323,71 @@ class LatenessList extends StatelessWidget {
     final scheme = theme.colorScheme;
     final status = StatusColors.of(context);
     return Card(
+      clipBehavior: Clip.antiAlias,
       child: Column(
         children: [
           for (final (i, r) in rows.indexed) ...[
             if (i > 0) const Divider(indent: 68),
-            Padding(
+            InkWell(
               key: ValueKey('lateness-${r.id}'),
-              padding: const EdgeInsets.fromLTRB(Gap.l, Gap.m, Gap.l, Gap.m),
-              child: Row(
-                children: [
-                  InitialsAvatar(
-                    firstName: r.firstName,
-                    lastName: r.lastName,
-                    background: status.lateContainer,
-                    foreground: status.onLateContainer,
-                  ),
-                  const SizedBox(width: Gap.m),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(r.fullName, style: theme.textTheme.titleMedium),
-                        if (r.className.isNotEmpty)
-                          Text(
-                            r.className,
-                            style: theme.textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
-                          ),
-                        if (r.local?.state == SyncState.pending)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 2),
-                            child: Row(
-                              children: [
-                                Icon(Icons.cloud_upload_outlined, size: 16, color: status.late),
-                                const SizedBox(width: Gap.xs),
-                                Flexible(
-                                  child: Text(
-                                    l.latenessWaiting,
-                                    style: theme.textTheme.bodySmall?.copyWith(color: status.onLateContainer),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        if (r.justified)
-                          Padding(
-                            padding: const EdgeInsets.only(top: Gap.xs),
-                            child: StatusPill(
-                              label: l.justifiedLabel,
-                              icon: Icons.verified_outlined,
-                              background: status.presentContainer,
-                              foreground: status.present,
-                            ),
-                          ),
-                      ],
+              onTap: onTap == null ? null : () => onTap!(r),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(Gap.l, Gap.m, Gap.l, Gap.m),
+                child: Row(
+                  children: [
+                    InitialsAvatar(
+                      firstName: r.firstName,
+                      lastName: r.lastName,
+                      background: status.lateContainer,
+                      foreground: status.onLateContainer,
                     ),
-                  ),
-                  const SizedBox(width: Gap.s),
-                  Text(
-                    r.arrivalTime.toString(),
-                    style: theme.textTheme.titleLarge?.copyWith(color: status.late, fontFeatures: tabular),
-                  ),
-                ],
+                    const SizedBox(width: Gap.m),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(r.fullName, style: theme.textTheme.titleMedium),
+                          if (r.className.isNotEmpty)
+                            Text(
+                              r.className,
+                              style: theme.textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
+                            ),
+                          if (r.local?.state == SyncState.pending)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 2),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.cloud_upload_outlined, size: 16, color: status.late),
+                                  const SizedBox(width: Gap.xs),
+                                  Flexible(
+                                    child: Text(
+                                      l.latenessWaiting,
+                                      style: theme.textTheme.bodySmall?.copyWith(color: status.onLateContainer),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          if (r.justified)
+                            Padding(
+                              padding: const EdgeInsets.only(top: Gap.xs),
+                              child: StatusPill(
+                                label: l.justifiedLabel,
+                                icon: Icons.verified_outlined,
+                                background: status.presentContainer,
+                                foreground: status.present,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: Gap.s),
+                    Text(
+                      r.arrivalTime.toString(),
+                      style: theme.textTheme.titleLarge?.copyWith(color: status.late, fontFeatures: tabular),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],

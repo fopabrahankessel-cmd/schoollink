@@ -308,11 +308,6 @@
   "justifiedLabel": "Justified",
   "inYourClasses": "In the classes you are in charge of",
   "alertsTitle": "Alerts to decide",
-  "alertsSoonTitle": "Risk alerts arrive in a coming update",
-  "alertsSoonBody": "Repeated absences and lateness in your classes will show here for your decision. The app never decides for you.",
-  "@alertsSoonBody": {
-    "description": "BR-16 to BR-19."
-  },
   "notificationChannelName": "Absences and lateness",
   "@notificationChannelName": {
     "description": "BR-21: Android notification channel, shown in the phone's settings."
@@ -536,5 +531,171 @@
   "absenceJustified": "Justified",
   "absenceUnjustified": "Not justified",
   "latenessJustified": "Justified",
-  "latenessUnjustified": "Not justified"
+  "latenessUnjustified": "Not justified",
+  "alertsToDecide": "{count, plural, =0{No alert to decide} =1{1 alert to decide} other{{count} alerts to decide}}",
+  "@alertsToDecide": {
+    "description": "DM home header: open risk alerts of their classes (UC-D2).",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noAlertsTitle": "No alert to decide",
+  "noAlertsBody": "Repeated absences and lateness in your classes show here for your decision. The app never decides for you.",
+  "@noAlertsBody": {
+    "description": "BR-16 to BR-19: rules only raise alerts; the DM decides."
+  },
+  "ruleFullDayAbsence": "Absent all day",
+  "ruleConsecutiveLateness": "Late day after day",
+  "ruleUnjustifiedAbsences": "Unjustified absences",
+  "ruleOther": "Risk alert",
+  "evidenceFullDay": "{count, plural, =1{Absent from every lesson on {dates}} other{Absent from every lesson {count} days in a row: {dates}}}",
+  "@evidenceFullDay": {
+    "description": "D2: what the full-day absence rule found.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "dates": {
+        "type": "String"
+      }
+    }
+  },
+  "evidenceLateness": "Late {count} school days in a row: {dates}",
+  "@evidenceLateness": {
+    "description": "D3: what the consecutive lateness rule found.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "dates": {
+        "type": "String"
+      }
+    }
+  },
+  "evidenceUnjustified": "{count, plural, =1{1 unjustified absent lesson from {from} to {to}} other{{count} unjustified absent lessons from {from} to {to}}}",
+  "@evidenceUnjustified": {
+    "description": "What the unjustified absences rule found in the term.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "alertRaisedOn": "Raised on {date}",
+  "@alertRaisedOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "alertTitle": "Risk alert",
+  "whatTheRuleFound": "What the rule found",
+  "yourDecision": "Your decision",
+  "decisionHint": "SchoolLink only raises the alert. You decide what happens next.",
+  "decisionSummon": "Summon the parents",
+  "decisionSummonDetail": "They are told at once, by the app or by SMS",
+  "decisionDismiss": "Dismiss",
+  "decisionDismissDetail": "Close the alert, with the reason",
+  "decisionDisciplinary": "Record a disciplinary issue",
+  "decisionDisciplinaryDetail": "Describe the issue to record",
+  "decisionRefer": "Refer to the counsellor",
+  "decisionReferDetail": "A case is opened for the counsellor",
+  "noteDismissLabel": "Reason for dismissing",
+  "noteDisciplinaryLabel": "The issue to record",
+  "noteReferLabel": "For the counsellor (optional)",
+  "noteRequired": "Write a few words.",
+  "decisionRecorded": "Decision recorded",
+  "alertAlreadyDecided": "This alert is no longer open: it has been decided.",
+  "summonTitle": "Summon {name}'s parents",
+  "@summonTitle": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "meetingLabel": "Meeting",
+  "meetingNextSchoolDay": "Next school day, when classes start",
+  "meetingChoose": "Choose the day and time",
+  "meetingAt": "{date} at {time}",
+  "@meetingAt": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "summonReasonLabel": "Reason",
+  "summonReasonOptional": "Reason (optional, the alert says why)",
+  "summonReasonHelp": "Kept in your records. Parents get the day and time, not the reason.",
+  "@summonReasonHelp": {
+    "description": "D31: the reason is not sent to the parents."
+  },
+  "sendSummons": "Send the summons",
+  "summonsSent": "Parents summoned for {date} at {time}",
+  "@summonsSent": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "parentsSummoned": "Parents summoned",
+  "selectToJustify": "Tap absences and lateness to select them, then justify them together.",
+  "@selectToJustify": {
+    "description": "BR-12: several records at once."
+  },
+  "justifyCount": "{count, plural, =1{Justify 1 record} other{Justify {count} records}}",
+  "@justifyCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "clearSelection": "Clear the selection",
+  "recordMenu": "More actions",
+  "cancelRecordAction": "Cancel this record",
+  "justificationReason": "Reason",
+  "reasonIllness": "Illness",
+  "reasonFamily": "Family reason",
+  "reasonSchoolActivity": "School activity",
+  "reasonOther": "Other reason",
+  "justificationNote": "Note (optional)",
+  "illnessNoNote": "“Illness” is enough: no health details are kept.",
+  "@illnessNoNote": {
+    "description": "NFR-10, D26: an illness takes no note."
+  },
+  "justify": "Justify",
+  "justifiedCount": "{count, plural, =1{1 record justified} other{{count} records justified}}",
+  "@justifiedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cancelRecordTitle": "Cancel this record?",
+  "cancelRecordBody": "Only for a mistake. The record stays in the school's files but no longer counts. Parents who were told get a correction.",
+  "@cancelRecordBody": {
+    "description": "BR-13 to BR-15, D27."
+  },
+  "cancelReason": "Reason for cancelling",
+  "confirmCancelRecord": "Cancel the record",
+  "recordCancelled": "Record cancelled"
 }

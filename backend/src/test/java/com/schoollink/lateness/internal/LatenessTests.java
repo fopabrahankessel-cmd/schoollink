@@ -131,10 +131,10 @@ class LatenessTests {
 	}
 
 	@TestFactory
-	Stream<DynamicTest> onlyAnAssistantDmSearchesTheGateList() {
+	Stream<DynamicTest> assistantDmsAndDmsSearchTheirStudents() { // D35
 		return PermissionMatrix.row("GET /lateness/students", w -> get("/api/v1/lateness/students"))
-			.expect(200, ASSISTANT_DM_1)
-			.expect(403, ADMIN_X, TEACHER_A, DM_1, DM_2, COUNSELLOR_X, PARENT_A, RESEARCHER, ADMIN_Y)
+			.expect(200, ASSISTANT_DM_1, DM_1, DM_2)
+			.expect(403, ADMIN_X, TEACHER_A, COUNSELLOR_X, PARENT_A, RESEARCHER, ADMIN_Y)
 			.expect(401, ANONYMOUS)
 			.tests(mockMvc, world);
 	}
@@ -349,6 +349,19 @@ class LatenessTests {
 		perform(ASSISTANT_DM_1, get("/api/v1/lateness/students").param("q", "x".repeat(101)))
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath("$.field").value("q"));
+	}
+
+	@Test
+	void aDmSearchesTheirOwnClassesOnly() throws Exception { // UC-D1, UC-D8, D35, NFR-8
+		student(world.schoolX, world.classA, "TW-0002", "Amina", "Abena");
+		UUID outside = student(world.schoolX, world.classB, "TW-0003", "Amina", "Hors-Bloc");
+
+		perform(DM_1, get("/api/v1/lateness/students").param("q", "amina")).andExpect(status().isOk())
+			.andExpect(jsonPath("$.length()").value(1))
+			.andExpect(jsonPath("$[0].lastName").value("Abena"));
+		perform(DM_2, get("/api/v1/lateness/students").param("q", "amina")).andExpect(status().isOk())
+			.andExpect(jsonPath("$.length()").value(1))
+			.andExpect(jsonPath("$[0].id").value(outside.toString()));
 	}
 
 	// The day's list (UC-AD2)

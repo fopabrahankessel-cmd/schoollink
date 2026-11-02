@@ -440,13 +440,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get alertsTitle => 'Alerts to decide';
 
   @override
-  String get alertsSoonTitle => 'Risk alerts arrive in a coming update';
-
-  @override
-  String get alertsSoonBody =>
-      'Repeated absences and lateness in your classes will show here for your decision. The app never decides for you.';
-
-  @override
   String get notificationChannelName => 'Absences and lateness';
 
   @override
@@ -716,4 +709,234 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get latenessUnjustified => 'Not justified';
+
+  @override
+  String alertsToDecide(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count alerts to decide',
+      one: '1 alert to decide',
+      zero: 'No alert to decide',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get noAlertsTitle => 'No alert to decide';
+
+  @override
+  String get noAlertsBody =>
+      'Repeated absences and lateness in your classes show here for your decision. The app never decides for you.';
+
+  @override
+  String get ruleFullDayAbsence => 'Absent all day';
+
+  @override
+  String get ruleConsecutiveLateness => 'Late day after day';
+
+  @override
+  String get ruleUnjustifiedAbsences => 'Unjustified absences';
+
+  @override
+  String get ruleOther => 'Risk alert';
+
+  @override
+  String evidenceFullDay(int count, String dates) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Absent from every lesson $count days in a row: $dates',
+      one: 'Absent from every lesson on $dates',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String evidenceLateness(int count, String dates) {
+    return 'Late $count school days in a row: $dates';
+  }
+
+  @override
+  String evidenceUnjustified(int count, String from, String to) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count unjustified absent lessons from $from to $to',
+      one: '1 unjustified absent lesson from $from to $to',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String alertRaisedOn(String date) {
+    return 'Raised on $date';
+  }
+
+  @override
+  String get alertTitle => 'Risk alert';
+
+  @override
+  String get whatTheRuleFound => 'What the rule found';
+
+  @override
+  String get yourDecision => 'Your decision';
+
+  @override
+  String get decisionHint => 'SchoolLink only raises the alert. You decide what happens next.';
+
+  @override
+  String get decisionSummon => 'Summon the parents';
+
+  @override
+  String get decisionSummonDetail => 'They are told at once, by the app or by SMS';
+
+  @override
+  String get decisionDismiss => 'Dismiss';
+
+  @override
+  String get decisionDismissDetail => 'Close the alert, with the reason';
+
+  @override
+  String get decisionDisciplinary => 'Record a disciplinary issue';
+
+  @override
+  String get decisionDisciplinaryDetail => 'Describe the issue to record';
+
+  @override
+  String get decisionRefer => 'Refer to the counsellor';
+
+  @override
+  String get decisionReferDetail => 'A case is opened for the counsellor';
+
+  @override
+  String get noteDismissLabel => 'Reason for dismissing';
+
+  @override
+  String get noteDisciplinaryLabel => 'The issue to record';
+
+  @override
+  String get noteReferLabel => 'For the counsellor (optional)';
+
+  @override
+  String get noteRequired => 'Write a few words.';
+
+  @override
+  String get decisionRecorded => 'Decision recorded';
+
+  @override
+  String get alertAlreadyDecided => 'This alert is no longer open: it has been decided.';
+
+  @override
+  String summonTitle(String name) {
+    return 'Summon $name\'s parents';
+  }
+
+  @override
+  String get meetingLabel => 'Meeting';
+
+  @override
+  String get meetingNextSchoolDay => 'Next school day, when classes start';
+
+  @override
+  String get meetingChoose => 'Choose the day and time';
+
+  @override
+  String meetingAt(String date, String time) {
+    return '$date at $time';
+  }
+
+  @override
+  String get summonReasonLabel => 'Reason';
+
+  @override
+  String get summonReasonOptional => 'Reason (optional, the alert says why)';
+
+  @override
+  String get summonReasonHelp => 'Kept in your records. Parents get the day and time, not the reason.';
+
+  @override
+  String get sendSummons => 'Send the summons';
+
+  @override
+  String summonsSent(String date, String time) {
+    return 'Parents summoned for $date at $time';
+  }
+
+  @override
+  String get parentsSummoned => 'Parents summoned';
+
+  @override
+  String get selectToJustify => 'Tap absences and lateness to select them, then justify them together.';
+
+  @override
+  String justifyCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Justify $count records',
+      one: 'Justify 1 record',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get clearSelection => 'Clear the selection';
+
+  @override
+  String get recordMenu => 'More actions';
+
+  @override
+  String get cancelRecordAction => 'Cancel this record';
+
+  @override
+  String get justificationReason => 'Reason';
+
+  @override
+  String get reasonIllness => 'Illness';
+
+  @override
+  String get reasonFamily => 'Family reason';
+
+  @override
+  String get reasonSchoolActivity => 'School activity';
+
+  @override
+  String get reasonOther => 'Other reason';
+
+  @override
+  String get justificationNote => 'Note (optional)';
+
+  @override
+  String get illnessNoNote => '“Illness” is enough: no health details are kept.';
+
+  @override
+  String get justify => 'Justify';
+
+  @override
+  String justifiedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count records justified',
+      one: '1 record justified',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get cancelRecordTitle => 'Cancel this record?';
+
+  @override
+  String get cancelRecordBody =>
+      'Only for a mistake. The record stays in the school\'s files but no longer counts. Parents who were told get a correction.';
+
+  @override
+  String get cancelReason => 'Reason for cancelling';
+
+  @override
+  String get confirmCancelRecord => 'Cancel the record';
+
+  @override
+  String get recordCancelled => 'Record cancelled';
 }

@@ -758,18 +758,6 @@ abstract class AppLocalizations {
   /// **'Alerts to decide'**
   String get alertsTitle;
 
-  /// No description provided for @alertsSoonTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Risk alerts arrive in a coming update'**
-  String get alertsSoonTitle;
-
-  /// BR-16 to BR-19.
-  ///
-  /// In en, this message translates to:
-  /// **'Repeated absences and lateness in your classes will show here for your decision. The app never decides for you.'**
-  String get alertsSoonBody;
-
   /// BR-21: Android notification channel, shown in the phone's settings.
   ///
   /// In en, this message translates to:
@@ -1177,6 +1165,360 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Not justified'**
   String get latenessUnjustified;
+
+  /// DM home header: open risk alerts of their classes (UC-D2).
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No alert to decide} =1{1 alert to decide} other{{count} alerts to decide}}'**
+  String alertsToDecide(int count);
+
+  /// No description provided for @noAlertsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No alert to decide'**
+  String get noAlertsTitle;
+
+  /// BR-16 to BR-19: rules only raise alerts; the DM decides.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeated absences and lateness in your classes show here for your decision. The app never decides for you.'**
+  String get noAlertsBody;
+
+  /// No description provided for @ruleFullDayAbsence.
+  ///
+  /// In en, this message translates to:
+  /// **'Absent all day'**
+  String get ruleFullDayAbsence;
+
+  /// No description provided for @ruleConsecutiveLateness.
+  ///
+  /// In en, this message translates to:
+  /// **'Late day after day'**
+  String get ruleConsecutiveLateness;
+
+  /// No description provided for @ruleUnjustifiedAbsences.
+  ///
+  /// In en, this message translates to:
+  /// **'Unjustified absences'**
+  String get ruleUnjustifiedAbsences;
+
+  /// No description provided for @ruleOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Risk alert'**
+  String get ruleOther;
+
+  /// D2: what the full-day absence rule found.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Absent from every lesson on {dates}} other{Absent from every lesson {count} days in a row: {dates}}}'**
+  String evidenceFullDay(int count, String dates);
+
+  /// D3: what the consecutive lateness rule found.
+  ///
+  /// In en, this message translates to:
+  /// **'Late {count} school days in a row: {dates}'**
+  String evidenceLateness(int count, String dates);
+
+  /// What the unjustified absences rule found in the term.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 unjustified absent lesson from {from} to {to}} other{{count} unjustified absent lessons from {from} to {to}}}'**
+  String evidenceUnjustified(int count, String from, String to);
+
+  /// No description provided for @alertRaisedOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Raised on {date}'**
+  String alertRaisedOn(String date);
+
+  /// No description provided for @alertTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Risk alert'**
+  String get alertTitle;
+
+  /// No description provided for @whatTheRuleFound.
+  ///
+  /// In en, this message translates to:
+  /// **'What the rule found'**
+  String get whatTheRuleFound;
+
+  /// No description provided for @yourDecision.
+  ///
+  /// In en, this message translates to:
+  /// **'Your decision'**
+  String get yourDecision;
+
+  /// No description provided for @decisionHint.
+  ///
+  /// In en, this message translates to:
+  /// **'SchoolLink only raises the alert. You decide what happens next.'**
+  String get decisionHint;
+
+  /// No description provided for @decisionSummon.
+  ///
+  /// In en, this message translates to:
+  /// **'Summon the parents'**
+  String get decisionSummon;
+
+  /// No description provided for @decisionSummonDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'They are told at once, by the app or by SMS'**
+  String get decisionSummonDetail;
+
+  /// No description provided for @decisionDismiss.
+  ///
+  /// In en, this message translates to:
+  /// **'Dismiss'**
+  String get decisionDismiss;
+
+  /// No description provided for @decisionDismissDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Close the alert, with the reason'**
+  String get decisionDismissDetail;
+
+  /// No description provided for @decisionDisciplinary.
+  ///
+  /// In en, this message translates to:
+  /// **'Record a disciplinary issue'**
+  String get decisionDisciplinary;
+
+  /// No description provided for @decisionDisciplinaryDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Describe the issue to record'**
+  String get decisionDisciplinaryDetail;
+
+  /// No description provided for @decisionRefer.
+  ///
+  /// In en, this message translates to:
+  /// **'Refer to the counsellor'**
+  String get decisionRefer;
+
+  /// No description provided for @decisionReferDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'A case is opened for the counsellor'**
+  String get decisionReferDetail;
+
+  /// No description provided for @noteDismissLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason for dismissing'**
+  String get noteDismissLabel;
+
+  /// No description provided for @noteDisciplinaryLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'The issue to record'**
+  String get noteDisciplinaryLabel;
+
+  /// No description provided for @noteReferLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'For the counsellor (optional)'**
+  String get noteReferLabel;
+
+  /// No description provided for @noteRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a few words.'**
+  String get noteRequired;
+
+  /// No description provided for @decisionRecorded.
+  ///
+  /// In en, this message translates to:
+  /// **'Decision recorded'**
+  String get decisionRecorded;
+
+  /// No description provided for @alertAlreadyDecided.
+  ///
+  /// In en, this message translates to:
+  /// **'This alert is no longer open: it has been decided.'**
+  String get alertAlreadyDecided;
+
+  /// No description provided for @summonTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Summon {name}\'s parents'**
+  String summonTitle(String name);
+
+  /// No description provided for @meetingLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Meeting'**
+  String get meetingLabel;
+
+  /// No description provided for @meetingNextSchoolDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Next school day, when classes start'**
+  String get meetingNextSchoolDay;
+
+  /// No description provided for @meetingChoose.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the day and time'**
+  String get meetingChoose;
+
+  /// No description provided for @meetingAt.
+  ///
+  /// In en, this message translates to:
+  /// **'{date} at {time}'**
+  String meetingAt(String date, String time);
+
+  /// No description provided for @summonReasonLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason'**
+  String get summonReasonLabel;
+
+  /// No description provided for @summonReasonOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason (optional, the alert says why)'**
+  String get summonReasonOptional;
+
+  /// D31: the reason is not sent to the parents.
+  ///
+  /// In en, this message translates to:
+  /// **'Kept in your records. Parents get the day and time, not the reason.'**
+  String get summonReasonHelp;
+
+  /// No description provided for @sendSummons.
+  ///
+  /// In en, this message translates to:
+  /// **'Send the summons'**
+  String get sendSummons;
+
+  /// No description provided for @summonsSent.
+  ///
+  /// In en, this message translates to:
+  /// **'Parents summoned for {date} at {time}'**
+  String summonsSent(String date, String time);
+
+  /// No description provided for @parentsSummoned.
+  ///
+  /// In en, this message translates to:
+  /// **'Parents summoned'**
+  String get parentsSummoned;
+
+  /// BR-12: several records at once.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap absences and lateness to select them, then justify them together.'**
+  String get selectToJustify;
+
+  /// No description provided for @justifyCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Justify 1 record} other{Justify {count} records}}'**
+  String justifyCount(int count);
+
+  /// No description provided for @clearSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear the selection'**
+  String get clearSelection;
+
+  /// No description provided for @recordMenu.
+  ///
+  /// In en, this message translates to:
+  /// **'More actions'**
+  String get recordMenu;
+
+  /// No description provided for @cancelRecordAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel this record'**
+  String get cancelRecordAction;
+
+  /// No description provided for @justificationReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason'**
+  String get justificationReason;
+
+  /// No description provided for @reasonIllness.
+  ///
+  /// In en, this message translates to:
+  /// **'Illness'**
+  String get reasonIllness;
+
+  /// No description provided for @reasonFamily.
+  ///
+  /// In en, this message translates to:
+  /// **'Family reason'**
+  String get reasonFamily;
+
+  /// No description provided for @reasonSchoolActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'School activity'**
+  String get reasonSchoolActivity;
+
+  /// No description provided for @reasonOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other reason'**
+  String get reasonOther;
+
+  /// No description provided for @justificationNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Note (optional)'**
+  String get justificationNote;
+
+  /// NFR-10, D26: an illness takes no note.
+  ///
+  /// In en, this message translates to:
+  /// **'“Illness” is enough: no health details are kept.'**
+  String get illnessNoNote;
+
+  /// No description provided for @justify.
+  ///
+  /// In en, this message translates to:
+  /// **'Justify'**
+  String get justify;
+
+  /// No description provided for @justifiedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 record justified} other{{count} records justified}}'**
+  String justifiedCount(int count);
+
+  /// No description provided for @cancelRecordTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel this record?'**
+  String get cancelRecordTitle;
+
+  /// BR-13 to BR-15, D27.
+  ///
+  /// In en, this message translates to:
+  /// **'Only for a mistake. The record stays in the school\'s files but no longer counts. Parents who were told get a correction.'**
+  String get cancelRecordBody;
+
+  /// No description provided for @cancelReason.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason for cancelling'**
+  String get cancelReason;
+
+  /// No description provided for @confirmCancelRecord.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel the record'**
+  String get confirmCancelRecord;
+
+  /// No description provided for @recordCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Record cancelled'**
+  String get recordCancelled;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
