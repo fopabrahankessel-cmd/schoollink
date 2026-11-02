@@ -315,6 +315,7 @@ class FullTestWeekTests {
 			.header("Authorization", "Bearer " + world.token(ASSISTANT_DM_1))
 			.contentType(MediaType.APPLICATION_JSON)
 			.content(json.writeValueAsString(body))).andExpect(status().isCreated());
+		detection.awaitRules(); // the rules run on commit, off the request thread (BR-17)
 	}
 
 	private void session(LocalDate day, UUID period, Set<UUID> absentees) throws Exception {
@@ -324,6 +325,7 @@ class FullTestWeekTests {
 			.header("Authorization", "Bearer " + world.token(TEACHER_A))
 			.contentType(MediaType.APPLICATION_JSON)
 			.content(json.writeValueAsString(body))).andExpect(status().isCreated());
+		detection.awaitRules(); // the rules run on commit, off the request thread (BR-17)
 	}
 
 	private UUID period(int number, String start, String end) {

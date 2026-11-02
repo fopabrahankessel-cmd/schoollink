@@ -12,6 +12,7 @@ SchoolLink is a school attendance and parent-notification platform for secondary
 | `backend/` | Java 21 + Spring Boot 4 **modular monolith**, Maven, one REST API under `/api/v1` | Spring Boot 4 (Spring Framework 7, Jakarta EE 11, Jackson 3), Spring Data JPA, Spring Security + JWT (BCrypt), PostgreSQL 16, Flyway, Firebase Admin SDK (FCM), Apache POI + OpenCSV (import), Lombok, JUnit 5 + Testcontainers |
 | `web/` | Dashboard for administrators, DMs and the researcher | React, Vite, TypeScript, MUI, Recharts, i18next (FR/EN) |
 | `docs/` | SPEC.md, PLAN.md and later docs | Markdown |
+| `loadtest/` | Load test of SPEC §11 (2 schools × 40 classes × 8 periods): fake seed, script, outbox checks; see its README | k6 (Docker image), SQL |
 | `docker-compose.yml` | Local PostgreSQL 16 for development | Docker Compose |
 
 Backend base package is `com.schoollink` (`SchoolLinkApplication`). Spring Boot 4 removed or renamed some Boot 3 APIs, so check examples against the Boot 4 docs before copying them. Backend modules (sub-packages of `com.schoollink`, in `backend/src/main/java/com/schoollink/`): `auth`, `school`, `people`, `attendance`, `lateness`, `justification`, `detection`, `discipline`, `notification`, `reporting`, `audit`, `shared`. Modules call each other through public Java interfaces and Spring application events, never over HTTP. A module's `internal` package is private to that module.

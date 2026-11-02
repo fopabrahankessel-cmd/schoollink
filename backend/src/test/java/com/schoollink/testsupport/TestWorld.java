@@ -149,7 +149,7 @@ public final class TestWorld {
 		return tokenFor(users.get(actor), actor.role.name());
 	}
 
-	/** A valid access token for a user the test created itself, with that role. */
+	/** An access token for a user the test created itself, with that role, valid on any test date. */
 	public String tokenFor(UUID id, String role) {
 		UUID school = jdbc.queryForObject("SELECT school_id FROM app_user WHERE id = ?", UUID.class, id);
 		Instant now = Instant.now();
@@ -157,7 +157,8 @@ public final class TestWorld {
 			.issuer("schoollink")
 			.subject(id.toString())
 			.issuedAt(now)
-			.expiresAt(now.plus(15, ChronoUnit.MINUTES))
+			// expiry is checked on the app clock, which a test may move days ahead (TestClock)
+			.expiresAt(now.plus(365, ChronoUnit.DAYS))
 			.claim("roles", List.of(role))
 			.claim("lang", "FR");
 		if (school != null) {

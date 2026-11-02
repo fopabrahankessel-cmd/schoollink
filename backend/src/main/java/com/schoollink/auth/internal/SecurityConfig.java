@@ -1,6 +1,7 @@
 package com.schoollink.auth.internal;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -15,6 +16,8 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.JwtIssuerValidator;
+import org.springframework.security.oauth2.jwt.JwtTimestampValidator;
 import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
@@ -58,10 +61,16 @@ class SecurityConfig {
 		return NimbusJwtEncoder.withSecretKey(jwtKey).algorithm(MacAlgorithm.HS256).build();
 	}
 
+	/**
+	 * Expiry is checked on the clock the tokens are issued with ({@link AccessTokens}), not the
+	 * system clock, so issuing and checking always agree (and tests on a fixed clock keep working).
+	 */
 	@Bean
-	JwtDecoder jwtDecoder(SecretKey jwtKey) {
+	JwtDecoder jwtDecoder(SecretKey jwtKey, Clock clock) {
 		NimbusJwtDecoder decoder = NimbusJwtDecoder.withSecretKey(jwtKey).macAlgorithm(MacAlgorithm.HS256).build();
-		decoder.setJwtValidator(JwtValidators.createDefaultWithIssuer(ISSUER));
+		JwtTimestampValidator expiry = new JwtTimestampValidator();
+		expiry.setClock(clock);
+		decoder.setJwtValidator(JwtValidators.createDefaultWithValidators(new JwtIssuerValidator(ISSUER), expiry));
 		return decoder;
 	}
 

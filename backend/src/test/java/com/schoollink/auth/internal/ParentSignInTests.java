@@ -112,6 +112,11 @@ class ParentSignInTests {
 		verify(started.get("activationId").asString(), otp).andExpect(status().isBadRequest());
 		// NFR-9
 		assertThat(output.getAll()).doesNotContain("690000401", "690 00 04 01", otp);
+
+		// NFR-7: the access token's 15 minutes (and 1 minute of skew) run on the clock it was issued with
+		clock.set(NOW.plus(Duration.ofMinutes(17)));
+		mockMvc.perform(get("/api/v1/me").header("Authorization", "Bearer " + tokens.get("accessToken").asString()))
+			.andExpect(status().isUnauthorized());
 	}
 
 	@Test

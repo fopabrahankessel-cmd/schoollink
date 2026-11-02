@@ -6,6 +6,7 @@ import com.schoollink.detection.RuleType;
 import com.schoollink.testsupport.TestClock;
 import com.schoollink.testsupport.TestWorld;
 import java.sql.Timestamp;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -59,6 +60,9 @@ class DetectionCommitTests {
 	Detection detection;
 
 	@Autowired
+	DetectionListeners listeners;
+
+	@Autowired
 	MockMvc mockMvc;
 
 	@Autowired
@@ -99,15 +103,17 @@ class DetectionCommitTests {
 				world.schoolX);
 
 		gate("2026-10-30", "2026-10-30T06:50:00Z"); // Friday
+		assertThat(listeners.awaitIdle(Duration.ofSeconds(30))).isTrue();
 		assertThat(openAlerts()).isZero();
 		gate("2026-11-02", "2026-11-02T06:48:00Z"); // Monday
+		assertThat(listeners.awaitIdle(Duration.ofSeconds(30))).isTrue();
 
 		assertThat(jdbc.queryForList("SELECT rule_type FROM risk_alert WHERE school_id = ? AND status = 'OPEN'",
 				String.class, world.schoolX)).containsExactly("CONSECUTIVE_LATENESS");
 	}
 
 	@Test
-	void aLockedSessionRunsTheRulesOnceCommitted() { // BR-17, D2
+	void aLockedSessionRunsTheRulesOnceCommitted() throws Exception { // BR-17, D2
 		UUID session = UUID.randomUUID();
 		UUID record = UUID.randomUUID();
 		new TransactionTemplate(transactions).executeWithoutResult(status -> {
@@ -124,6 +130,7 @@ class DetectionCommitTests {
 			// not before the commit: the session could still be rolled back
 			assertThat(openAlerts()).isZero();
 		});
+		assertThat(listeners.awaitIdle(Duration.ofSeconds(30))).isTrue(); // on the detection executor
 
 		assertThat(jdbc.queryForList("SELECT rule_type FROM risk_alert WHERE school_id = ? AND status = 'OPEN'",
 				String.class, world.schoolX)).containsExactly("FULL_DAY_ABSENCE");
