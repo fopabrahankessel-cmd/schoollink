@@ -313,7 +313,7 @@ describe('DM home and access (UC-D8, D34, NFR-8)', () => {
     const figures = await screen.findByText("Taux d'absence", { selector: 'dt' })
     expect(figures.nextElementSibling).toHaveTextContent('5 %')
     expect(screen.getByText('Alertes à traiter', { selector: 'dt' }).nextElementSibling).toHaveTextContent('3')
-    const byClass = screen.getAllByRole('table')[0]
+    const byClass = screen.getByRole('table', { name: 'Par classe' })
     expect(within(byClass).getByText('6e A')).toBeInTheDocument()
     expect(screen.getByRole('navigation', { name: 'Navigation principale' })).toHaveTextContent('Alertes')
   })

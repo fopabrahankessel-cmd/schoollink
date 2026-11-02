@@ -59,7 +59,8 @@
     "discipline": "Discipline",
     "alerts": "Alerts",
     "students": "Students",
-    "settings": "Alert settings"
+    "settings": "Alert settings",
+    "schoolDashboard": "School dashboard"
   },
   "home": {
     "welcome": "Welcome to SchoolLink",
@@ -382,8 +383,6 @@
       "openAlerts": "Alerts to handle"
     },
     "seeAlerts": "See the alerts",
-    "byDay": "Absence rate by day",
-    "dayBar": "{{date}}: {{rate}} absent, {{lateness}} late",
     "noActivity": "No attendance taken and no lateness recorded in this period.",
     "byClass": "By class",
     "absentPeriods": "Missed lessons",
@@ -534,5 +533,33 @@
     "removeDigest": "Remove",
     "digestHelp": "Parents without the app get one SMS with the day's absences and lateness, at these times.",
     "settingsSaved": "Settings saved."
+  },
+  "dashboard": {
+    "title": "School dashboard",
+    "intro": "Attendance, lateness, alerts and parent notifications for the whole school. Cancelled records are not counted.",
+    "openAlerts": "Open alerts",
+    "byDay": "Day by day",
+    "absenceTrend": "Share of lessons missed",
+    "latenessTrend": "Late arrivals at the gate",
+    "lateCount_one": "1 late arrival",
+    "lateCount_other": "{{count}} late arrivals",
+    "showData": "Show the figures behind the charts",
+    "dataTable": "Figures day by day",
+    "notifications": "Parent notifications",
+    "notificationsIntro": "Every notification sent so far. Parents with the app get a notification; the others get an SMS.",
+    "push": "App notification",
+    "sms": "SMS",
+    "deliveryRate": "{{channel}}: delivery rate",
+    "opened": "Opened",
+    "delivered": "Delivered",
+    "sent": "Sent, not yet confirmed",
+    "pending": "Waiting to be sent",
+    "failed": "Failed",
+    "smsMonth": "SMS this month",
+    "smsCap": "Monthly cap: {{cap}}",
+    "smsUsed": "{{sent}} of {{cap}} SMS used this month",
+    "capLeft_one": "{{left}} SMS left before the cap.",
+    "capLeft_other": "{{left}} SMS left before the cap.",
+    "capReached": "Cap reached: until the end of the month, only summons go out by SMS. Parents with the app still get notifications."
   }
 }

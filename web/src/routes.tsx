@@ -8,6 +8,7 @@ import { GuardiansPage } from './pages/guardians/GuardiansPage'
 import { ImportPreviewPage } from './pages/import/ImportPreviewPage'
 import { ImportUploadPage } from './pages/import/ImportUploadPage'
 import { HomePage } from './pages/HomePage'
+import { SchoolDashboardPage } from './pages/dashboard/SchoolDashboardPage'
 import { LoginPage } from './pages/LoginPage'
 import { AlertsPage } from './pages/dm/AlertsPage'
 import { SettingsPage } from './pages/dm/SettingsPage'
@@ -34,6 +35,8 @@ export const routes: RouteObject[] = [
     children: [
       { index: true, element: <HomePage /> },
       { path: CHANGE_PASSWORD_PATH, element: <ChangePasswordPage /> },
+      // UC-A6: the school dashboard, admin only
+      { path: '/dashboard', element: admin(<SchoolDashboardPage />) },
       // UC-A1: school structure, admin only
       { path: '/structure/calendar', element: admin(<CalendarPage />) },
       { path: '/structure/periods', element: admin(<PeriodsPage />) },

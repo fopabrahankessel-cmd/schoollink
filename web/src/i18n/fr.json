@@ -59,7 +59,8 @@
     "discipline": "Discipline",
     "alerts": "Alertes",
     "students": "Élèves",
-    "settings": "Réglages des alertes"
+    "settings": "Réglages des alertes",
+    "schoolDashboard": "Tableau de bord"
   },
   "home": {
     "welcome": "Bienvenue sur SchoolLink",
@@ -382,8 +383,6 @@
       "openAlerts": "Alertes à traiter"
     },
     "seeAlerts": "Voir les alertes",
-    "byDay": "Taux d'absence par jour",
-    "dayBar": "{{date}} : {{rate}} d'absence, {{lateness}} retard(s)",
     "noActivity": "Aucun appel fait et aucun retard enregistré sur cette période.",
     "byClass": "Par classe",
     "absentPeriods": "Cours manqués",
@@ -534,5 +533,33 @@
     "removeDigest": "Retirer",
     "digestHelp": "Les parents sans l'application reçoivent un SMS avec les absences et retards du jour, à ces heures.",
     "settingsSaved": "Réglages enregistrés."
+  },
+  "dashboard": {
+    "title": "Tableau de bord de l'école",
+    "intro": "Assiduité, retards, alertes et information des parents pour toute l'école. Les enregistrements annulés ne comptent pas.",
+    "openAlerts": "Alertes ouvertes",
+    "byDay": "Jour par jour",
+    "absenceTrend": "Part des cours manqués",
+    "latenessTrend": "Retards au portail",
+    "lateCount_one": "1 retard",
+    "lateCount_other": "{{count}} retards",
+    "showData": "Voir les chiffres des graphiques",
+    "dataTable": "Chiffres jour par jour",
+    "notifications": "Information des parents",
+    "notificationsIntro": "Toutes les notifications envoyées à ce jour. Les parents qui ont l'application reçoivent une notification, les autres un SMS.",
+    "push": "Notification de l'application",
+    "sms": "SMS",
+    "deliveryRate": "{{channel}} : taux de remise",
+    "opened": "Ouvertes",
+    "delivered": "Remis",
+    "sent": "Envoyés, sans confirmation",
+    "pending": "En attente d'envoi",
+    "failed": "En échec",
+    "smsMonth": "SMS ce mois-ci",
+    "smsCap": "Plafond mensuel : {{cap}}",
+    "smsUsed": "{{sent}} SMS utilisés sur {{cap}} ce mois-ci",
+    "capLeft_one": "Encore {{left}} SMS avant le plafond.",
+    "capLeft_other": "Encore {{left}} SMS avant le plafond.",
+    "capReached": "Plafond atteint : jusqu'à la fin du mois, seules les convocations partent par SMS. Les parents qui ont l'application reçoivent toujours les notifications."
   }
 }
