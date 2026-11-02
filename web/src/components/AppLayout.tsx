@@ -13,10 +13,14 @@ import {
   HouseIcon,
   IdentificationCardIcon,
   ListIcon,
+  SlidersIcon,
+  SquaresFourIcon,
+  StudentIcon,
   SignOutIcon,
   TableIcon,
   UsersFourIcon,
   UsersThreeIcon,
+  WarningIcon,
   type Icon,
 } from '../icons'
 import { hover, theme, tokens } from '../theme'
@@ -50,6 +54,25 @@ const ADMIN_NAV: { group?: string; items: NavItem[] }[] = [
     ],
   },
 ]
+
+/** The DM's screens (UC-D1, UC-D2, UC-D7, UC-D8); the home is the scope dashboard. */
+const DM_NAV: { group?: string; items: NavItem[] }[] = [
+  { items: [{ to: '/', label: 'nav.dashboard', icon: SquaresFourIcon }] },
+  {
+    group: 'nav.discipline',
+    items: [
+      { to: '/alerts', label: 'nav.alerts', icon: WarningIcon },
+      { to: '/students', label: 'nav.students', icon: StudentIcon },
+      { to: '/settings', label: 'nav.settings', icon: SlidersIcon },
+    ],
+  },
+]
+
+/** An admin who is also the DM gets the admin's home and both sets of screens. */
+function navFor(roles: readonly string[]) {
+  if (roles.includes('ADMIN')) return roles.includes('DM') ? [...ADMIN_NAV, DM_NAV[1]] : ADMIN_NAV
+  return roles.includes('DM') ? DM_NAV : []
+}
 
 const phone = theme.breakpoints.down('md')
 
@@ -125,7 +148,7 @@ function Sidebar() {
   const { user, signOut } = useAuth()
   const { pathname } = useLocation()
   const schoolName = useSchoolName(user?.schoolId ?? undefined)
-  const nav = user?.roles.includes('ADMIN') && !user.passwordChangeRequired ? ADMIN_NAV : []
+  const nav = user && !user.passwordChangeRequired ? navFor(user.roles) : []
   const isCurrent = (to: string) => to === pathname || (to !== '/' && pathname.startsWith(`${to}/`))
   const roles = user?.roles.map((r) => t(`roles.${r}`)).join(', ')
 

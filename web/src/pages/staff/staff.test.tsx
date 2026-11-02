@@ -202,10 +202,10 @@ describe('staff screens (UC-A2)', () => {
   })
 
   it('keeps the staff screens to the admin', async () => {
-    const { client } = signedIn({}, ['DM'])
+    const { client } = signedIn({}, ['DM']) // sent back to the DM's home, the scope dashboard (UC-D8)
     renderApp(client, '/staff/u1')
 
-    expect(await screen.findByRole('heading', { name: 'Bienvenue sur SchoolLink' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Vos classes' })).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Personnel' })).not.toBeInTheDocument()
   })
 

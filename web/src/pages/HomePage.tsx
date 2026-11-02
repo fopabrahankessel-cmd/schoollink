@@ -2,14 +2,16 @@ import { Alert, Box, Chip, Stack, Typography } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { WEB_ROLES } from '../auth/roles'
 import { useAuth } from '../auth/useAuth'
+import { ScopeDashboard } from './dm/ScopeDashboard'
 import { SetupOverview } from './SetupOverview'
 
-/** The admin sees how far the school year is set up; other web roles get theirs in later tasks. */
+/** The admin sees how far the school year is set up, the DM their classes (UC-D8); other web roles get theirs in later tasks. */
 export function HomePage() {
   const { t } = useTranslation()
   const { user } = useAuth()
   const roles = user?.roles ?? []
   if (roles.includes('ADMIN')) return <SetupOverview />
+  if (roles.includes('DM')) return <ScopeDashboard />
   const onWeb = roles.some((r) => WEB_ROLES.includes(r))
 
   return (

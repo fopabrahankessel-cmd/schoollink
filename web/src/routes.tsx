@@ -9,6 +9,10 @@ import { ImportPreviewPage } from './pages/import/ImportPreviewPage'
 import { ImportUploadPage } from './pages/import/ImportUploadPage'
 import { HomePage } from './pages/HomePage'
 import { LoginPage } from './pages/LoginPage'
+import { AlertsPage } from './pages/dm/AlertsPage'
+import { SettingsPage } from './pages/dm/SettingsPage'
+import { StudentHistoryPage } from './pages/dm/StudentHistoryPage'
+import { StudentsPage } from './pages/dm/StudentsPage'
 import { CalendarPage } from './pages/structure/CalendarPage'
 import { ClassesPage } from './pages/structure/ClassesPage'
 import { PeriodsPage } from './pages/structure/PeriodsPage'
@@ -17,6 +21,7 @@ import { StaffDetailPage } from './pages/staff/StaffDetailPage'
 import { StaffListPage } from './pages/staff/StaffListPage'
 
 const admin = (page: ReactNode) => <RequireRole role="ADMIN">{page}</RequireRole>
+const dm = (page: ReactNode) => <RequireRole role="DM">{page}</RequireRole>
 
 export const routes: RouteObject[] = [
   { path: '/login', element: <LoginPage /> },
@@ -42,6 +47,11 @@ export const routes: RouteObject[] = [
       { path: '/students/import/:id', element: admin(<ImportPreviewPage />) },
       // UC-A4: guardians and invitation codes, admin only
       { path: '/guardians', element: admin(<GuardiansPage />) },
+      // UC-D1, UC-D2, UC-D6, UC-D7, UC-D8: the DM's alerts, students and settings; the home is the scope dashboard
+      { path: '/alerts', element: dm(<AlertsPage />) },
+      { path: '/students', element: dm(<StudentsPage />) },
+      { path: '/students/:id', element: dm(<StudentHistoryPage />) },
+      { path: '/settings', element: dm(<SettingsPage />) },
     ],
   },
   { path: '*', element: <Navigate to="/" replace /> },

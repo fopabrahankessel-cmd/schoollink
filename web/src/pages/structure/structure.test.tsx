@@ -194,10 +194,10 @@ describe('school structure screens (UC-A1)', () => {
   })
 
   it('keeps the structure screens to the admin', async () => {
-    const { client } = signedIn({}, ['DM'])
+    const { client } = signedIn({}, ['DM']) // sent back to the DM's home, the scope dashboard (UC-D8)
     renderApp(client, '/structure/periods')
 
-    expect(await screen.findByRole('heading', { name: 'Bienvenue sur SchoolLink' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Vos classes' })).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Périodes' })).not.toBeInTheDocument()
   })
 
