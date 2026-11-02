@@ -45,8 +45,9 @@ describe('letterhead editor (UC-A7, D36)', () => {
 
     const french = await screen.findByRole('group', { name: 'Colonne française' })
     const second = within(french).getByRole('group', { name: 'Ligne 2' })
+    // pasted, not typed: a keystroke at a time is slow and not what this test is about
     await user.clear(within(second).getByLabelText('Texte'))
-    await user.type(within(second).getByLabelText('Texte'), '  Paix – Travail – Patrie ')
+    await user.paste('  Paix – Travail – Patrie ')
     await user.click(within(second).getByRole('button', { name: 'Monter' }))
     const first = within(french).getByRole('group', { name: 'Ligne 1' })
     expect(within(first).getByLabelText('Texte')).toHaveValue('  Paix – Travail – Patrie ')
@@ -55,7 +56,8 @@ describe('letterhead editor (UC-A7, D36)', () => {
 
     const english = screen.getByRole('group', { name: 'Colonne anglaise' })
     await user.click(within(english).getByRole('button', { name: 'Ajouter une ligne' }))
-    await user.type(within(within(english).getByRole('group', { name: 'Ligne 2' })).getByLabelText('Texte'), 'Peace – Work')
+    await user.click(within(within(english).getByRole('group', { name: 'Ligne 2' })).getByLabelText('Texte'))
+    await user.paste('Peace – Work')
     await user.click(screen.getByRole('button', { name: 'Enregistrer' }))
 
     expect(await screen.findByText("L'en-tête est enregistré.")).toBeInTheDocument()
