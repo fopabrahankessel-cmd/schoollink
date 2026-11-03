@@ -7,13 +7,19 @@ import com.schoollink.school.Schools;
 import com.schoollink.shared.error.ApiException;
 import com.schoollink.shared.security.CurrentUser;
 import com.schoollink.shared.security.Role;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +38,9 @@ class Letterheads {
 	static final int MAX_TEXT = 100;
 
 	static final int MAX_LOGO_BYTES = 1_048_576;
+
+	/** A 30 mm logo needs a few hundred pixels; more only costs the DM's phone memory. */
+	static final int MAX_LOGO_PIXELS = 2000;
 
 	enum Layout {
 		BILINGUAL, FRENCH, ENGLISH
@@ -122,6 +131,7 @@ class Letterheads {
 		if (bytes.length > MAX_LOGO_BYTES) {
 			throw ApiException.invalid("letterhead.logo_too_large", "file");
 		}
+		checkDecodes(bytes);
 		Timestamp now = now();
 		jdbc.update("""
 				INSERT INTO school_letterhead (school_id, layout, french, english, logo, logo_type, logo_at, updated_at, updated_by)
@@ -182,6 +192,38 @@ class Letterheads {
 			}
 			return new Line(text, line.bold(), line.size() == null ? Size.NORMAL : line.size());
 		}).toList();
+	}
+
+	/**
+	 * D36: every DM's phone draws the logo into the PDF, so a logo that does not decode, or decodes into a
+	 * huge picture, would break the report for the whole school. The size is read from the header before
+	 * anything is decoded.
+	 */
+	private static void checkDecodes(byte[] bytes) {
+		try (ImageInputStream input = ImageIO.createImageInputStream(new ByteArrayInputStream(bytes))) {
+			Iterator<ImageReader> readers = ImageIO.getImageReaders(input);
+			if (!readers.hasNext()) {
+				throw ApiException.invalid("letterhead.logo_type", "file");
+			}
+			ImageReader reader = readers.next();
+			try {
+				reader.setInput(input, true, true);
+				if (reader.getWidth(0) > MAX_LOGO_PIXELS || reader.getHeight(0) > MAX_LOGO_PIXELS) {
+					throw ApiException.invalid("letterhead.logo_pixels", "file",
+							String.valueOf(MAX_LOGO_PIXELS));
+				}
+				reader.read(0);
+			}
+			finally {
+				reader.dispose();
+			}
+		}
+		catch (IOException | RuntimeException e) {
+			if (e instanceof ApiException refusal) {
+				throw refusal;
+			}
+			throw ApiException.invalid("letterhead.logo_type", "file");
+		}
 	}
 
 	private static String typeOf(byte[] bytes) {

@@ -4,10 +4,15 @@ import com.schoollink.TestcontainersConfiguration;
 import com.schoollink.testsupport.Actor;
 import com.schoollink.testsupport.PermissionMatrix;
 import com.schoollink.testsupport.TestWorld;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
+import javax.imageio.ImageIO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
@@ -62,9 +67,22 @@ class LetterheadTests {
 
 	static final String LOGO = LETTERHEAD + "/logo";
 
-	static final byte[] PNG = { (byte) 0x89, 'P', 'N', 'G', '\r', '\n', 0x1A, '\n', 0, 0, 0, 13, 'I', 'H', 'D', 'R' };
+	static final byte[] PNG = image("png", 40, 40);
 
-	static final byte[] JPEG = { (byte) 0xFF, (byte) 0xD8, (byte) 0xFF, (byte) 0xE0, 0, 16, 'J', 'F', 'I', 'F' };
+	static final byte[] JPEG = image("jpeg", 40, 40);
+
+	/** A real, generated image: the server decodes every logo before keeping it. */
+	static byte[] image(String format, int width, int height) {
+		try {
+			BufferedImage picture = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+			ByteArrayOutputStream out = new ByteArrayOutputStream();
+			ImageIO.write(picture, format, out);
+			return out.toByteArray();
+		}
+		catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
+	}
 
 	static final String BODY = """
 			{"layout": "BILINGUAL",
@@ -198,6 +216,24 @@ class LetterheadTests {
 	}
 
 	@Test
+	void refusesLogosThatOnlyLookLikeImages() throws Exception {
+		// a PNG signature and nothing usable after it: every DM's PDF would fail on it
+		byte[] signatureOnly = Arrays.copyOf(PNG, 16);
+		upload(png("logo.png", Arrays.copyOf(signatureOnly, 4096))).andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.code").value("letterhead.logo_type"));
+		byte[] truncatedJpeg = Arrays.copyOf(JPEG, 20);
+		upload(new MockMultipartFile("file", "logo.jpg", "image/jpeg", truncatedJpeg))
+			.andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.code").value("letterhead.logo_type"));
+
+		// small on disk, huge once decoded on the DM's phone
+		upload(png("logo.png", image("png", 2001, 10))).andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.code").value("letterhead.logo_pixels"))
+			.andExpect(jsonPath("$.message").value("Le logo ne doit pas dépasser 2000 × 2000 pixels."));
+		upload(png("logo.png", image("png", 2000, 2000))).andExpect(status().isOk());
+	}
+
+	@Test
 	void aLogoIsServedWithItsTypeAndCanBeRemoved() throws Exception {
 		upload(new MockMultipartFile("file", "logo.jpg", "image/jpeg", JPEG)).andExpect(status().isOk())
 			.andExpect(jsonPath("$.hasLogo").value(true))
@@ -226,7 +262,7 @@ class LetterheadTests {
 			assertThat(row.get("entity_id")).isEqualTo(world.schoolX.toString());
 		});
 		assertThat((String) rows.get(0).get("after")).contains("LYCÉE FICTIF X");
-		assertThat((String) rows.get(1).get("after")).contains("\"type\": \"image/png\"", "\"bytes\": 16");
+		assertThat((String) rows.get(1).get("after")).contains("\"type\": \"image/png\"", "\"bytes\": " + PNG.length);
 	}
 
 	@Test

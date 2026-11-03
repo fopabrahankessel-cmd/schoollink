@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -52,6 +53,23 @@ void main() {
       texts: texts('fr', report),
       generatedAt: generatedAt,
       fonts: fonts,
+    );
+
+    expect(ascii.decode(bytes.sublist(0, 4)), '%PDF');
+  });
+
+  test('a logo that cannot be read leaves the header without it, not the DM without a document', () async {
+    final report = reportOf([const ReportStudent(lastName: 'Abena', firstName: 'Awa', matricule: 'TW-0001')]);
+    // a PNG signature and nothing usable after it
+    final broken = Uint8List.fromList([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, ...List.filled(64, 0)]);
+
+    final bytes = await buildReportPdf(
+      report: report,
+      letterhead: head,
+      texts: texts('fr', report),
+      generatedAt: generatedAt,
+      fonts: fonts,
+      logo: broken,
     );
 
     expect(ascii.decode(bytes.sublist(0, 4)), '%PDF');

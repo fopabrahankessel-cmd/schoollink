@@ -171,14 +171,25 @@ pw.Document buildReportDocument({
   return document;
 }
 
+/// UC-D9: a logo the phone cannot decode is left out of the header; the report itself still matters more.
+pw.MemoryImage? _readable(Uint8List? logo) {
+  if (logo == null) return null;
+  try {
+    return pw.MemoryImage(logo);
+  } on Exception {
+    return null;
+  }
+}
+
 pw.Widget _header(Letterhead letterhead, Uint8List? logo) {
   final columns = headerColumns(letterhead);
-  final image = logo == null
+  final picture = _readable(logo);
+  final image = picture == null
       ? null
       : pw.SizedBox(
           width: _logo,
           height: _logo,
-          child: pw.Image(pw.MemoryImage(logo), fit: pw.BoxFit.contain),
+          child: pw.Image(picture, fit: pw.BoxFit.contain),
         );
   pw.Widget column(List<LetterheadLine> lines) => pw.Column(
     crossAxisAlignment: pw.CrossAxisAlignment.center,
