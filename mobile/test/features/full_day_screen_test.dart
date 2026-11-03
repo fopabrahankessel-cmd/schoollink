@@ -197,6 +197,17 @@ void main() {
     expect(find.text('Réessayer'), findsOneWidget);
   });
 
+  testWidgets('after a long holiday, with no default day, the DM can still pick one', (tester) async {
+    server.on('GET /reports/full-day-absences/default-date', (_) => Reply.error(404, 'not_found', 'Introuvable.'));
+    await open(tester);
+    await tap(tester, find.byKey(const ValueKey('open-full-day')));
+
+    expect(find.text('Réessayer'), findsNothing);
+    expect(find.text('lundi 2 novembre 2026'), findsOneWidget, reason: 'today, until another day is picked');
+    await tap(tester, find.byKey(const ValueKey('full-day-date')));
+    expect(find.byType(DatePickerDialog), findsOneWidget);
+  });
+
   testWidgets('the entry is only on the DM home', (tester) async {
     final teacher = userJson(roles: ['TEACHER']);
     server.on('GET /me', (_) => Reply.ok(teacher));

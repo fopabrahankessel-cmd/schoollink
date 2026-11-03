@@ -86,7 +86,12 @@ class _FullDayScreenState extends ConsumerState<FullDayScreen> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final defaultDate = ref.watch(defaultReportDateProvider);
-    final day = _picked ?? defaultDate.value;
+    // no school day in the server's look-back (a long holiday): start from today, the DM picks the day
+    final noDefault = switch (defaultDate) {
+      AsyncError(error: ApiFailure(status: 404)) => true,
+      _ => false,
+    };
+    final day = _picked ?? defaultDate.value ?? (noDefault ? DateUtils.dateOnly(ref.read(clockProvider)()) : null);
     final outcome = _outcome;
 
     return Scaffold(
