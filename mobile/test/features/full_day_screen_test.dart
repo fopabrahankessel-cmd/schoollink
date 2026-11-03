@@ -158,7 +158,9 @@ void main() {
     expect(server.sent('GET /school/letterhead/logo'), isEmpty, reason: 'the school has no logo');
   });
 
-  testWidgets('the day picker stops at today, and a refused day shows the server message with a retry', (tester) async {
+  testWidgets('the day picker stops at today, and a refused day shows the server message, without a retry', (
+    tester,
+  ) async {
     server.on(
       'GET /reports/full-day-absences',
       (_) => Reply.error(400, 'report.not_a_school_day', "Ce jour n'est pas un jour de classe.", field: 'date'),
@@ -180,6 +182,18 @@ void main() {
     await generate(tester);
     expect(server.sent('GET /reports/full-day-absences').single.query, {'date': '2026-10-30'});
     expect(find.text("Ce jour n'est pas un jour de classe."), findsOneWidget);
+    // retrying cannot change the answer: another day can
+    expect(find.text('Réessayer'), findsNothing);
+    expect(find.byIcon(Icons.wifi_off_rounded), findsNothing);
+  });
+
+  testWidgets('without the network the message offers a retry', (tester) async {
+    await open(tester);
+    await tap(tester, find.byKey(const ValueKey('open-full-day')));
+    server.on('GET /reports/full-day-absences', (_) => Reply.unreachable);
+
+    await generate(tester);
+
     expect(find.text('Réessayer'), findsOneWidget);
   });
 

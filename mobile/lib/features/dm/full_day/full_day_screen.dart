@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:printing/printing.dart';
 
+import '../../../core/api/api_failure.dart';
 import '../../../core/providers.dart';
 import '../../../core/theme.dart';
 import '../../../core/ui/skeleton.dart';
@@ -116,6 +117,17 @@ class _FullDayScreenState extends ConsumerState<FullDayScreen> {
               child: switch (outcome) {
                 null => const SizedBox.shrink(),
                 _Busy() => _Preparing(key: const ValueKey('full-day-busy'), text: l.fullDayPreparing),
+                // a day the server refuses (not over, not a school day): retrying cannot help
+                _Failed(error: ApiFailure(status: 400) && final refusal) => ListView(
+                  key: const ValueKey('full-day-refused'),
+                  padding: const EdgeInsets.fromLTRB(Gap.l, 0, Gap.l, Gap.xl),
+                  children: [
+                    Card(
+                      margin: EdgeInsets.zero,
+                      child: EmptyState(icon: Icons.event_busy_rounded, title: failureText(refusal, l)),
+                    ),
+                  ],
+                ),
                 _Failed(:final error) => Padding(
                   key: const ValueKey('full-day-failed'),
                   padding: const EdgeInsets.all(Gap.l),
