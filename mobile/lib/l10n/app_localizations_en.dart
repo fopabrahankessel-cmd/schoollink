@@ -989,4 +989,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String reportPage(int page, int pages) {
     return 'Page $page/$pages';
   }
+
+  @override
+  String get fullDayEntry => 'Full-day absences';
+
+  @override
+  String get fullDayEntryHint => 'The day\'s list, as a PDF to share';
+
+  @override
+  String get fullDayPickDay => 'Day';
+
+  @override
+  String get fullDayDayHint => 'From 5 PM the day proposed is today; before, the previous school day.';
+
+  @override
+  String get fullDayGenerate => 'Generate the document';
+
+  @override
+  String get fullDayPreparing => 'Preparing the document…';
+
+  @override
+  String get fullDayShare => 'Share';
+
+  @override
+  String fullDayNobody(String date) {
+    return 'No student was absent from all the school periods on $date.';
+  }
 }

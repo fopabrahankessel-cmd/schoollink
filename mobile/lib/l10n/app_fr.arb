@@ -248,5 +248,13 @@
   "reportUnrecorded": "Heures non saisies, les absences de toute la journée y sont donc inconnues : {list}",
   "reportPeriod": "H{number}",
   "reportFooter": "Généré par SchoolLink le {date} à {time}",
-  "reportPage": "Page {page}/{pages}"
+  "reportPage": "Page {page}/{pages}",
+  "fullDayEntry": "Absents toute la journée",
+  "fullDayEntryHint": "La liste du jour, en PDF à partager",
+  "fullDayPickDay": "Jour",
+  "fullDayDayHint": "À partir de 17 h, le jour proposé est aujourd'hui ; avant, le jour de classe précédent.",
+  "fullDayGenerate": "Générer le document",
+  "fullDayPreparing": "Préparation du document…",
+  "fullDayShare": "Partager",
+  "fullDayNobody": "Aucun élève n'a été absent à toutes les heures de cours le {date}."
 }

@@ -10,6 +10,7 @@ import 'features/auth/login_screen.dart';
 import 'features/dm/alert_screen.dart';
 import 'features/dm/student_history_screen.dart';
 import 'features/dm/student_search_screen.dart';
+import 'features/dm/full_day/full_day_screen.dart';
 import 'features/shell/destinations.dart';
 import 'features/shell/home_shell.dart';
 import 'features/shell/web_only_screen.dart';
@@ -77,6 +78,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => StudentHistoryScreen(studentId: state.pathParameters['studentId']!),
           ),
           GoRoute(path: 'students', builder: (context, state) => const StudentSearchScreen()),
+          GoRoute(path: 'full-day', builder: (context, state) => const FullDayScreen()),
           GoRoute(
             path: 'attendance/:classId/:periodId',
             builder: (context, state) => AttendanceScreen(

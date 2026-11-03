@@ -1585,6 +1585,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Page {page}/{pages}'**
   String reportPage(int page, int pages);
+
+  /// UC-D9: the DM home entry and the screen title.
+  ///
+  /// In en, this message translates to:
+  /// **'Full-day absences'**
+  String get fullDayEntry;
+
+  /// UC-D9: under the DM home entry.
+  ///
+  /// In en, this message translates to:
+  /// **'The day\'s list, as a PDF to share'**
+  String get fullDayEntryHint;
+
+  /// UC-D9: the day field.
+  ///
+  /// In en, this message translates to:
+  /// **'Day'**
+  String get fullDayPickDay;
+
+  /// UC-D9: under the day field.
+  ///
+  /// In en, this message translates to:
+  /// **'From 5 PM the day proposed is today; before, the previous school day.'**
+  String get fullDayDayHint;
+
+  /// UC-D9: the button.
+  ///
+  /// In en, this message translates to:
+  /// **'Generate the document'**
+  String get fullDayGenerate;
+
+  /// UC-D9: while the PDF is made.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing the document…'**
+  String get fullDayPreparing;
+
+  /// UC-D9: opens Android's share sheet with the PDF.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get fullDayShare;
+
+  /// UC-D9: nobody listed; no PDF is made.
+  ///
+  /// In en, this message translates to:
+  /// **'No student was absent from all the school periods on {date}.'**
+  String fullDayNobody(String date);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

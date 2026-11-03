@@ -788,5 +788,42 @@
         "type": "int"
       }
     }
+  },
+  "fullDayEntry": "Full-day absences",
+  "@fullDayEntry": {
+    "description": "UC-D9: the DM home entry and the screen title."
+  },
+  "fullDayEntryHint": "The day's list, as a PDF to share",
+  "@fullDayEntryHint": {
+    "description": "UC-D9: under the DM home entry."
+  },
+  "fullDayPickDay": "Day",
+  "@fullDayPickDay": {
+    "description": "UC-D9: the day field."
+  },
+  "fullDayDayHint": "From 5 PM the day proposed is today; before, the previous school day.",
+  "@fullDayDayHint": {
+    "description": "UC-D9: under the day field."
+  },
+  "fullDayGenerate": "Generate the document",
+  "@fullDayGenerate": {
+    "description": "UC-D9: the button."
+  },
+  "fullDayPreparing": "Preparing the document…",
+  "@fullDayPreparing": {
+    "description": "UC-D9: while the PDF is made."
+  },
+  "fullDayShare": "Share",
+  "@fullDayShare": {
+    "description": "UC-D9: opens Android's share sheet with the PDF."
+  },
+  "fullDayNobody": "No student was absent from all the school periods on {date}.",
+  "@fullDayNobody": {
+    "description": "UC-D9: nobody listed; no PDF is made.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   }
 }
