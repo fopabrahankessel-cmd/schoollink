@@ -115,6 +115,13 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
+		<dependency>
+			<!-- FirebaseOptions needs JacksonFactory, which came only with the excluded Cloud libraries;
+			     same version as the google-http-client that firebase-admin brings -->
+			<groupId>com.google.http-client</groupId>
+			<artifactId>google-http-client-jackson2</artifactId>
+			<version>2.2.0</version>
+		</dependency>
 		<!-- Task 1.14: fake names for the dev profile seed only; left out of the packaged jar below -->
 		<dependency>
 			<groupId>net.datafaker</groupId>
