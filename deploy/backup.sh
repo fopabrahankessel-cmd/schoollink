@@ -3,8 +3,11 @@
 #   15 21 * * * cd /opt/schoollink/deploy && ./backup.sh >> backups/backup.log 2>&1
 # Keeps 14 days of backups in deploy/backups; copy them off the server too (see the guide).
 set -eu
+# the dumps hold minors' data (NFR-10): readable by this user only
+umask 077
 cd "$(dirname "$0")"
 mkdir -p backups
+chmod 700 backups
 file="backups/schoollink-$(date +%Y-%m-%d).dump"
 docker compose exec -T db sh -c 'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB" --format=custom' > "$file.tmp"
 mv "$file.tmp" "$file"
