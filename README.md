@@ -7,7 +7,8 @@ School attendance and parent-notification platform for secondary schools. The so
 | `backend/` | Java 21 + Spring Boot 4 modular monolith, REST API under `/api/v1` |
 | `web/` | React dashboard for administrators, DMs and the researcher |
 | `mobile/` | Flutter Android app for teachers, assistant DMs, DMs, counsellors and parents |
-| `docs/` | Specification, plan, import format and samples |
+| `docs/` | Specification, plan, import format and samples; [DEPLOYMENT.md](docs/DEPLOYMENT.md) puts the pilot on a server |
+| `deploy/` | Production setup on one server: Docker Compose, Caddy (HTTPS), nightly backup |
 
 ## Local development
 

@@ -34,3 +34,8 @@ desktop.ini
 
 # brainstorming mockups (visual companion)
 .superpowers/
+
+# deployment: the server secrets and database backups never leave the server
+deploy/secrets/
+deploy/backups/
+deploy/downloads/

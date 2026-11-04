@@ -1,0 +1,34 @@
+# SchoolLink's front door (docs/DEPLOYMENT.md). Caddy gets and renews the Let's Encrypt
+# certificate for the domain by itself, and redirects HTTP to HTTPS (NFR-7).
+# No access log: a URL never carries a phone number (NFR-9), but nothing needs one either.
+{$SCHOOLLINK_DOMAIN} {
+	encode gzip
+
+	# the API, the SMS delivery webhook (D32) and the uptime check (NFR-13)
+	handle /api/* {
+		reverse_proxy backend:8080
+	}
+	handle /actuator/health {
+		reverse_proxy backend:8080
+	}
+
+	# the app's APK files, for phones that install it without Google Play (deploy/downloads)
+	handle_path /download/* {
+		root * /downloads
+		file_server
+	}
+
+	# the web dashboard; any other path is a page of the React app
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "no-referrer"
+		-Server
+	}
+}
