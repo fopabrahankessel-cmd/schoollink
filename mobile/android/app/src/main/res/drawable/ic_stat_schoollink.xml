@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- BR-21: the SchoolLink mark for the status bar. Android draws it as a white silhouette and tints it
+     with notification_color, so only the shape matters: the logo's mortarboard over an open book. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- mortarboard: the board, then the cap below it, with a gap so they read as two shapes -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M12,2.6L22.4,6.8L12,11L1.6,6.8Z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M6.4,10.2L12,12.4L17.6,10.2V12.7C17.6,13.9 15.1,14.8 12,14.8C8.9,14.8 6.4,13.9 6.4,12.7Z" />
+    <!-- tassel -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M20.1,7.4H21.1V11H20.1ZM19.6,10.6H21.6V12.9H19.6Z" />
+    <!-- open book -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M1.8,16.2C4.9,15.2 9,15.5 11.3,17.2V21.4C9,19.9 4.9,19.5 1.8,20.4Z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M22.2,16.2C19.1,15.2 15,15.5 12.7,17.2V21.4C15,19.9 19.1,19.5 22.2,20.4Z" />
+</vector>

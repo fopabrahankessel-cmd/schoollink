@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- brandBlue in lib/core/theme.dart: tints the notification icon and app name in the shade -->
+    <color name="notification_color">#1D4FA8</color>
+	<color name="ic_launcher_background">#FFFFFF</color>
+</resources>

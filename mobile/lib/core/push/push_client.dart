@@ -7,6 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../theme.dart';
 
 /// A push as the server sends it (BR-21): the title and body already in the user's language, and
 /// the id of the notification, which the inbox opens (BR-24).
@@ -63,6 +64,10 @@ class FirebaseConfig {
 /// once (BR-21). Its name, seen in the phone's settings, is in the user's language (NFR-12).
 const alertsChannelId = 'schoollink_alerts';
 
+/// BR-21: the SchoolLink mark in the status bar (android/app/src/main/res/drawable), the same one FCM uses
+/// for pushes that arrive while the app is closed (AndroidManifest.xml).
+const notificationIcon = 'ic_stat_schoollink';
+
 class FirebasePushClient implements PushClient {
   FirebasePushClient._(this._messaging, this._local);
 
@@ -81,7 +86,7 @@ class FirebasePushClient implements PushClient {
       final local = FlutterLocalNotificationsPlugin();
       final client = FirebasePushClient._(FirebaseMessaging.instance, local);
       await local.initialize(
-        settings: const InitializationSettings(android: AndroidInitializationSettings('@mipmap/ic_launcher')),
+        settings: const InitializationSettings(android: AndroidInitializationSettings(notificationIcon)),
         // a notification the app showed itself, while open, and the user tapped
         onDidReceiveNotificationResponse: (response) =>
             client._tapped.add(PushMessage(title: null, body: null, notificationId: response.payload)),
@@ -127,6 +132,7 @@ class FirebasePushClient implements PushClient {
           channelDescription: l.notificationChannelDescription,
           importance: Importance.high,
           priority: Priority.high,
+          color: brandBlue,
           styleInformation: BigTextStyleInformation(push.body ?? ''),
         ),
       ),
