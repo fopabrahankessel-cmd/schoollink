@@ -75,14 +75,16 @@ class FirebasePushClient implements PushClient {
   final FlutterLocalNotificationsPlugin _local;
   final _tapped = StreamController<PushMessage>.broadcast();
 
-  /// Starts Firebase and the notification channel. Null when the app was built without a
-  /// Firebase project, or Firebase cannot start: the app then runs without push.
+  /// Starts Firebase and the notification channel. The project comes from the FIREBASE_*
+  /// dart-defines when the build has them, otherwise from the Android resources the build
+  /// generates from google-services.json (D23), so every build of a machine with that file has
+  /// push, however it is installed. Null when neither is there, or Firebase cannot start: the
+  /// app then runs without push.
   static Future<FirebasePushClient?> start(Locale locale) async {
-    if (!FirebaseConfig.present) {
-      return null;
-    }
     try {
-      await Firebase.initializeApp(options: FirebaseConfig.options);
+      await (FirebaseConfig.present
+          ? Firebase.initializeApp(options: FirebaseConfig.options)
+          : Firebase.initializeApp());
       final local = FlutterLocalNotificationsPlugin();
       final client = FirebasePushClient._(FirebaseMessaging.instance, local);
       await local.initialize(

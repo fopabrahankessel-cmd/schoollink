@@ -448,7 +448,7 @@ Before every new version, raise the version in `mobile/pubspec.yaml`: `version: 
 
 ```powershell
 cd C:\Users\fopab\StudioProjects\mobile
-$defines = "--dart-define-from-file=C:\Users\fopab\secrets\firebase-dart-defines.json", "--dart-define=API_BASE_URL=https://YOUR_DOMAIN/api/v1"
+$defines = "--dart-define=API_BASE_URL=https://YOUR_DOMAIN/api/v1"
 
 # for Google Play
 flutter build appbundle --release @defines
@@ -456,6 +456,8 @@ flutter build appbundle --release @defines
 # for direct download: one file per processor type, each under 30 MB (NFR-4)
 flutter build apk --release --split-per-abi @defines
 ```
+
+Push needs no flag: the build reads the Firebase project from `mobile\android\app\google-services.json`, which must be on the machine that builds (it is never committed). The production server address, on the other hand, must always be given with `API_BASE_URL`.
 
 The results:
 - `build\app\outputs\bundle\release\app-release.aab`: upload this one to Google Play.
@@ -616,7 +618,7 @@ All commands run in `/opt/schoollink/deploy` on the server.
 | Browser warns the certificate is not valid | Caddy could not get the certificate. Run `docker compose logs caddy`. Usually the DNS record is wrong, or port 80 is closed: Let's Encrypt needs it. |
 | `backend` keeps restarting | Run `docker compose logs backend` and read the last lines. A message naming `JWT_SECRET`, `FIREBASE_CREDENTIALS` or `TWILIO` means that setting is missing or wrong in `.env`. "Cannot read the Firebase service-account file" means the key file is missing or not readable (part 10.2). |
 | `docker compose` says `set DB_PASSWORD in .env` | That line in `.env` is empty. |
-| Parents get no push | The app was built without the Firebase settings or with the wrong `API_BASE_URL` (part 12). The parent may also have refused notifications in the phone's settings. |
+| Parents get no push | The app was built on a machine without `mobile\android\app\google-services.json`, or with the wrong `API_BASE_URL` (part 12). The parent may also have refused notifications in the phone's settings. |
 | Parents get no SMS | Check, in this order: Twilio credit, Geo permissions for Cameroon, sender ID registration, the school's monthly limit, and Console → Monitor → Logs → Messaging for the error code. |
 | Server slow or out of memory | `free -h` and `docker stats`. Two schools fit easily in 4 GB. If not, resize the server in Hetzner (CX33): a reboot, nothing to reinstall. |
 

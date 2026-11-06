@@ -34,6 +34,31 @@ android {
         versionName = flutter.versionName
     }
 
+    // D23, BR-21: the Firebase project of the app, from android/app/google-services.json (never
+    // committed), turned into the Android resources Firebase reads at start-up — what the
+    // google-services plugin does, without the plugin. Every build of a machine that has the
+    // file gets push, however the app is started or installed; without it the app runs
+    // without push, unless the build is given the FIREBASE_* dart-defines.
+    buildFeatures {
+        resValues = true
+    }
+    val googleServices = file("google-services.json")
+    if (googleServices.exists()) {
+        val config = groovy.json.JsonSlurper().parse(googleServices) as Map<*, *>
+        val project = config["project_info"] as Map<*, *>
+        val client = (config["client"] as List<*>).map { it as Map<*, *> }.firstOrNull {
+            val info = (it["client_info"] as Map<*, *>)["android_client_info"] as Map<*, *>
+            info["package_name"] == "cm.schoollink.app"
+        } ?: throw GradleException("google-services.json has no Android app cm.schoollink.app")
+        val apiKey = ((client["api_key"] as List<*>).first() as Map<*, *>)["current_key"] as String
+        defaultConfig {
+            resValue("string", "google_app_id", (client["client_info"] as Map<*, *>)["mobilesdk_app_id"] as String)
+            resValue("string", "gcm_defaultSenderId", project["project_number"] as String)
+            resValue("string", "project_id", project["project_id"] as String)
+            resValue("string", "google_api_key", apiKey)
+        }
+    }
+
     // The upload key for Google Play (docs/DEPLOYMENT.md): android/key.properties names the keystore
     // and its passwords. Neither is ever committed. Without the file, release builds use the debug
     // key, so `flutter run --release` still works on a development machine.
