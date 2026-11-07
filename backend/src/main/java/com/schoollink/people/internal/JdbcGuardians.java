@@ -50,6 +50,18 @@ class JdbcGuardians implements Guardians {
 	}
 
 	@Override
+	public Optional<WithoutAccount> withoutAccount(UUID schoolId, String phone) {
+		return jdbc.query("""
+				SELECT g.id, g.language FROM guardian g
+				WHERE g.school_id = :school AND g.phone = :phone AND g.user_id IS NULL
+				  AND EXISTS (SELECT 1 FROM student_guardian sg WHERE sg.guardian_id = g.id AND sg.school_id = g.school_id)""",
+				Map.of("school", schoolId, "phone", phone),
+				(rs, n) -> new WithoutAccount(rs.getObject("id", UUID.class), rs.getString("language")))
+			.stream()
+			.findFirst();
+	}
+
+	@Override
 	public String language(UUID schoolId, UUID guardianId) {
 		return jdbc.queryForObject("SELECT language FROM guardian WHERE id = :id AND school_id = :school",
 				Map.of("school", schoolId, "id", guardianId), String.class);

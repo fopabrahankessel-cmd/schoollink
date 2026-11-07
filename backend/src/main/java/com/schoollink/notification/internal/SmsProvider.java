@@ -9,7 +9,7 @@ import java.util.UUID;
  */
 interface SmsProvider {
 
-	/** NFR-9: the phone and the text (it may hold an invitation code) never appear in logs. */
+	/** NFR-9: the phone and the text (it may hold a one-time code) never appear in logs. */
 	record SmsMessage(UUID notificationId, String phone, String text) {
 
 		@Override

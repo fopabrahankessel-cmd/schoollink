@@ -217,7 +217,6 @@ class ParentApiTests {
 		UUID summonsEvent = UUID.randomUUID();
 		UUID summonsPush = outbox(guardianA, awa, "SUMMONS", "PUSH", "SENT", NOW, summonsEvent);
 		outbox(guardianA, awa, "SUMMONS", "SMS", "SENT", NOW, summonsEvent); // BR-23: same event by SMS
-		outbox(guardianA, null, "INVITATION", "SMS", "SENT", NOW.minusSeconds(86_400)); // never shown (D13)
 		outbox(otherGuardian, brice, "ABSENCE", "SMS", "HELD", NOW); // another family
 
 		perform(get("/api/v1/me/notifications")).andExpect(status().isOk())
@@ -280,10 +279,7 @@ class ParentApiTests {
 	}
 
 	@Test
-	void anInvitationOrAnUnknownNotificationCannotBeOpened() throws Exception {
-		UUID invitation = outbox(guardianA, null, "INVITATION", "SMS", "SENT", NOW);
-
-		perform(post("/api/v1/notifications/{id}/opened", invitation)).andExpect(status().isNotFound());
+	void anUnknownNotificationCannotBeOpened() throws Exception {
 		perform(post("/api/v1/notifications/{id}/opened", UUID.randomUUID())).andExpect(status().isNotFound());
 	}
 
@@ -368,7 +364,6 @@ class ParentApiTests {
 		String payload = switch (type) {
 			case "SUMMONS" -> "{\"firstName\":\"Awa\",\"meetingDate\":\"2026-11-05\",\"meetingTime\":\"10:00\"}";
 			case "LATENESS" -> "{\"firstName\":\"Awa\",\"date\":\"2026-11-02\",\"arrivalTime\":\"08:12\"}";
-			case "INVITATION" -> "{\"expiresAt\":\"2026-12-01T00:00:00Z\"}";
 			default -> "{\"firstName\":\"Awa\",\"date\":\"2026-11-02\",\"periodNumber\":1,\"periodStart\":\"07:30\"}";
 		};
 		return jdbc.queryForObject("""

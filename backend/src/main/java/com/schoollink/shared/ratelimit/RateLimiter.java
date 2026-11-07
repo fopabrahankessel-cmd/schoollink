@@ -9,7 +9,7 @@ import java.util.function.Function;
 import org.springframework.stereotype.Component;
 
 /**
- * In-memory rate limiter for login and parent activation (NFR-7). One backend instance serves
+ * In-memory rate limiter for login and parent sign-in (NFR-7). One backend instance serves
  * the pilot (modular monolith), so the buckets live in memory and reset on restart. Keys may
  * contain phone numbers: they stay in memory and are never logged (NFR-9).
  *

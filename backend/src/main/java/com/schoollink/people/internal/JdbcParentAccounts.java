@@ -4,8 +4,6 @@ import com.schoollink.audit.AuditAction;
 import com.schoollink.audit.AuditEntry;
 import com.schoollink.audit.AuditLog;
 import com.schoollink.people.ParentAccounts;
-import java.sql.Timestamp;
-import java.time.Clock;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -16,96 +14,77 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-/** UC-P1 step 2: the guardian's account, made when the SMS one-time code is right. */
+/** UC-P1: the guardian's account, made when the SMS one-time code is right; D21: staff who are parents. */
 @Repository
 class JdbcParentAccounts implements ParentAccounts {
 
 	private record Guardian(String name, String phone, String language, UUID userId) {
 	}
 
-	private record Account(UUID id, String status) {
-	}
-
 	private final NamedParameterJdbcTemplate jdbc;
 
 	private final AuditLog audit;
 
-	private final Clock clock;
-
-	JdbcParentAccounts(NamedParameterJdbcTemplate jdbc, AuditLog audit, Clock clock) {
+	JdbcParentAccounts(NamedParameterJdbcTemplate jdbc, AuditLog audit) {
 		this.jdbc = jdbc;
 		this.audit = audit;
-		this.clock = clock;
 	}
 
 	@Override
 	@Transactional(propagation = Propagation.MANDATORY)
-	public Optional<UUID> activate(UUID schoolId, UUID invitationId) {
-		MapSqlParameterSource p = new MapSqlParameterSource("school", schoolId).addValue("invitation", invitationId)
-			.addValue("now", Timestamp.from(clock.instant()));
-		// locked: of two concurrent activations, the second waits and then finds the code used.
+	public Optional<UUID> activate(UUID schoolId, UUID guardianId) {
+		MapSqlParameterSource p = new MapSqlParameterSource("school", schoolId).addValue("guardian", guardianId);
+		// locked: of two concurrent first sign-ins, the second waits and then finds the account.
 		// Everything is checked before anything is written, so a refusal changes nothing.
-		List<UUID> live = jdbc.queryForList("""
-				SELECT guardian_id FROM invitation_code
-				WHERE id = :invitation AND school_id = :school AND used_at IS NULL AND revoked_at IS NULL AND expires_at > :now
-				FOR UPDATE""", p, UUID.class);
-		if (live.isEmpty()) {
-			return Optional.empty();
-		}
-		UUID guardianId = live.getFirst();
-		p.addValue("guardian", guardianId);
 		Guardian guardian = jdbc.queryForObject("""
 				SELECT name, phone, language, user_id FROM guardian WHERE id = :guardian AND school_id = :school FOR UPDATE""",
 				p, (rs, n) -> new Guardian(rs.getString("name"), rs.getString("phone"), rs.getString("language"),
 						rs.getObject("user_id", UUID.class)));
 		if (guardian.userId() != null) {
-			// D7: codes go to guardians without an account; one linked meanwhile keeps its account,
-			// unless it was disabled (D18): a code never brings a disabled account back
-			String status = jdbc.queryForObject("""
-					SELECT status FROM app_user WHERE id = :user AND school_id = :school FOR UPDATE""",
-					p.addValue("user", guardian.userId()), String.class);
-			if ("DISABLED".equals(status)) {
-				return Optional.empty();
-			}
-			useInvitation(p);
 			return Optional.of(guardian.userId());
 		}
 		p.addValue("phone", guardian.phone());
-		Optional<Account> existing = jdbc.query("""
-				SELECT id, status FROM app_user WHERE school_id = :school AND phone = :phone FOR UPDATE""", p,
-				(rs, n) -> new Account(rs.getObject("id", UUID.class), rs.getString("status"))).stream().findFirst();
-		if (existing.isPresent() && "DISABLED".equals(existing.get().status())) {
+		if (!jdbc.queryForList("SELECT id FROM app_user WHERE school_id = :school AND phone = :phone FOR UPDATE", p, UUID.class)
+			.isEmpty()) {
 			return Optional.empty();
 		}
-		useInvitation(p);
-		UUID userId;
-		if (existing.isPresent()) {
-			// D21: a staff member who is also a parent keeps one account, now with the PARENT role
-			userId = existing.get().id();
+		String[] names = splitName(guardian.name());
+		UUID userId = jdbc.queryForObject("""
+				INSERT INTO app_user (school_id, first_name, last_name, phone, language)
+				VALUES (:school, :first, :last, :phone, :language) RETURNING id""",
+				p.addValue("first", names[0]).addValue("last", names[1]).addValue("language", guardian.language()),
+				UUID.class);
+		// NFR-11, NFR-9: no phone in the audit
+		audit.record(new AuditEntry(schoolId, userId, AuditAction.CREATE, "app_user", userId.toString(), null,
+				Map.of("role", "PARENT", "guardianId", guardianId, "language", guardian.language())));
+		link(schoolId, guardianId, userId);
+		return Optional.of(userId);
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.MANDATORY)
+	public boolean linkStaff(UUID schoolId, UUID userId) {
+		List<UUID> guardians = jdbc.queryForList("""
+				SELECT g.id FROM guardian g
+				JOIN app_user u ON u.school_id = g.school_id AND u.phone = g.phone
+				WHERE u.id = :user AND g.school_id = :school AND g.user_id IS NULL FOR UPDATE OF g""",
+				new MapSqlParameterSource("school", schoolId).addValue("user", userId), UUID.class);
+		if (guardians.isEmpty()) {
+			return false;
 		}
-		else {
-			String[] names = splitName(guardian.name());
-			userId = jdbc.queryForObject("""
-					INSERT INTO app_user (school_id, first_name, last_name, phone, language)
-					VALUES (:school, :first, :last, :phone, :language) RETURNING id""",
-					p.addValue("first", names[0]).addValue("last", names[1]).addValue("language", guardian.language()),
-					UUID.class);
-			// NFR-11, NFR-9: no phone in the audit
-			audit.record(new AuditEntry(schoolId, userId, AuditAction.CREATE, "app_user", userId.toString(), null,
-					Map.of("role", "PARENT", "guardianId", guardianId, "language", guardian.language())));
-		}
-		p.addValue("user", userId);
+		link(schoolId, guardians.getFirst(), userId);
+		return true;
+	}
+
+	private void link(UUID schoolId, UUID guardianId, UUID userId) {
+		MapSqlParameterSource p = new MapSqlParameterSource("school", schoolId).addValue("guardian", guardianId)
+			.addValue("user", userId);
 		jdbc.update("""
 				INSERT INTO role_assignment (school_id, user_id, role) VALUES (:school, :user, 'PARENT')
 				ON CONFLICT DO NOTHING""", p);
 		jdbc.update("UPDATE guardian SET user_id = :user WHERE id = :guardian AND school_id = :school", p);
 		audit.record(new AuditEntry(schoolId, userId, AuditAction.UPDATE, "guardian", guardianId.toString(),
-				Map.of("account", false), Map.of("account", true, "userId", userId, "invitationId", invitationId)));
-		return Optional.of(userId);
-	}
-
-	private void useInvitation(MapSqlParameterSource p) {
-		jdbc.update("UPDATE invitation_code SET used_at = :now WHERE id = :invitation AND school_id = :school", p);
+				Map.of("account", false), Map.of("account", true, "userId", userId)));
 	}
 
 	/** "Mbarga Paul Éric" -> first "Mbarga", last "Paul Éric"; one word -> first only. */

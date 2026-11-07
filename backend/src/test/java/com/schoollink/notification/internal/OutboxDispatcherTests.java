@@ -218,36 +218,6 @@ class OutboxDispatcherTests {
 	}
 
 	@Test
-	void anInvitationSmsIsSentAndItsCodeErased() { // D13, NFR-9
-		UUID invitation = invitation("2026-11-30T00:00:00Z", false);
-		UUID row = invitationSms(invitation, "K7M2-Q9XP");
-
-		dispatcher.dispatchDue();
-
-		assertThat(sms.sent).singleElement().satisfies(message -> {
-			assertThat(message.phone()).isEqualTo("+237690000202");
-			assertThat(message.text()).isEqualTo(
-					"SchoolLink: your activation code for Lycée Fictif X is K7M2-Q9XP. Enter it in the SchoolLink app before 30/11.");
-			assertThat(message.toString()).doesNotContain("690000202", "K7M2");
-		});
-		assertThat(state(row)).containsEntry("status", "SENT");
-		assertThat(payload(row)).doesNotContain("K7M2").contains("expiresAt");
-	}
-
-	@Test
-	void aRevokedInvitationIsNotSentAndItsCodeErased() { // D13
-		UUID invitation = invitation("2026-11-30T00:00:00Z", true);
-		UUID row = invitationSms(invitation, "K7M2-Q9XP");
-
-		dispatcher.dispatchDue();
-
-		assertThat(sms.sent).isEmpty();
-		assertThat(state(row)).containsEntry("status", "FAILED")
-			.containsEntry("last_error", "the invitation code was revoked or has expired");
-		assertThat(payload(row)).doesNotContain("K7M2");
-	}
-
-	@Test
 	void aPushForAGuardianWithoutAnAccountFails() { // D7
 		UUID row = absencePush(withoutApp);
 
@@ -265,10 +235,6 @@ class OutboxDispatcherTests {
 		return state;
 	}
 
-	private String payload(UUID row) {
-		return jdbc.queryForObject("SELECT payload::text FROM notification_outbox WHERE id = ?", String.class, row);
-	}
-
 	private UUID absencePush(UUID guardian) {
 		return row(guardian, world.studentA, "ABSENCE", UUID.randomUUID(), "PUSH", "FR",
 				Map.of("firstName", "Awa", "date", "2026-11-02", "periodNumber", 1, "periodStart", "07:30"));
@@ -277,11 +243,6 @@ class OutboxDispatcherTests {
 	private UUID correctionSms(UUID guardian) {
 		return row(guardian, world.studentA, "CORRECTION", UUID.randomUUID(), "SMS", "EN",
 				Map.of("firstName", "Awa", "date", "2026-11-02", "kind", "LATENESS"));
-	}
-
-	private UUID invitationSms(UUID invitation, String code) {
-		return row(withoutApp, null, "INVITATION", invitation, "SMS", "EN",
-				Map.of("code", code, "expiresAt", "2026-11-29T23:30:00Z"));
 	}
 
 	private UUID row(UUID guardian, UUID student, String type, UUID eventId, String channel, String language,
@@ -300,14 +261,6 @@ class OutboxDispatcherTests {
 				INSERT INTO student_guardian (school_id, student_id, guardian_id, relation, is_primary)
 				VALUES (?, ?, ?, 'GUARDIAN', false)""", world.schoolX, world.studentA, guardian);
 		return guardian;
-	}
-
-	private UUID invitation(String expiresAt, boolean revoked) {
-		return jdbc.queryForObject("""
-				INSERT INTO invitation_code (school_id, guardian_id, code_hash, created_at, expires_at, revoked_at)
-				VALUES (?, ?, ?, ?, ?::timestamptz, ?) RETURNING id""", UUID.class, world.schoolX, withoutApp,
-				"hash-" + UUID.randomUUID(), Timestamp.from(T0.minus(Duration.ofDays(1))), expiresAt,
-				revoked ? Timestamp.from(T0.minusSeconds(60)) : null);
 	}
 
 	/** A provider that answers from a script (then "sent") and records what it was asked. */

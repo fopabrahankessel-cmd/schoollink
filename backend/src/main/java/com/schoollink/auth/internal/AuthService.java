@@ -1,5 +1,6 @@
 package com.schoollink.auth.internal;
 
+import com.schoollink.people.ParentAccounts;
 import com.schoollink.people.UserAccount;
 import com.schoollink.people.UserAccounts;
 import com.schoollink.shared.error.ApiException;
@@ -17,11 +18,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Staff login and token refresh (NFR-7, D15, D16). Parents sign in through activation (UC-P1, task 2.9). */
+/** Staff login and token refresh (NFR-7, D15, D16). Parents sign in with an SMS code (UC-P1, D24). */
 @Service
 class AuthService {
 
 	private final UserAccounts accounts;
+
+	private final ParentAccounts parentAccounts;
 
 	private final PasswordEncoder passwords;
 
@@ -60,9 +63,10 @@ class AuthService {
 	/** Checked when no account matches, so a wrong login takes as long as a wrong password. */
 	private final String dummyHash;
 
-	AuthService(UserAccounts accounts, PasswordEncoder passwords, AccessTokens accessTokens,
-			RefreshTokens refreshTokens, RateLimiter limiter) {
+	AuthService(UserAccounts accounts, ParentAccounts parentAccounts, PasswordEncoder passwords,
+			AccessTokens accessTokens, RefreshTokens refreshTokens, RateLimiter limiter) {
 		this.accounts = accounts;
+		this.parentAccounts = parentAccounts;
 		this.passwords = passwords;
 		this.accessTokens = accessTokens;
 		this.refreshTokens = refreshTokens;
@@ -111,6 +115,10 @@ class AuthService {
 			throw ApiException.invalid("auth.school_required", "schoolId");
 		}
 		UserAccount account = matches.getFirst();
+		// D21: the password proves who they are, so a staff member who is also a parent is linked here
+		if (account.schoolId() != null && parentAccounts.linkStaff(account.schoolId(), account.id())) {
+			account = accounts.findById(account.id()).orElseThrow();
+		}
 		return tokens(account, refreshTokens.create(account.id(), UUID.randomUUID()));
 	}
 

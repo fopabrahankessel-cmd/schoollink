@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:schoollink/core/storage/device_store.dart';
-import 'package:schoollink/features/auth/activation_screen.dart';
+import 'package:schoollink/features/auth/parent_sign_in_screen.dart';
 
 import '../support/fake_server.dart';
 import '../support/harness.dart';
 
-/// D24: a parent who already activated signs in again with their school, phone and an SMS one-time
-/// code. The phone goes in request bodies only (NFR-9).
+/// UC-P1, D24: a parent signs in with their school, phone and an SMS one-time code, the first time
+/// too. The phone goes in request bodies only (NFR-9).
 void main() {
   late FakeServer server;
   late MemoryDeviceStore store;
@@ -38,7 +38,7 @@ void main() {
     await pumpApp(tester, server: server, store: store, language: language);
     await tester.tap(find.text(language == 'fr' ? 'Me connecter avec un code par SMS' : 'Sign in with a code by SMS'));
     await tester.pumpAndSettle();
-    expect(find.byType(ActivationScreen), findsOneWidget);
+    expect(find.byType(ParentSignInScreen), findsOneWidget);
   }
 
   Future<void> pickSchool(WidgetTester tester, String name) async {
@@ -54,20 +54,18 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('a parent signs in again with their school, phone and SMS code (D24)', (tester) async {
+  testWidgets('a parent signs in with their school, phone and SMS code (UC-P1, D24)', (tester) async {
     await openSignIn(tester);
     expect(find.text('Connexion parent'), findsOneWidget);
-    expect(find.byKey(const ValueKey('invitation-code')), findsNothing);
 
     await pickSchool(tester, 'Collège Démo B (fictif)');
     await enterPhone(tester);
 
     expect(server.sent('POST /auth/parent/sign-in').single.body, {'schoolId': 'school-2', 'phone': '+237699000001'});
-    expect(server.sent('POST /auth/parent/activate'), isEmpty);
-    // NFR-7: the server does not say whether the number has an account
+    // NFR-7: the server does not say whether it knows the number
     expect(
       find.text(
-        'Si le +237 699 00 00 01 a un compte parent SchoolLink, un code à 6 chiffres lui a été envoyé par SMS.',
+        "Si l'établissement connaît le +237 699 00 00 01, un code à 6 chiffres lui a été envoyé par SMS.",
       ),
       findsOneWidget,
     );
@@ -77,7 +75,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(server.sent('POST /auth/parent/sign-in/verify').single.body, {'activationId': 'sign-1', 'otp': '123456'});
-    expect(server.sent('POST /auth/parent/verify'), isEmpty);
     expect(find.widgetWithText(AppBar, 'Enfants'), findsOneWidget);
     expect(await store.read('session.refresh'), 'refresh-p');
     expect(server.requests.every((r) => !r.path.contains('699')), isTrue, reason: 'no phone in a URL (NFR-9)');
@@ -104,6 +101,112 @@ void main() {
     await enterPhone(tester);
 
     expect((server.sent('POST /auth/parent/sign-in').single.body! as Map)['schoolId'], 'school-1');
+  });
+
+  group('with one school', () {
+    setUp(() {
+      server.on(
+        'GET /auth/schools',
+        (_) => const Reply.ok([
+          {'id': 'school-1', 'name': 'Lycée Démo A (fictif)'},
+        ]),
+      );
+    });
+
+    Future<void> enterOtp(WidgetTester tester, String otp) async {
+      await tester.enterText(find.byKey(const ValueKey('otp')), otp);
+      await tester.tap(find.widgetWithText(FilledButton, 'Se connecter'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('a number that is not a Cameroon mobile number is refused before sending', (tester) async {
+      await openSignIn(tester);
+
+      await enterPhone(tester, phone: '12345');
+
+      expect(find.text('Saisissez un numéro camerounais à 9 chiffres, par exemple 6 99 00 00 01.'), findsOneWidget);
+      expect(server.sent('POST /auth/parent/sign-in'), isEmpty);
+    });
+
+    testWidgets('the number may be typed with the country code', (tester) async {
+      await openSignIn(tester);
+
+      await enterPhone(tester, phone: '+237 699000001');
+
+      expect((server.sent('POST /auth/parent/sign-in').single.body! as Map)['phone'], '+237699000001');
+    });
+
+    testWidgets('an SMS that could not be sent shows the server message and stays on step 1', (tester) async {
+      const message = "Le SMS contenant votre code de vérification n'a pas pu être envoyé. Réessayez dans quelques minutes.";
+      server.on('POST /auth/parent/sign-in', (_) => Reply.error(503, 'auth.otp_not_sent', message));
+      await openSignIn(tester);
+
+      await enterPhone(tester);
+
+      expect(find.text(message), findsOneWidget);
+      expect(find.text('Étape 1 sur 2'), findsOneWidget);
+    });
+
+    testWidgets('a wrong one-time code says so; a new code replaces it', (tester) async {
+      const message = 'Ce code de vérification est incorrect ou a expiré. Vérifiez le SMS ou demandez un nouveau code.';
+      server.on('POST /auth/parent/sign-in/verify', (_) => Reply.error(400, 'auth.invalid_otp', message, field: 'otp'));
+      await openSignIn(tester);
+      await enterPhone(tester);
+
+      await enterOtp(tester, '000000');
+      expect(find.text(message), findsOneWidget);
+
+      server
+        ..on(
+          'POST /auth/parent/sign-in',
+          (_) => const Reply.ok({'activationId': 'sign-2', 'expiresAt': '2026-11-02T07:20:00Z'}),
+        )
+        ..on('POST /auth/parent/sign-in/verify', (_) => Reply.ok(tokensJson('access-p', 'refresh-p', user: parent)));
+      await tester.tap(find.text('Renvoyer un code'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Un nouveau code a été envoyé.'), findsOneWidget);
+      expect(find.text(message), findsNothing);
+
+      await enterOtp(tester, '654321');
+      expect((server.sent('POST /auth/parent/sign-in/verify').last.body! as Map)['activationId'], 'sign-2');
+      expect(find.widgetWithText(AppBar, 'Enfants'), findsOneWidget);
+    });
+
+    testWidgets('the code must have 6 digits', (tester) async {
+      await openSignIn(tester);
+      await enterPhone(tester);
+
+      await enterOtp(tester, '123');
+
+      expect(find.text('Saisissez les 6 chiffres du code.'), findsOneWidget);
+      expect(server.sent('POST /auth/parent/sign-in/verify'), isEmpty);
+    });
+
+    testWidgets('"Change the number" and the back arrow return to step 1 with what was typed', (tester) async {
+      await openSignIn(tester);
+      await enterPhone(tester);
+
+      await tester.tap(find.text('Changer de numéro'));
+      await tester.pumpAndSettle();
+      expect(find.text('Étape 1 sur 2'), findsOneWidget);
+      expect(find.text('6 99 00 00 01'), findsOneWidget);
+
+      await tester.tap(find.text('Recevoir un code par SMS'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byType(BackButton));
+      await tester.pumpAndSettle();
+      expect(find.text('Étape 1 sur 2'), findsOneWidget);
+      expect(find.byType(ParentSignInScreen), findsOneWidget);
+    });
+  });
+
+  test('Cameroon numbers are read however they are typed (D15)', () {
+    expect(cameroonDigits('6 99 00 00 01'), '699000001');
+    expect(cameroonDigits('+237 699 00 00 01'), '699000001');
+    expect(cameroonDigits('00237699000001'), '699000001');
+    expect(cameroonDigits('237699000001'), '699000001');
+    expect(cameroonDigits('69900000'), isNull);
+    expect(cameroonDigits('+33 6 12 34 56 78'), isNull);
   });
 
   testWidgets('sign-in reads in English (NFR-12)', (tester) async {

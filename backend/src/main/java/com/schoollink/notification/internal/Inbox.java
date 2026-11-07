@@ -25,8 +25,7 @@ import tools.jackson.databind.json.JsonMapper;
  * UC-P2: the parent's notifications in the app, and the open receipt for the research metrics
  * (BR-24). Only the rows of the guardian linked to the signed-in account (NFR-8). One entry per
  * event: when an event went by push and by SMS (a summons, BR-23), the push stands for both.
- * Invitations are left out: their row concerned the code, never returned (D13). Each entry is
- * written in the parent's current language (NFR-12), from what the event captured (task 2.5).
+ * Each entry is written in the parent's current language (NFR-12), from what the event captured (task 2.5).
  */
 @Service
 class Inbox {
@@ -85,7 +84,7 @@ class Inbox {
 				SELECT id, event_type, student_id, payload::text AS payload, created_at, opened_at FROM (
 				    SELECT DISTINCT ON (event_type, event_id) id, event_type, student_id, payload, created_at, opened_at
 				    FROM notification_outbox
-				    WHERE school_id = :school AND guardian_id = :guardian AND event_type NOT IN ('INVITATION', 'DIGEST')
+				    WHERE school_id = :school AND guardian_id = :guardian AND event_type <> 'DIGEST'
 				      AND status <> 'WITHDRAWN'
 				    ORDER BY event_type, event_id, channel = 'PUSH' DESC) e
 				WHERE CAST(:before AS uuid) IS NULL
@@ -123,7 +122,7 @@ class Inbox {
 				UPDATE notification_outbox
 				SET opened_at = COALESCE(opened_at, :now),
 				    status = CASE WHEN status IN ('SENT', 'DELIVERED') THEN 'OPENED' ELSE status END
-				WHERE id = :id AND school_id = :school AND guardian_id = :guardian AND event_type <> 'INVITATION'""",
+				WHERE id = :id AND school_id = :school AND guardian_id = :guardian""",
 				new MapSqlParameterSource("id", id).addValue("school", user.schoolId())
 					.addValue("guardian", guardian)
 					.addValue("now", Timestamp.from(clock.instant())));

@@ -1,7 +1,6 @@
 import {
   Alert,
   Box,
-  Button,
   Paper,
   Stack,
   Table,
@@ -16,88 +15,36 @@ import {
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { errorMessage } from '../../api/errors'
-import {
-  classInvitationsPath,
-  guardianInvitationPath,
-  guardiansPath,
-  STATUSES,
-  type ClassInvitations,
-  type Guardian,
-  type GuardianStatus,
-} from '../../api/guardians'
+import { guardiansPath, STATUSES, type Guardian, type GuardianStatus } from '../../api/guardians'
 import { PATHS, query, type AcademicYear, type SchoolClass } from '../../api/structure'
-import { useAuth } from '../../auth/useAuth'
-import { ConfirmDialog } from '../../components/ConfirmDialog'
 import { PageHeader } from '../../components/PageHeader'
 import { PersonAvatar } from '../../components/PersonAvatar'
 import { YearPicker } from '../../components/YearPicker'
-import { formatInstant } from '../../format'
 import { useList } from '../../hooks/useList'
-import { ChatCircleTextIcon, UsersFourIcon } from '../../icons'
+import { UsersFourIcon } from '../../icons'
 import { tokens } from '../../theme'
 
 type Pill = keyof typeof tokens.pill
 
 const PILL: Record<GuardianStatus, Pill> = {
   ACCOUNT: 'positive',
-  INVITED: 'brand',
-  EXPIRED: 'warning',
-  NOT_INVITED: 'neutral',
-}
-
-interface Confirm {
-  title: string
-  text: string
-  label: string
-  run: () => Promise<void>
+  NO_ACCOUNT: 'neutral',
 }
 
 /**
- * UC-A4: a class's guardians and their invitation codes. A code goes by SMS (D13), to a guardian
- * without an app account (D7); the screen never shows it. Issuing a new code revokes the old one.
+ * UC-A4: a class's guardians and who has signed in to the app (D7). Nothing to send from here: a
+ * parent signs in with their phone number and an SMS code (UC-P1).
  */
 export function GuardiansPage() {
-  const { t, i18n } = useTranslation()
-  const { client } = useAuth()
+  const { t } = useTranslation()
   const years = useList<AcademicYear>(PATHS.years)
   const [yearId, setYearId] = useState('')
   const [classId, setClassId] = useState('')
   const classes = useList<SchoolClass>(yearId ? PATHS.classes + query({ academicYearId: yearId }) : null)
   const guardians = useList<Guardian>(classId ? guardiansPath(classId) : null)
-  const [confirm, setConfirm] = useState<Confirm | null>(null)
-  const [sending, setSending] = useState<string | null>(null) // a guardian id, or the class id
-  const [done, setDone] = useState<string | null>(null)
-  const [error, setError] = useState<unknown>(null)
 
-  const schoolClass = classes.items.find((c) => c.id === classId)
   const className = (id: string) => classes.items.find((c) => c.id === id)?.name
   const count = (status: GuardianStatus) => guardians.items.filter((g) => g.status === status).length
-  const invitable = guardians.items.length - count('ACCOUNT')
-
-  const send = async (key: string, action: () => Promise<string>) => {
-    setSending(key)
-    setError(null)
-    setDone(null)
-    try {
-      setDone(await action())
-      await guardians.reload()
-    } catch (err) {
-      setError(err)
-    }
-    setSending(null)
-  }
-
-  const inviteClass = () =>
-    send(classId, async () => {
-      const result = await client.request<ClassInvitations>(classInvitationsPath(classId), { method: 'POST' })
-      return t('guardians.classSent', { count: result.issued.length, skipped: result.skippedWithAccount })
-    })
-
-  const inviteOne = (g: Guardian) =>
-    send(g.id, async () => {
-      await client.request(guardianInvitationPath(g.id), { method: 'POST' })
-      return t('guardians.sent', { name: g.name })
-    })
 
   return (
     <Stack>
@@ -105,26 +52,6 @@ export function GuardiansPage() {
         icon={UsersFourIcon}
         title={t('guardians.title')}
         description={t('guardians.intro')}
-        actions={
-          classId && (
-            <Button
-              variant="contained"
-              startIcon={<ChatCircleTextIcon aria-hidden />}
-              disabled={guardians.loading || invitable === 0}
-              loading={sending === classId}
-              onClick={() =>
-                setConfirm({
-                  title: t('guardians.classTitle', { name: schoolClass?.name ?? '' }),
-                  text: t('guardians.classText', { count: invitable }),
-                  label: t('guardians.classConfirm'),
-                  run: inviteClass,
-                })
-              }
-            >
-              {t('guardians.inviteClass')}
-            </Button>
-          )
-        }
       />
       <Stack spacing={2.5}>
         {years.error !== null && <Alert severity="error">{errorMessage(years.error, t)}</Alert>}
@@ -143,8 +70,6 @@ export function GuardiansPage() {
             value={classId}
             onChange={(e) => {
               setClassId(e.target.value)
-              setDone(null)
-              setError(null)
             }}
             margin="none"
             sx={{ maxWidth: 260 }}
@@ -161,12 +86,7 @@ export function GuardiansPage() {
           </TextField>
         </Stack>
 
-        {done && (
-          <Alert severity="success" onClose={() => setDone(null)}>
-            {done}
-          </Alert>
-        )}
-        {(error ?? guardians.error) !== null && <Alert severity="error">{errorMessage(error ?? guardians.error, t)}</Alert>}
+        {guardians.error !== null && <Alert severity="error">{errorMessage(guardians.error, t)}</Alert>}
 
         {!classId ? (
           <Paper variant="outlined" sx={{ px: 2, py: 5, textAlign: 'center' }}>
@@ -201,11 +121,6 @@ export function GuardiansPage() {
                       <TableCell>{t('guardians.guardian')}</TableCell>
                       <TableCell>{t('guardians.children')}</TableCell>
                       <TableCell>{t('guardians.status')}</TableCell>
-                      <TableCell align="right">
-                        <Box component="span" sx={visuallyHidden}>
-                          {t('crud.actions')}
-                        </Box>
-                      </TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -242,34 +157,6 @@ export function GuardiansPage() {
                         </TableCell>
                         <TableCell>
                           <StatusPill status={g.status}>{t(`guardians.state.${g.status}`)}</StatusPill>
-                          {g.status === 'INVITED' && g.expiresAt && (
-                            <Typography variant="caption" color="text.secondary" component="p" sx={{ mt: 0.5 }}>
-                              {t('guardians.expires', { date: formatInstant(g.expiresAt, i18n.language) })}
-                            </Typography>
-                          )}
-                        </TableCell>
-                        <TableCell align="right">
-                          {g.status !== 'ACCOUNT' && (
-                            <Button
-                              size="small"
-                              variant="outlined"
-                              loading={sending === g.id}
-                              disabled={sending !== null && sending !== g.id}
-                              onClick={() =>
-                                g.status === 'INVITED'
-                                  ? setConfirm({
-                                      title: t('guardians.resendTitle'),
-                                      text: t('guardians.resendText', { name: g.name }),
-                                      label: t('guardians.resend'),
-                                      run: () => inviteOne(g),
-                                    })
-                                  : void inviteOne(g)
-                              }
-                              sx={{ whiteSpace: 'nowrap' }}
-                            >
-                              {g.status === 'NOT_INVITED' ? t('guardians.invite') : t('guardians.resend')}
-                            </Button>
-                          )}
                         </TableCell>
                       </TableRow>
                     ))}
@@ -280,15 +167,6 @@ export function GuardiansPage() {
           </Paper>
         )}
       </Stack>
-
-      <ConfirmDialog
-        open={confirm !== null}
-        title={confirm?.title ?? ''}
-        text={confirm?.text ?? ''}
-        confirmLabel={confirm?.label ?? ''}
-        onConfirm={() => void confirm?.run()}
-        onClose={() => setConfirm(null)}
-      />
     </Stack>
   )
 }
@@ -316,12 +194,3 @@ function StatusPill({ status, quiet = false, children }: { status: GuardianStatu
     </Box>
   )
 }
-
-const visuallyHidden = {
-  position: 'absolute',
-  width: '1px',
-  height: '1px',
-  overflow: 'hidden',
-  clip: 'rect(0 0 0 0)',
-  whiteSpace: 'nowrap',
-} as const

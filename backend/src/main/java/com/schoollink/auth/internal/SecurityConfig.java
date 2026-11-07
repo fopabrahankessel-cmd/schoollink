@@ -42,7 +42,7 @@ class SecurityConfig {
 			.authorizeHttpRequests(auth -> auth
 				.requestMatchers("/actuator/health", "/actuator/health/**", "/error").permitAll()
 				.requestMatchers(HttpMethod.POST, "/api/v1/auth/login", "/api/v1/auth/refresh",
-						"/api/v1/auth/logout", "/api/v1/auth/parent/activate", "/api/v1/auth/parent/verify",
+						"/api/v1/auth/logout",
 						"/api/v1/auth/parent/sign-in", "/api/v1/auth/parent/sign-in/verify").permitAll()
 				.requestMatchers(HttpMethod.GET, "/api/v1/auth/schools").permitAll()
 				// BR-24: the SMS gateway signs its delivery reports instead of signing in (D32)

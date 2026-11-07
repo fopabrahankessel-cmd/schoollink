@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-/** UC-A4: the guardians of a class and their account or invitation status, for the admin. */
+/** UC-A4: the guardians of a class and whether they have an app account, for the admin. */
 @RestController
 class GuardianController {
 

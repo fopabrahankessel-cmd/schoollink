@@ -453,28 +453,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get parentQuestion => 'Parent ?';
 
   @override
-  String get activateWithCode => 'Activer avec mon code d\'invitation';
-
-  @override
-  String get activationTitle => 'Activer mon compte';
-
-  @override
-  String activationStep(int step) {
+  String parentSignInStep(int step) {
     return 'Étape $step sur 2';
   }
-
-  @override
-  String get activationHeadline => 'Votre code d\'invitation';
-
-  @override
-  String get activationIntro =>
-      'L\'établissement vous l\'a envoyé par SMS. Saisissez-le avec le numéro de téléphone donné à l\'établissement.';
-
-  @override
-  String get invitationCodeLabel => 'Code d\'invitation';
-
-  @override
-  String get invitationCodeHelp => 'Tel qu\'écrit dans le SMS de l\'établissement';
 
   @override
   String get phoneLabel => 'Numéro de téléphone';
@@ -490,11 +471,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get otpTitle => 'Saisissez le code reçu';
-
-  @override
-  String otpSentTo(String phone) {
-    return 'Nous avons envoyé un code à 6 chiffres par SMS au $phone.';
-  }
 
   @override
   String get otpLabel => 'Code de vérification';
@@ -513,9 +489,6 @@ class AppLocalizationsFr extends AppLocalizations {
   }
 
   @override
-  String get activateAccount => 'Activer mon compte';
-
-  @override
   String get resendCode => 'Renvoyer un code';
 
   @override
@@ -532,11 +505,11 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get parentSignInIntro =>
-      'Choisissez votre établissement et saisissez le numéro que vous lui avez donné. Nous vous enverrons un code par SMS. Première fois ? Utilisez plutôt votre code d\'invitation.';
+      'Choisissez votre établissement et saisissez le numéro que vous lui avez donné. Nous vous enverrons un code par SMS.';
 
   @override
-  String otpSentIfAccount(String phone) {
-    return 'Si le $phone a un compte parent SchoolLink, un code à 6 chiffres lui a été envoyé par SMS.';
+  String otpSentIfKnown(String phone) {
+    return 'Si l\'établissement connaît le $phone, un code à 6 chiffres lui a été envoyé par SMS.';
   }
 
   @override

@@ -99,22 +99,11 @@ class TemplatesTests {
 	}
 
 	@Test
-	void invitationSms() { // D13, UC-P1
-		// 23:30 UTC on the 28th is already the 29th in Douala: the date is the school's
-		JsonNode payload = payload(Map.of("code", "K7M2-Q9XP", "expiresAt", "2026-11-28T23:30:00Z"));
-
-		assertThat(templates.sms(EventType.INVITATION, "FR", payload, SCHOOL)).isEqualTo(
-				"SchoolLink : votre code d'activation pour Lycée Pilote (fictif) est K7M2-Q9XP. Saisissez-le dans l'application SchoolLink avant le 29/11.");
-		assertThat(templates.sms(EventType.INVITATION, "EN", payload, SCHOOL)).isEqualTo(
-				"SchoolLink: your activation code for Lycée Pilote (fictif) is K7M2-Q9XP. Enter it in the SchoolLink app before 29/11.");
-	}
-
-	@Test
-	void activationCodeSms() { // UC-P1
+	void signInCodeSms() { // UC-P1, D24
 		assertThat(templates.otp("FR", "042917", Duration.ofMinutes(10))).isEqualTo(
-				"SchoolLink : votre code de vérification est 042917. Il expire dans 10 minutes. Ne le communiquez à personne.");
+				"SchoolLink : votre code est 042917. Il expire dans 10 minutes. Ne le partagez pas.");
 		assertThat(templates.otp("EN", "042917", Duration.ofMinutes(10)))
-			.isEqualTo("SchoolLink: your verification code is 042917. It expires in 10 minutes. Never share it.");
+			.isEqualTo("SchoolLink: your code is 042917. It expires in 10 minutes. Do not share it.");
 	}
 
 	@Test
@@ -154,14 +143,12 @@ class TemplatesTests {
 		JsonNode absence = payload(Map.of("firstName", firstName, "date", "2026-11-02", "kind", "ABSENCE", "periodNumber", 8));
 		JsonNode lateness = payload(Map.of("firstName", firstName, "date", "2026-11-02", "kind", "LATENESS"));
 		JsonNode summons = payload(Map.of("firstName", firstName, "meetingDate", "2026-11-05", "meetingTime", "10:00"));
-		JsonNode invitation = payload(Map.of("code", "K7M2-Q9XP", "expiresAt", "2026-11-28T23:30:00Z"));
 		Digest digest = new Digest(firstName, LocalDate.parse("2026-10-28"), new TreeSet<>(List.of(1, 3, 5, 7)), "07:48");
 
 		for (String language : List.of("FR", "EN")) {
 			List<String> all = List.of(templates.sms(EventType.CORRECTION, language, absence, longName),
 					templates.sms(EventType.CORRECTION, language, lateness, longName),
 					templates.sms(EventType.SUMMONS, language, summons, longName),
-					templates.sms(EventType.INVITATION, language, invitation, longName),
 					templates.digest(language, digest, longName),
 					templates.otp(language, "042917", Duration.ofMinutes(10)));
 			assertThat(all).allSatisfy(sms -> {

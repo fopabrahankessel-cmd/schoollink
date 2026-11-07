@@ -4,7 +4,7 @@ import java.time.Duration;
 import java.util.UUID;
 
 /**
- * UC-P1: the activation one-time code goes by SMS at once, through the SMS provider and not the
+ * UC-P1, D24: the sign-in one-time code goes by SMS at once, through the SMS provider and not the
  * outbox: it is useless after a few minutes and must never sit in a table (notification module
  * API; PLAN, open questions). It is counted towards the school's SMS use but never blocked by the
  * monthly cap (BR-25, task 3.x).

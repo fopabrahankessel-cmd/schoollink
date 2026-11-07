@@ -12,7 +12,6 @@ import com.schoollink.notification.internal.Outbox.Row;
 import com.schoollink.notification.internal.Outbox.Status;
 import com.schoollink.people.Guardians;
 import com.schoollink.people.Guardians.StudentGuardian;
-import com.schoollink.people.InvitationIssued;
 import com.schoollink.school.SchoolCalendar;
 import com.schoollink.school.SchoolCalendar.Period;
 import java.util.List;
@@ -32,7 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * <p>Channel (D7): a guardian with an app account gets a push, sent at once (BR-21); one without gets
  * an SMS. An absence's or a lateness's SMS is held for the daily digest (BR-22, D6), for app users
- * too, in case they do not open the push (D33); an invitation goes at once (D13).
+ * too, in case they do not open the push (D33).
  * Each row is in the guardian's language (BR-20). The payload holds what the templates need (task
  * 2.5), captured now, so a later rename does not change a sent message.
  */
@@ -117,18 +116,6 @@ class OutboxListeners {
 					Status.QUEUED);
 		}).toList();
 		outbox.write(rows);
-	}
-
-	/**
-	 * D13: the code goes by SMS at once to a guardian without an account. The payload holds the
-	 * code in clear until it is sent: the dispatcher removes it after sending (task 2.6).
-	 */
-	@EventListener
-	@Transactional(propagation = Propagation.MANDATORY)
-	void on(InvitationIssued event) {
-		outbox.write(List.of(new Row(event.schoolId(), event.guardianId(), null, EventType.INVITATION,
-				event.invitationId(), Channel.SMS, guardians.language(event.schoolId(), event.guardianId()),
-				Map.of("code", event.code(), "expiresAt", event.expiresAt().toString()), Status.QUEUED)));
 	}
 
 	/**

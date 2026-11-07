@@ -103,20 +103,9 @@ From the result, pick:
 
 If Q1 returns no rows, prof1 has no lesson today. Replace `prof1` with `prof2` … `prof8` until one does.
 
-## D. Prepare the parent device (activation, UC-P1)
+## D. Prepare the parent device (sign-in, UC-P1)
 
-1. Start the web admin, sign in, and invite the guardian:
-
-   ```powershell
-   cd web
-   npm run dev
-   ```
-
-   Open <http://localhost:5173> and sign in as `admin@lycee-demo-a.test` / `schoollink-dev`. Go to **Tuteurs et invitations**, open the class, and choose **Inviter** on the guardian's row.
-
-2. In the server window, find the line `SMS (not delivered, dev): notification …` and note the **invitation code** in it.
-
-3. Connect the parent phone by USB, then run the app on it with the Firebase values:
+1. Connect the parent phone by USB, then run the app on it with the Firebase values:
 
    ```powershell
    & "$env:LOCALAPPDATA\Android\Sdk\platform-tools\adb.exe" devices
@@ -125,15 +114,15 @@ If Q1 returns no rows, prof1 has no lesson today. Replace `prof1` with `prof2` �
    flutter run -d <phone-serial> --dart-define-from-file=C:\Users\fopab\secrets\schoollink-phone.json
    ```
 
-4. On the phone:
-   1. Tap **Activer avec mon code d'invitation**.
-   2. Enter the code and the guardian's phone number from Q1.
+2. On the phone:
+   1. Tap **Me connecter avec un code par SMS**.
+   2. Choose the school and enter the guardian's phone number from Q1.
    3. Tap **Recevoir un code par SMS**.
    4. Copy the 6-digit code from the new `SMS (not delivered, dev)` line in the server window.
-   5. Tap **Activer mon compte**. The app opens on **Enfants** with the student.
+   5. Tap **Se connecter**. The app opens on **Enfants** with the student.
    6. Allow notifications when Android asks (Android 13 and later).
 
-5. Check that the server has the phone's push token (Q2). Don't show the token: it identifies the device.
+3. Check that the server has the phone's push token (Q2). Don't show the token: it identifies the device.
 
    ```sql
    -- Q2: the parent's registered devices

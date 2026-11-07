@@ -51,7 +51,7 @@ export const routes: RouteObject[] = [
       // UC-A3: student and guardian import, admin only
       { path: '/students/import', element: admin(<ImportUploadPage />) },
       { path: '/students/import/:id', element: admin(<ImportPreviewPage />) },
-      // UC-A4: guardians and invitation codes, admin only
+      // UC-A4: guardians, admin only
       { path: '/guardians', element: admin(<GuardiansPage />) },
       // UC-D1, UC-D2, UC-D6, UC-D7, UC-D8: the DM's alerts, students and settings; the home is the scope dashboard
       { path: '/alerts', element: dm(<AlertsPage />) },

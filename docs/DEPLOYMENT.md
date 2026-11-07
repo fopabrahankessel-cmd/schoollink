@@ -79,7 +79,7 @@ Approximate exchange rates: 1 € = 656 FCFA (fixed rate), 1 US$ ≈ 570 FCFA.
 | --- | --- | --- |
 | Domain name (`.org`, `.com`) | about US$ 10–15 per year | Paid yearly. A `.cm` domain costs more and is sold by local registrars |
 | Google Play developer account | US$ 25, once | Only if you publish on Google Play (part 13). A direct APK download is free |
-| Activating parent accounts | about US$ 1.27 per French-speaking parent, US$ 0.63 per English-speaking parent | Each parent who installs the app receives two SMS: the invitation code and the verification code. See "Why French SMS cost more" below |
+| Parent sign-in | about US$ 0.32 (≈ 181 FCFA) per parent | A parent receives one SMS code each time they sign in, normally once per phone. Nothing is sent to the parents who never sign in |
 
 ### Monthly costs
 
@@ -100,9 +100,9 @@ Everything except SMS costs less than US$ 10 a month. SMS can cost hundreds.
 - A parent without the app gets **one SMS per child per day** with absences or lateness (the digest, BR-22).
 - A parent with the app gets the same digest by SMS **only if they did not open the push** (D33).
 - Summons always go by SMS as well (BR-23).
-- Each parent who activates the app receives two SMS, once.
+- Each parent who signs in to the app receives one SMS with a code.
 
-**The safety net (BR-25).** Each school has a monthly SMS limit, **2,000 messages by default**. When a school reaches it, only summons are still sent by SMS. The admin sees the counter on the dashboard. The default 2,000 caps the worst case at about **US$ 634 per school per month** (2,000 × 0.317). To change the limit, see part 17.
+**The safety net (BR-25).** Each school has a monthly SMS limit, **2,000 messages by default**. When a school reaches it, only summons are still sent by SMS. The admin sees the counter on the dashboard. **Sign-in codes are not counted in this limit**: they go straight to Twilio. They are limited to 3 per parent per hour, so also set a spending trigger in Twilio. The default 2,000 caps the worst case at about **US$ 634 per school per month** (2,000 × 0.317). To change the limit, see part 17.
 
 **An example per school per month** (1,500 students, about 4 % absent or late each day, 22 school days):
 
@@ -112,20 +112,20 @@ Everything except SMS costs less than US$ 10 a month. SMS can cost hundreds.
 | 50 % | about 1,000 | about US$ 320 |
 | 80 % | about 400 | about US$ 130 |
 
-**Example total for a 3-month pilot in 2 schools**, with half the parents on the app and 300 parents per school activating the app:
+**Example total for a 3-month pilot in 2 schools**, with half the parents on the app and 300 parents per school signing in:
 - server: 4 months × about US$ 6 = **US$ 24**
 - domain: **US$ 12**
-- parent activations: 600 × US$ 1.27 = **US$ 760**
+- parent sign-ins: 600 × US$ 0.317 = **US$ 190**
 - digests: 2 schools × 3 months × US$ 320 = **US$ 1,920**
-- **Total: about US$ 2,700 (≈ 1.5 million FCFA)**
+- **Total: about US$ 2,150 (≈ 1.2 million FCFA)**
 
 **Ways to spend less:**
 - **Get parents onto the app.** Every parent who uses the app and opens pushes costs almost nothing. Push adoption is the biggest saving.
 - **Lower the monthly limit** to what you can afford (part 17). For example, 800 per school caps SMS at about US$ 250 per school per month.
-- **Keep accents out of the school name in SchoolLink.** The digest SMS ends with the school name. See below.
+- **Avoid the rarer accented letters in the school name.** The digest SMS ends with the school name. See below.
 - **Use a local SMS provider.** Cameroonian SMS aggregators usually charge far less than Twilio. Ask two or three for quotes. SchoolLink sends SMS through one interface (`SmsProvider`), so adding another provider is a small backend change. It is a code change, though, not a setting.
 
-**Why French SMS cost more.** One SMS segment holds 160 plain characters. As soon as a message contains a single accented character (é, è, à…), the whole message switches to a format that holds only 70 characters per segment, so the same text can cost two segments instead of one. The French invitation and verification messages contain accents, so they cost two segments each. A digest whose student or school name has an accent can also cost two.
+**Which letters make an SMS cost more.** One SMS segment holds 160 characters of the standard SMS alphabet (GSM-7). That alphabet includes é, è, à, ù, ì and ò, so ordinary French messages cost one segment; SchoolLink's own templates are tested to fit in one. A single letter outside it (ç, ê, ô, î, â, û, ë, ï) switches the whole message to a format that holds only 70 characters per segment, so the same text can cost two or three segments. This can happen to a digest when a student's first name or the school name has such a letter.
 
 ---
 
@@ -140,7 +140,7 @@ Some steps take days or weeks and you cannot speed them up. Start them on day 1,
 | Day 1 | If you want Google Play: open the developer account (part 13) | Identity checks take days. A new personal account must then run a 14-day closed test with at least 12 testers before it can publish publicly |
 | Week 1 | Domain, server, installation (parts 5–10) | About one day of work |
 | Week 1–2 | Create the schools, import students, set the timetable (part 11) | Depends on getting class lists from the schools |
-| Week 2–3 | Train staff, then invite parents | Part 18 |
+| Week 2–3 | Train staff, then help parents sign in | Part 18 |
 
 ---
 
@@ -386,7 +386,7 @@ SchoolLink creates a school and its first administrator when it starts, from the
    BOOTSTRAP_ADMIN_EMAIL=admin.lycee1@your-domain.org
    BOOTSTRAP_ADMIN_PASSWORD=a-temporary-password-of-12+-characters
    ```
-   The school name appears at the end of every SMS digest, so keep it short and **without accents** (part 2).
+   The school name appears at the end of every SMS digest, so keep it short and avoid letters such as ç, ê and ô (part 2).
 2. Restart the backend with the new settings, then check the log:
    ```bash
    docker compose up -d backend
@@ -631,7 +631,7 @@ All commands run in `/opt/schoollink/deploy` on the server.
 - [ ] Parent information notice and consent form, in French and English, handed out
 - [ ] `https://YOUR_DOMAIN` loads with a padlock; `/actuator/health` shows `UP`
 - [ ] Twilio upgraded, Cameroon allowed, sender ID approved, spending triggers set
-- [ ] A test SMS reached a real MTN number and a real Orange number (invite yourself as a guardian)
+- [ ] A test SMS reached a real MTN number and a real Orange number (add yourself as a guardian, then sign in as a parent)
 - [ ] A test push reached a real phone with the production app
 - [ ] Both schools: calendar, periods, classes, timetable, staff, students and letterhead in place
 - [ ] Each school's SMS limit set to what you can afford

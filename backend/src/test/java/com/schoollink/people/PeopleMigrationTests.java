@@ -205,17 +205,6 @@ class PeopleMigrationTests {
 		assertThat(columns).contains("user_id").doesNotContain("sms_only");
 	}
 
-	@Test
-	void oneLiveInvitationCodePerGuardian() { // UC-A4
-		UUID guardian = guardian(schoolA);
-		UUID first = code(schoolA, guardian, "hash-1");
-
-		assertRejected(() -> code(schoolA, guardian, "hash-2"));
-
-		jdbc.update("UPDATE invitation_code SET revoked_at = now() WHERE id = ?", first);
-		code(schoolA, guardian, "hash-2");
-	}
-
 	/**
 	 * A rejected statement aborts the PostgreSQL transaction (25P02), so it runs inside a savepoint
 	 * and the test can go on after it.
@@ -278,12 +267,6 @@ class PeopleMigrationTests {
 	private void role(UUID school, UUID user, String role, UUID block) {
 		jdbc.update("INSERT INTO role_assignment (school_id, user_id, role, block_id) VALUES (?, ?, ?, ?)", school, user,
 				role, block);
-	}
-
-	private UUID code(UUID school, UUID guardian, String hash) {
-		return jdbc.queryForObject(
-				"INSERT INTO invitation_code (school_id, guardian_id, code_hash, expires_at) VALUES (?, ?, ?, now() + interval '30 days') RETURNING id",
-				UUID.class, school, guardian, hash);
 	}
 
 	private static String nextPhone() {

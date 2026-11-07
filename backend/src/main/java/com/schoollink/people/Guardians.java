@@ -18,6 +18,12 @@ public interface Guardians {
 	/** The guardian linked to this app account, if any (a parent's own inbox, UC-P2). */
 	Optional<UUID> ofAccount(UUID schoolId, UUID userId);
 
+	/**
+	 * UC-P1: the school's guardian with this phone ({@code +237...}), if they have no app account yet
+	 * and at least one child in the school.
+	 */
+	Optional<WithoutAccount> withoutAccount(UUID schoolId, String phone);
+
 	/** The guardian's message language, FR or EN. */
 	String language(UUID schoolId, UUID guardianId);
 
@@ -26,6 +32,9 @@ public interface Guardians {
 	 * (SMS). Never log it (NFR-9).
 	 */
 	Contact contact(UUID schoolId, UUID guardianId);
+
+	record WithoutAccount(UUID guardianId, String language) {
+	}
 
 	/** {@code userId} null when the guardian has no app account (D7). */
 	record Contact(UUID userId, String phone) {

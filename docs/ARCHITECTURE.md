@@ -34,7 +34,7 @@ The backend is **one deployable application**, divided into 12 modules, one Java
 
 | Module | Responsibility |
 | --- | --- |
-| `auth` | Sign-in, tokens (JWT), passwords, parent activation and SMS codes |
+| `auth` | Sign-in, tokens (JWT), passwords, parent sign-in by SMS code |
 | `school` | Schools, calendar, periods, classes, timetable, letterhead |
 | `people` | Staff, students, guardians, import, school bootstrap |
 | `attendance` | Roll-call sessions and absences (BR-1–BR-7) |

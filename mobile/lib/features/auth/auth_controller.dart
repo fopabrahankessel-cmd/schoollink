@@ -42,13 +42,9 @@ class AuthController extends AsyncNotifier<UserInfo?> {
     state = AsyncData(tokens.user);
   }
 
-  /// UC-P1 step 2, or D24 when [signIn] (a parent signing in again): the one-time code; signs the
-  /// parent in. Throws an [ApiFailure].
-  Future<void> verifyParent({required String activationId, required String otp, bool signIn = false}) async {
-    final api = ref.read(authApiProvider);
-    final tokens = signIn
-        ? await api.verifyParentSignIn(signInId: activationId, otp: otp)
-        : await api.verifyParent(activationId: activationId, otp: otp);
+  /// UC-P1, D24 step 2: the one-time code; signs the parent in. Throws an [ApiFailure].
+  Future<void> verifyParent({required String signInId, required String otp}) async {
+    final tokens = await ref.read(authApiProvider).verifyParentSignIn(signInId: signInId, otp: otp);
     await ref.read(sessionStoreProvider).save(tokens);
     state = AsyncData(tokens.user);
   }

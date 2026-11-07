@@ -62,7 +62,7 @@ Seven roles use SchoolLink; every role except the administrator and researcher i
 
 | Role | Channel | Scope | Main responsibilities |
 | --- | --- | --- | --- |
-| School administrator | Web | Whole school | School structure, accounts, student import, parent invitations, announcements, school-wide dashboard |
+| School administrator | Web | Whole school | School structure, accounts, student import, guardians, announcements, school-wide dashboard |
 | Teacher | App | Classes they teach | Record attendance per period, double-confirm absentees |
 | Assistant DM | App | Classes assigned by the admin | Record lateness at the gate after 7:30 |
 | Discipline Master (DM) | App + web | Classes assigned by the admin | Justify absences and lateness, review risk alerts, summon and message parents, record disciplinary issues, refer to the counsellor, cancel erroneous records, configure thresholds |
@@ -155,7 +155,7 @@ The use cases are numbered by actor; the MVP column says which ones the first pi
 | UC-A1 | Administrator | Create the academic year, terms, periods (timetable slots) and classes | Yes |
 | UC-A2 | Administrator | Create staff accounts (teacher, assistant DM, DM, counsellor) and assign classes | Yes |
 | UC-A3 | Administrator | Import students and guardian phone numbers from CSV/Excel, with a preview and error list before commit | Yes |
-| UC-A4 | Administrator | Generate parent invitation codes, link guardians to children, print or SMS the codes | Yes |
+| UC-A4 | Administrator | Link guardians to children and see which guardians have signed in to the app | Yes |
 | UC-A5 | Administrator | Send a school-wide or class announcement | Wave 2 |
 | UC-A6 | Administrator | Consult the school dashboard: attendance trends, alerts, delivery rate, SMS usage | Yes |
 | UC-A7 | Administrator | Set the school letterhead (French and English lines, layout, logo) used on generated documents (D36) | Yes |
@@ -176,7 +176,7 @@ The use cases are numbered by actor; the MVP column says which ones the first pi
 | UC-C1 | Counsellor | See referrals from DMs and open a case | Wave 2 |
 | UC-C2 | Counsellor | Study a student's attendance pattern (by day of week, period, subject) | Wave 2 |
 | UC-C3 | Counsellor | Write private case notes, set follow-up dates, close a case | Wave 2 |
-| UC-P1 | Parent | Activate the account with the invitation code and an SMS one-time code | Yes |
+| UC-P1 | Parent | Sign in with the school, the phone number the school holds and an SMS one-time code; the first sign-in creates the account | Yes |
 | UC-P2 | Parent | Receive absence, lateness, summons and correction alerts | Yes |
 | UC-P3 | Parent | Consult each child's attendance history | Yes |
 | UC-P4 | Parent | Read DM messages and announcements | Wave 2 |
@@ -229,7 +229,6 @@ The model has about 25 tables in PostgreSQL; every school-owned row carries a `s
 | People | `Student` | id, school\_id, matricule, names, class\_id, sex, birth\_year | Current class enrolment |
 | People | `Guardian` | id, user\_id (nullable), phone, language, sms\_only | A guardian may have no app account |
 | People | `StudentGuardian` | student\_id, guardian\_id, relation, is\_primary | Many-to-many |
-| People | `InvitationCode` | guardian\_id, code\_hash, expires\_at, used\_at | Single-use, 30-day expiry |
 | Attendance | `AttendanceSession` | id (UUID from device), class\_id, date, period\_id, teacher\_id, confirmed\_at, synced\_at | Unique on class + date + period |
 | Attendance | `AttendanceRecord` | session\_id, student\_id, status (PRESENT, ABSENT), justification\_id, cancelled\_at, cancel\_reason | Only absentees need rows if you prefer; storing all gives clean statistics |
 | Attendance | `LatenessRecord` | id, student\_id, date, arrival\_time, recorded\_by, justification\_id | Unique on student + date |
@@ -291,16 +290,12 @@ One REST API under `/api/v1`, secured by JWT; the server derives the school and 
 | Module | Method and path | Used by | Purpose |
 | --- | --- | --- | --- |
 | Auth | `POST /auth/login` | Staff | Phone or email + password, returns access + refresh tokens |
-| Auth | `POST /auth/parent/activate` | Parent | Invitation code + phone, sends an SMS one-time code |
-| Auth | `POST /auth/parent/verify` | Parent | One-time code, returns tokens |
-| Auth | `POST /auth/parent/sign-in` | Parent | School + phone of an activated parent, sends an SMS one-time code; same answer for an unknown number (D24) |
-| Auth | `POST /auth/parent/sign-in/verify` | Parent | One-time code, returns tokens (D24) |
+| Auth | `POST /auth/parent/sign-in` | Parent | School + phone of a guardian or parent, sends an SMS one-time code; same answer for an unknown number (D24) |
+| Auth | `POST /auth/parent/sign-in/verify` | Parent | One-time code, creates the account at the first sign-in, returns tokens (D24) |
 | Auth | `POST /auth/refresh` | All | New access token |
 | School | `GET/POST /classes`, `/periods`, `/terms` | Admin | School structure |
 | People | `POST /students/import` (preview), `POST /students/import/{id}/commit` | Admin | CSV/Excel import in two steps |
-| People | `GET /guardians?classId=` | Admin | A class's guardians, their children and account or invitation status |
-| People | `POST /guardians/{id}/invitations` | Admin | Generate an invitation code |
-| People | `POST /classes/{id}/invitations` | Admin | Invitation codes for every guardian of a class without an account (D7) |
+| People | `GET /guardians?classId=` | Admin | A class's guardians, their children and whether they have an account |
 | Attendance | `GET /me/sessions?date=` | Teacher | Today's sessions to record |
 | Attendance | `GET /me/classes` | Teacher | The classes they teach with their students, kept on the device for offline recording |
 | Attendance | `PUT /sessions/{uuid}` | Teacher | Create or sync a confirmed session (idempotent by device UUID) |
@@ -339,7 +334,7 @@ The four that decide whether the pilot succeeds are speed of entry, offline oper
 | NFR-4 | Devices | Runs on Android 8.0+ and low-end phones (2 GB RAM); APK under 30 MB | Test on a cheap reference phone |
 | NFR-5 | Delivery | 95% of push notifications sent within 1 min of sync; SMS digest sent within 5 min of its scheduled time | Outbox timestamps |
 | NFR-6 | Reliability | No notification lost after a server restart or network failure | Outbox pattern + retry tests |
-| NFR-7 | Security | HTTPS only; passwords hashed with BCrypt; JWT access token 15 min, refresh 30 days; rate limit on login and activation | Security test checklist |
+| NFR-7 | Security | HTTPS only; passwords hashed with BCrypt; JWT access token 15 min, refresh 30 days; rate limit on login and parent sign-in | Security test checklist |
 | NFR-8 | Access | Every query filtered by school and scope on the server | Integration tests per role |
 | NFR-9 | Privacy | Case notes encrypted at rest and readable only by their author; phone numbers never in URLs or logs | Code review + tests |
 | NFR-10 | Privacy | Minimal data: no photos, no full birth dates (year only), no health details beyond "illness" | Data review |
@@ -372,7 +367,7 @@ The evaluation compares each pilot school before and after deployment, on the fo
 | Dimension | Indicator | Source |
 | --- | --- | --- |
 | Technical | Push and SMS delivery rate; median time from confirmation to delivery; sync failures; crash-free sessions | `NotificationOutbox`, logs, Firebase Crashlytics |
-| Adoption | Share of expected sessions actually recorded per day; active parents per week; share of parents activated | Database counts |
+| Adoption | Share of expected sessions actually recorded per day; active parents per week; share of parents signed in | Database counts |
 | Usability | System Usability Scale (SUS) for teachers, DMs and parents; time to record a class | Questionnaire, timed tests |
 | Acceptance | Perceived usefulness and ease of use (TAM-style questionnaire); semi-structured interviews with DMs and counsellors | Questionnaire, interviews |
 | Communication | Time from absence to parent informed, compared with baseline; share of parents informed the same day | Outbox vs baseline survey |
@@ -404,7 +399,7 @@ The MVP is the loop from attendance to parent notification to DM decision; couns
 | --- | --- | --- | --- |
 | 0. Preparation | School authorisations, consent forms, baseline data, SMS gateway account, VPS | Both schools agree in writing; baseline collected | 2–3 weeks, in parallel with phase 1 |
 | 1. Foundations | Spring Boot project, PostgreSQL schema, auth, roles and scopes, school structure, CSV import, admin web screens | Admin can set up a school and import students | 3 weeks |
-| 2. Attendance loop | Flutter app shell, teacher attendance with double confirmation, offline sync, lateness at the gate, outbox, FCM push, parent activation and inbox | A teacher's confirmation reaches a parent's phone | 4 weeks |
+| 2. Attendance loop | Flutter app shell, teacher attendance with double confirmation, offline sync, lateness at the gate, outbox, FCM push, parent sign-in and inbox | A teacher's confirmation reaches a parent's phone | 4 weeks |
 | 3. DM and detection | Justification, cancel with correction, threshold rules and alerts, decisions, summons, SMS digest, dashboards | A full test day produces correct alerts and one digest per student | 3 weeks |
 | 4. Pilot wave 1 | Training staff, issuing parent codes, live use in 2 schools, bug fixes | 80% of expected sessions recorded daily for 2 weeks | 4–6 weeks |
 | 5. Wave 2 | Counsellor cases, DM messages, disciplinary records, announcements, research view and export | Counsellor opens a real case from a referral | 3 weeks |

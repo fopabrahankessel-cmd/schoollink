@@ -21,7 +21,7 @@ class Outbox {
 
 	enum EventType {
 
-		ABSENCE, LATENESS, CORRECTION, SUMMONS, DM_MESSAGE, ANNOUNCEMENT, INVITATION,
+		ABSENCE, LATENESS, CORRECTION, SUMMONS, DM_MESSAGE, ANNOUNCEMENT,
 
 		/** BR-22: one SMS for a guardian, student and day, built by the digest run (task 3.8). */
 		DIGEST
@@ -41,7 +41,7 @@ class Outbox {
 
 	}
 
-	/** {@code studentId} null when the notification is about the guardian (an invitation). */
+	/** {@code studentId} null when the notification concerns no one child. */
 	record Row(UUID schoolId, UUID guardianId, UUID studentId, EventType eventType, UUID eventId, Channel channel,
 			String language, Map<String, Object> payload, Status status) {
 	}

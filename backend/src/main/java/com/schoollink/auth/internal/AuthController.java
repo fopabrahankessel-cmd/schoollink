@@ -24,15 +24,12 @@ class AuthController {
 
 	private final AuthService auth;
 
-	private final ParentActivation activation;
-
 	private final ParentSignIn parentSignIn;
 
 	private final Schools schools;
 
-	AuthController(AuthService auth, ParentActivation activation, ParentSignIn parentSignIn, Schools schools) {
+	AuthController(AuthService auth, ParentSignIn parentSignIn, Schools schools) {
 		this.auth = auth;
-		this.activation = activation;
 		this.parentSignIn = parentSignIn;
 		this.schools = schools;
 	}
@@ -46,25 +43,13 @@ class AuthController {
 		return auth.login(request.schoolId(), request.login(), request.password(), http.getRemoteAddr());
 	}
 
-	/** UC-P1 step 1: invitation code + phone; sends the one-time code by SMS. */
-	@PostMapping("/api/v1/auth/parent/activate")
-	ParentActivation.Started activate(@Valid @RequestBody ActivateRequest request, HttpServletRequest http) {
-		return activation.start(request.code(), request.phone(), http.getRemoteAddr());
-	}
-
-	/** UC-P1 step 2: the one-time code; returns the parent's tokens. */
-	@PostMapping("/api/v1/auth/parent/verify")
-	TokenResponse verify(@Valid @RequestBody VerifyRequest request, HttpServletRequest http) {
-		return activation.verify(request.activationId(), request.otp(), http.getRemoteAddr());
-	}
-
-	/** D24 step 1: a parent's school + phone; sends a one-time code by SMS if the account exists. */
+	/** UC-P1, D24 step 1: a parent's school + phone; sends a one-time code by SMS if the school knows the number. */
 	@PostMapping("/api/v1/auth/parent/sign-in")
-	ParentActivation.Started parentSignIn(@Valid @RequestBody ParentSignInRequest request, HttpServletRequest http) {
+	ParentSignIn.Started parentSignIn(@Valid @RequestBody ParentSignInRequest request, HttpServletRequest http) {
 		return parentSignIn.start(request.schoolId(), request.phone(), http.getRemoteAddr());
 	}
 
-	/** D24 step 2: the one-time code; returns the parent's tokens. */
+	/** UC-P1, D24 step 2: the one-time code; makes the account the first time and returns the parent's tokens. */
 	@PostMapping("/api/v1/auth/parent/sign-in/verify")
 	TokenResponse parentSignInVerify(@Valid @RequestBody VerifyRequest request, HttpServletRequest http) {
 		return parentSignIn.verify(request.activationId(), request.otp(), http.getRemoteAddr());
@@ -112,9 +97,6 @@ class AuthController {
 	}
 
 	/** {@code code}: as in the SMS ("K7QM-3XPA", spaces and case do not matter). */
-	record ActivateRequest(@NotBlank @Size(max = 20) String code, @NotBlank @Size(max = 20) String phone) {
-	}
-
 	record ParentSignInRequest(@NotNull UUID schoolId, @NotBlank @Size(max = 20) String phone) {
 	}
 

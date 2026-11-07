@@ -776,47 +776,11 @@ abstract class AppLocalizations {
   /// **'Parent?'**
   String get parentQuestion;
 
-  /// UC-P1: entry point on the sign-in screen.
-  ///
-  /// In en, this message translates to:
-  /// **'Activate with my invitation code'**
-  String get activateWithCode;
-
-  /// No description provided for @activationTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Activate my account'**
-  String get activationTitle;
-
-  /// No description provided for @activationStep.
+  /// No description provided for @parentSignInStep.
   ///
   /// In en, this message translates to:
   /// **'Step {step} of 2'**
-  String activationStep(int step);
-
-  /// No description provided for @activationHeadline.
-  ///
-  /// In en, this message translates to:
-  /// **'Your invitation code'**
-  String get activationHeadline;
-
-  /// No description provided for @activationIntro.
-  ///
-  /// In en, this message translates to:
-  /// **'The school sent it to you by SMS. Enter it with the phone number you gave the school.'**
-  String get activationIntro;
-
-  /// No description provided for @invitationCodeLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Invitation code'**
-  String get invitationCodeLabel;
-
-  /// No description provided for @invitationCodeHelp.
-  ///
-  /// In en, this message translates to:
-  /// **'As written in the school\'s SMS'**
-  String get invitationCodeHelp;
+  String parentSignInStep(int step);
 
   /// No description provided for @phoneLabel.
   ///
@@ -848,12 +812,6 @@ abstract class AppLocalizations {
   /// **'Enter the code received'**
   String get otpTitle;
 
-  /// No description provided for @otpSentTo.
-  ///
-  /// In en, this message translates to:
-  /// **'We sent a 6-digit code by SMS to {phone}.'**
-  String otpSentTo(String phone);
-
   /// No description provided for @otpLabel.
   ///
   /// In en, this message translates to:
@@ -878,12 +836,6 @@ abstract class AppLocalizations {
   /// **'A new code was sent. It works until {time}.'**
   String otpResent(String time);
 
-  /// No description provided for @activateAccount.
-  ///
-  /// In en, this message translates to:
-  /// **'Activate my account'**
-  String get activateAccount;
-
   /// No description provided for @resendCode.
   ///
   /// In en, this message translates to:
@@ -896,7 +848,7 @@ abstract class AppLocalizations {
   /// **'Change the number'**
   String get changeNumber;
 
-  /// D24: a parent who already activated signs in again.
+  /// UC-P1, D24: how a parent signs in, the first time too.
   ///
   /// In en, this message translates to:
   /// **'Sign in with a code by SMS'**
@@ -917,14 +869,14 @@ abstract class AppLocalizations {
   /// No description provided for @parentSignInIntro.
   ///
   /// In en, this message translates to:
-  /// **'Choose your school and enter the number you gave it. We will send you a code by SMS. First time? Use your invitation code instead.'**
+  /// **'Choose your school and enter the number you gave it. We will send you a code by SMS.'**
   String get parentSignInIntro;
 
-  /// D24, NFR-7: the server does not say whether the number has an account.
+  /// D24, NFR-7: the server does not say whether the school knows the number.
   ///
   /// In en, this message translates to:
-  /// **'If {phone} has a SchoolLink parent account, a 6-digit code was sent to it by SMS.'**
-  String otpSentIfAccount(String phone);
+  /// **'If the school knows {phone}, a 6-digit code was sent to it by SMS.'**
+  String otpSentIfKnown(String phone);
 
   /// Read by screen readers while a skeleton stands in for content.
   ///

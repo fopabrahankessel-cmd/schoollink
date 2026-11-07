@@ -25,39 +25,34 @@ String? cameroonDigits(String typed) {
   return RegExp(r'^\d{9}$').hasMatch(digits) ? digits : null;
 }
 
-/// UC-P1: a parent activates their account. Step 1, the invitation code the school sent by SMS
-/// and their phone number; step 2, the one-time code sent to that phone. Then they are signed in
-/// and land on their children. With [signIn] (D24), a parent who already activated signs in again:
-/// step 1 is their school and phone. The phone stays in request bodies, never in a URL (NFR-9).
-class ActivationScreen extends ConsumerStatefulWidget {
-  const ActivationScreen({super.key, this.signIn = false});
-
-  final bool signIn;
+/// UC-P1, D24: a parent signs in, the first time and every time after. Step 1, their school and
+/// phone; step 2, the one-time code sent to that phone. Then they land on their children. The phone
+/// stays in request bodies, never in a URL (NFR-9).
+class ParentSignInScreen extends ConsumerStatefulWidget {
+  const ParentSignInScreen({super.key});
 
   @override
-  ConsumerState<ActivationScreen> createState() => _ActivationScreenState();
+  ConsumerState<ParentSignInScreen> createState() => _ParentSignInScreenState();
 }
 
-class _ActivationScreenState extends ConsumerState<ActivationScreen> {
-  final _codeForm = GlobalKey<FormState>();
+class _ParentSignInScreenState extends ConsumerState<ParentSignInScreen> {
+  final _phoneForm = GlobalKey<FormState>();
   final _otpForm = GlobalKey<FormState>();
-  final _code = TextEditingController();
   final _phone = TextEditingController();
   final _otp = TextEditingController();
 
   /// Set once the one-time code is sent: step 2.
-  ActivationStarted? _started;
+  ParentSignInStarted? _started;
   String? _sentTo;
   Object? _error;
   bool _busy = false;
   bool _resent = false;
 
-  /// D24: the school picked, when it differs from the remembered one.
+  /// The school picked, when it differs from the remembered one.
   String? _schoolId;
 
   @override
   void dispose() {
-    _code.dispose();
     _phone.dispose();
     _otp.dispose();
     super.dispose();
@@ -83,15 +78,12 @@ class _ActivationScreenState extends ConsumerState<ActivationScreen> {
 
   /// Step 1, and "Send a new code" in step 2: the server replaces the one-time code.
   Future<void> _sendCode({bool again = false}) async {
-    if (!again && !_codeForm.currentState!.validate()) {
+    if (!again && !_phoneForm.currentState!.validate()) {
       return;
     }
     final digits = cameroonDigits(_phone.text)!;
-    final api = ref.read(authApiProvider);
     await _run(() async {
-      final started = widget.signIn
-          ? await api.parentSignIn(schoolId: _school()!, phone: '+237$digits')
-          : await api.activateParent(code: _code.text.trim().toUpperCase(), phone: '+237$digits');
+      final started = await ref.read(authApiProvider).parentSignIn(schoolId: _school()!, phone: '+237$digits');
       setState(() {
         _started = started;
         _sentTo =
@@ -113,7 +105,7 @@ class _ActivationScreenState extends ConsumerState<ActivationScreen> {
     await _run(
       () => ref
           .read(authControllerProvider.notifier)
-          .verifyParent(activationId: _started!.activationId, otp: _otp.text, signIn: widget.signIn),
+          .verifyParent(signInId: _started!.signInId, otp: _otp.text),
     );
   }
 
@@ -136,32 +128,24 @@ class _ActivationScreenState extends ConsumerState<ActivationScreen> {
         }
       },
       child: Scaffold(
-        appBar: AppBar(title: Text(widget.signIn ? l.parentSignInTitle : l.activationTitle)),
+        appBar: AppBar(title: Text(l.parentSignInTitle)),
         body: ListView(
           padding: const EdgeInsets.only(bottom: Gap.xl),
           children: [
             HeaderBand(
               children: [
                 Text(
-                  l.activationStep(step2 ? 2 : 1),
+                  l.parentSignInStep(step2 ? 2 : 1),
                   style: theme.textTheme.labelLarge?.copyWith(color: status.onHeaderMuted),
                 ),
                 const SizedBox(height: Gap.xs),
                 Text(
-                  step2
-                      ? l.otpTitle
-                      : widget.signIn
-                      ? l.parentSignInHeadline
-                      : l.activationHeadline,
+                  step2 ? l.otpTitle : l.parentSignInHeadline,
                   style: theme.textTheme.headlineSmall?.copyWith(color: status.onHeader),
                 ),
                 const SizedBox(height: Gap.s),
                 Text(
-                  step2
-                      ? (widget.signIn ? l.otpSentIfAccount(_sentTo!) : l.otpSentTo(_sentTo!))
-                      : widget.signIn
-                      ? l.parentSignInIntro
-                      : l.activationIntro,
+                  step2 ? l.otpSentIfKnown(_sentTo!) : l.parentSignInIntro,
                   style: theme.textTheme.bodyMedium?.copyWith(color: status.onHeaderMuted),
                 ),
                 const SizedBox(height: Gap.m),
@@ -172,7 +156,7 @@ class _ActivationScreenState extends ConsumerState<ActivationScreen> {
               padding: const EdgeInsets.fromLTRB(Gap.l, Gap.xl, Gap.l, 0),
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 480),
-                child: step2 ? _otpStep(context) : _codeStep(context),
+                child: step2 ? _otpStep(context) : _phoneStep(context),
               ),
             ),
           ],
@@ -194,31 +178,14 @@ class _ActivationScreenState extends ConsumerState<ActivationScreen> {
     );
   }
 
-  Widget _codeStep(BuildContext context) {
+  Widget _phoneStep(BuildContext context) {
     final l = AppLocalizations.of(context);
     return Form(
-      key: _codeForm,
+      key: _phoneForm,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (widget.signIn)
-            _SchoolPicker(selected: _schoolId, onChanged: (id) => setState(() => _schoolId = id))
-          else
-            TextFormField(
-              key: const ValueKey('invitation-code'),
-              controller: _code,
-              decoration: InputDecoration(
-                labelText: l.invitationCodeLabel,
-                helperText: l.invitationCodeHelp,
-                prefixIcon: const Icon(Icons.key_rounded),
-              ),
-              textCapitalization: TextCapitalization.characters,
-              autocorrect: false,
-              enableSuggestions: false,
-              textInputAction: TextInputAction.next,
-              style: const TextStyle(fontSize: 18, letterSpacing: 1.5, fontWeight: FontWeight.w600),
-              validator: (value) => value == null || value.trim().isEmpty ? l.fieldRequired : null,
-            ),
+          _SchoolPicker(selected: _schoolId, onChanged: (id) => setState(() => _schoolId = id)),
           const SizedBox(height: Gap.l),
           TextFormField(
             key: const ValueKey('phone'),
@@ -289,7 +256,7 @@ class _ActivationScreenState extends ConsumerState<ActivationScreen> {
             onPressed: _busy ? null : _verify,
             child: _busy
                 ? const SizedBox.square(dimension: 22, child: CircularProgressIndicator(strokeWidth: 2.5))
-                : Text(l.activateAccount),
+                : Text(l.signIn),
           ),
           const SizedBox(height: Gap.m),
           Row(
@@ -319,7 +286,7 @@ class _ActivationScreenState extends ConsumerState<ActivationScreen> {
   }
 }
 
-/// Two bars on the header band: where the parent is in the activation.
+/// Two bars on the header band: where the parent is in the sign-in.
 class _Steps extends StatelessWidget {
   const _Steps({required this.current});
 
@@ -350,7 +317,7 @@ class _Steps extends StatelessWidget {
   }
 }
 
-/// D24: the parent's school (D15: a phone may have an account in each school), the one remembered
+/// The parent's school (D15: a phone may have an account in each school), the one remembered
 /// on this phone first.
 class _SchoolPicker extends ConsumerWidget {
   const _SchoolPicker({required this.selected, required this.onChanged});

@@ -3,10 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'core/auth/user_info.dart';
-import 'features/auth/activation_screen.dart';
 import 'features/auth/auth_controller.dart';
 import 'features/auth/change_password_screen.dart';
 import 'features/auth/login_screen.dart';
+import 'features/auth/parent_sign_in_screen.dart';
 import 'features/dm/alert_screen.dart';
 import 'features/dm/student_history_screen.dart';
 import 'features/dm/student_search_screen.dart';
@@ -28,8 +28,8 @@ String? redirectFor(AsyncValue<UserInfo?> auth, String location) {
   }
   final user = auth.value;
   if (user == null) {
-    // UC-P1, D24: parents activate, or sign in again, by SMS instead of a password
-    return location == '/activate' || location == '/parent-sign-in' ? null : goTo('/login');
+    // UC-P1, D24: parents sign in by SMS instead of a password
+    return location == '/parent-sign-in' ? null : goTo('/login');
   }
   if (user.passwordChangeRequired) {
     return goTo('/change-password'); // D18
@@ -53,8 +53,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(path: '/splash', builder: (context, state) => const SplashScreen()),
       GoRoute(path: '/login', builder: (context, state) => const LoginScreen()),
-      GoRoute(path: '/activate', builder: (context, state) => const ActivationScreen()),
-      GoRoute(path: '/parent-sign-in', builder: (context, state) => const ActivationScreen(signIn: true)),
+      GoRoute(path: '/parent-sign-in', builder: (context, state) => const ParentSignInScreen()),
       GoRoute(path: '/change-password', builder: (context, state) => const ChangePasswordScreen()),
       GoRoute(path: '/web-only', builder: (context, state) => const WebOnlyScreen()),
       GoRoute(

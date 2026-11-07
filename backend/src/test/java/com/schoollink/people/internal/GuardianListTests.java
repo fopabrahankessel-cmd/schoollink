@@ -35,7 +35,6 @@ import static com.schoollink.testsupport.Actor.RESEARCHER;
 import static com.schoollink.testsupport.Actor.TEACHER_A;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /** UC-A4 guardian list for the admin (task 1.19, D7, NFR-8, NFR-9). Generated data only. */
@@ -101,31 +100,16 @@ class GuardianListTests {
 
 		assertThat(list).hasSize(2);
 		JsonNode withAccount = byName(list, "Parent Fictif");
-		assertThat(withAccount.get("status").asString()).isEqualTo("ACCOUNT"); // D7: push, no code needed
+		assertThat(withAccount.get("status").asString()).isEqualTo("ACCOUNT"); // D7: gets push
 		assertThat(withAccount.get("phone").asString()).isEqualTo("+237690000001");
 
 		JsonNode dad = byName(list, "Père Fictif");
-		assertThat(dad.get("status").asString()).isEqualTo("NOT_INVITED");
-		assertThat(dad.get("invitedAt").isNull()).isTrue();
+		assertThat(dad.get("status").asString()).isEqualTo("NO_ACCOUNT");
 		// siblings in another class are shown too, primary flag and relation included
 		assertThat(dad.get("children")).extracting(c -> c.get("firstName").asString()).containsExactly("Cadet", "Élève");
 		assertThat(dad.get("children").get(0).get("classId").asString()).isEqualTo(world.classB.toString());
 		assertThat(dad.get("children").get(0).get("relation").asString()).isEqualTo("FATHER");
 		assertThat(list).noneMatch(g -> g.get("id").asString().equals(otherClass.toString()));
-	}
-
-	@Test
-	void followsTheLatestCodeFromInvitedToExpired() throws Exception {
-		perform(ADMIN_X, post("/api/v1/guardians/{id}/invitations", father)).andExpect(status().isCreated());
-
-		JsonNode invited = byName(list(world.classA), "Père Fictif");
-		assertThat(invited.get("status").asString()).isEqualTo("INVITED");
-		assertThat(invited.get("expiresAt").isNull()).isFalse();
-
-		jdbc.update("""
-				UPDATE invitation_code SET created_at = now() - interval '31 days', expires_at = now() - interval '1 day'
-				WHERE guardian_id = ?""", father);
-		assertThat(byName(list(world.classA), "Père Fictif").get("status").asString()).isEqualTo("EXPIRED");
 	}
 
 	@Test

@@ -25,7 +25,7 @@ The `dev` profile seeds two fictional schools (Lycée Démo A, Lycée Démo B) w
 
 ## Phase 1 walkthrough
 
-The Phase 1 exit check (PLAN task 1.20): from an empty database to a school with its structure, staff, imported students and invited guardians, without the dev seed. Everything is done through the web app, as the pilot schools will do it. Only fictional data is used.
+The Phase 1 exit check (PLAN task 1.20): from an empty database to a school with its structure, staff, imported students and their guardians, without the dev seed. Everything is done through the web app, as the pilot schools will do it. Only fictional data is used.
 
 ### 1. Start from an empty database
 
@@ -72,7 +72,7 @@ Then start the web app: `cd web && npm run dev`, and open http://localhost:5173.
 
 ### 3. Steps
 
-Each step names the screen and the expected result. All steps were last checked on 2026-10-29.
+Each step names the screen and the expected result. All steps were last checked on 2026-10-29; the Guardians step was reworded on 2026-11-07, when invitation codes were removed (D24).
 
 - [x] **Startup.** The backend log shows `Bootstrap: created the school 'Lycée Pilote (fictif)' and its administrator admin@pilote.test`. A second start logs `exists already` and changes nothing.
 - [x] **First sign-in.** Sign in as `admin@pilote.test` with the temporary password. The app asks for a new password before anything else; after it, the home page shows the setup checklist with every step to do.
@@ -83,13 +83,11 @@ Each step names the screen and the expected result. All steps were last checked 
 - [x] **Timetable** (Emploi du temps). Choose 6e A, click Monday period 1 and pick « Mathématiques · Paul Enseignant ». The cell shows the lesson.
 - [x] **Import with errors** (Importer des élèves). Upload [docs/import-samples/pilote-with-errors.csv](docs/import-samples/pilote-with-errors.csv) for 2026-2027. Expected: 5 rows read, 2 valid, 3 with errors and 4 problems (row 4 unknown class « 6e B », row 5 sex X, row 6 invalid phone and a matricule already on row 5). Nothing is imported.
 - [x] **Clean import.** « Envoyer un fichier corrigé », upload [docs/import-samples/pilote.csv](docs/import-samples/pilote.csv), then « Importer 5 élèves » and confirm. Expected: 5 students created, 5 guardians created (Awa and Junior share Mama Exemple), 0 already known.
-- [x] **Guardians** (Tuteurs). Choose 6e A: 4 guardians « pas encore invités ». Mama Exemple lists Awa, and Junior « en 5e A ». « Inviter la classe », then « Envoyer les codes »: the 4 guardians become « invités ». The codes are never shown.
+- [x] **Guardians** (Tuteurs). Choose 6e A: 4 guardians « pas encore connectés ». Mama Exemple lists Awa, and Junior « en 5e A ». Nothing is sent from this screen: a parent signs in from the app with their phone number and an SMS code (UC-P1).
 - [x] **Audit.** Every step above wrote to `audit_log`, for example:
 
   ```bash
   docker compose exec db psql -U schoollink -c "SELECT entity, action, count(*) FROM audit_log GROUP BY 1, 2 ORDER BY 1, 2;"
   ```
 
-  Expected: one `school_bootstrap` entry, the password change (`app_user UPDATE`), the structure, staff and timetable entries, two `student_import CREATE` and one `IMPORT`, and four `invitation_code CREATE`.
-
-Known limit: inviting the class queues one SMS per guardian in `notification_outbox` (event type `INVITATION`), and the dispatcher picks them up within seconds, but no SMS leaves yet: until the SMS gateway (task 3.7), SMS are only logged, then marked `SENT` and their code erased (D13). To give a parent a code during the pilot rehearsal, generate a new one.
+  Expected: one `school_bootstrap` entry, the password change (`app_user UPDATE`), the structure, staff and timetable entries, two `student_import CREATE` and one `IMPORT`.

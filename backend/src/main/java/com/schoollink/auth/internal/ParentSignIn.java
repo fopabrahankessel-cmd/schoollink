@@ -1,7 +1,8 @@
 package com.schoollink.auth.internal;
 
-import com.schoollink.auth.internal.ParentActivation.Started;
 import com.schoollink.notification.ActivationSms;
+import com.schoollink.people.Guardians;
+import com.schoollink.people.ParentAccounts;
 import com.schoollink.people.UserAccount;
 import com.schoollink.people.UserAccounts;
 import com.schoollink.shared.error.ApiException;
@@ -11,6 +12,7 @@ import com.schoollink.shared.ratelimit.RateLimitPolicy;
 import com.schoollink.shared.ratelimit.RateLimiter;
 import java.security.SecureRandom;
 import java.sql.Timestamp;
+import java.sql.Types;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -27,15 +29,17 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /**
- * D24 (UC-P1 follow-up): a parent who already activated signs in again, after signing out or on a
- * new phone, with their school, their phone and a 6-digit one-time code sent to that phone.
- * Parents have no password; staff who are also parents (D21) sign in with theirs. NFR-7:
+ * UC-P1, D24: a parent signs in with their school, their phone and a 6-digit one-time code sent to
+ * that phone, the first time and every time after. The first time, the phone is a guardian's in the
+ * school (D15) and the account is made when the code is right: the code proves they hold the number
+ * the school gave. Parents have no password; an SMS code never opens an account that has one, so
+ * staff who are also parents sign in with theirs and are linked then (D21). NFR-7:
  * <ul>
- * <li>step 1 answers the same whether or not the phone has a parent account, so nothing tells
- * which numbers are registered: no SMS is sent then, and step 2 can never succeed;</li>
+ * <li>step 1 answers the same whether or not the phone is known, so nothing tells which numbers
+ * are registered: no SMS is sent then, and step 2 can never succeed;</li>
  * <li>the one-time code is stored as a BCrypt hash, lasts 10 minutes and allows 5 wrong tries, then
  * 429; asking again replaces it;</li>
- * <li>at most 3 one-time codes per account per hour, counted in the database;</li>
+ * <li>at most 3 one-time codes per account or guardian per hour, counted in the database;</li>
  * <li>per IP address, 10 sign-in and 30 verification requests per 15 minutes.</li>
  * </ul>
  * NFR-9: the phone travels in the request body only and is never logged; the codes are never
@@ -44,16 +48,42 @@ import org.springframework.transaction.support.TransactionTemplate;
 @Service
 class ParentSignIn {
 
+	static final Duration OTP_VALIDITY = Duration.ofMinutes(10);
+
+	static final int MAX_FAILED_ATTEMPTS = 5;
+
+	/** One-time codes per account or guardian per {@link #CODES_WINDOW}. */
+	static final int MAX_CODES = 3;
+
+	static final Duration CODES_WINDOW = Duration.ofHours(1);
+
 	static final RateLimitPolicy START_PER_IP = new RateLimitPolicy("parent-sign-in-ip", 10, Duration.ofMinutes(15));
 
 	static final RateLimitPolicy VERIFY_PER_IP = new RateLimitPolicy("parent-sign-in-verify-ip", 30,
 			Duration.ofMinutes(15));
 
-	private record Pending(UUID userId, String otpHash, Instant expiresAt, int failedAttempts, boolean verified,
-			boolean superseded) {
+	/** {@code expiresAt}: when the one-time code stops working. */
+	record Started(UUID activationId, Instant expiresAt) {
+	}
+
+	/** Who the code is for: an account, or a guardian who has none yet. */
+	private record Target(UUID schoolId, UUID userId, UUID guardianId, String language) {
+
+		UUID key() {
+			return userId != null ? userId : guardianId;
+		}
+
+	}
+
+	private record Pending(UUID schoolId, UUID userId, UUID guardianId, String otpHash, Instant expiresAt,
+			int failedAttempts, boolean verified, boolean superseded) {
 	}
 
 	private final UserAccounts accounts;
+
+	private final Guardians guardians;
+
+	private final ParentAccounts parentAccounts;
 
 	private final ActivationSms sms;
 
@@ -73,10 +103,12 @@ class ParentSignIn {
 
 	private final SecureRandom random = new SecureRandom();
 
-	ParentSignIn(UserAccounts accounts, ActivationSms sms, PasswordEncoder hashes, AccessTokens accessTokens,
-			RefreshTokens refreshTokens, RateLimiter limiter, NamedParameterJdbcTemplate jdbc,
-			PlatformTransactionManager transactionManager, Clock clock) {
+	ParentSignIn(UserAccounts accounts, Guardians guardians, ParentAccounts parentAccounts, ActivationSms sms,
+			PasswordEncoder hashes, AccessTokens accessTokens, RefreshTokens refreshTokens, RateLimiter limiter,
+			NamedParameterJdbcTemplate jdbc, PlatformTransactionManager transactionManager, Clock clock) {
 		this.accounts = accounts;
+		this.guardians = guardians;
+		this.parentAccounts = parentAccounts;
 		this.sms = sms;
 		this.hashes = hashes;
 		this.accessTokens = accessTokens;
@@ -87,7 +119,7 @@ class ParentSignIn {
 		this.clock = clock;
 	}
 
-	/** Step 1: sends a one-time code to the phone of the school's parent account, if there is one. */
+	/** Step 1: sends a one-time code to the phone of the school's parent or guardian, if there is one. */
 	Started start(UUID schoolId, String phone, String clientIp) {
 		checkRate(limiter.tryConsume(START_PER_IP, clientIp));
 		String otp = "%06d".formatted(random.nextInt(1_000_000));
@@ -95,60 +127,79 @@ class ParentSignIn {
 		String otpHash = hashes.encode(otp);
 		UUID id = UUID.randomUUID();
 		Instant now = clock.instant();
-		Instant expiresAt = now.plus(ParentActivation.OTP_VALIDITY);
-		Optional<UserAccount> parent = PhoneNumbers.normalize(phone)
-			.flatMap(normalized -> accounts.findByLogin(normalized, schoolId).stream().filter(ParentSignIn::isParentOnly)
-				.findFirst());
-		if (parent.isEmpty()) {
+		Instant expiresAt = now.plus(OTP_VALIDITY);
+		Optional<String> normalized = PhoneNumbers.normalize(phone);
+		Optional<Target> found = normalized.flatMap(number -> target(schoolId, number));
+		if (found.isEmpty()) {
 			// NFR-7: the same answer as for a registered number; this id is never stored
 			return new Started(id, expiresAt);
 		}
-		UserAccount account = parent.get();
+		Target target = found.get();
 		transactions.executeWithoutResult(tx -> {
-			MapSqlParameterSource p = new MapSqlParameterSource("id", id).addValue("school", account.schoolId())
-				.addValue("user", account.id())
+			MapSqlParameterSource p = new MapSqlParameterSource("id", id).addValue("school", target.schoolId())
+				.addValue("user", target.userId(), Types.OTHER)
+				.addValue("guardian", target.guardianId(), Types.OTHER)
+				.addValue("key", target.key().toString())
 				.addValue("hash", otpHash)
 				.addValue("now", Timestamp.from(now))
 				.addValue("expires", Timestamp.from(expiresAt))
-				.addValue("windowStart", Timestamp.from(now.minus(ParentActivation.CODES_WINDOW)));
-			// one account's requests are counted one after the other
-			jdbc.queryForList("SELECT pg_advisory_xact_lock(hashtextextended(CAST(:user AS text), 0))", p);
+				.addValue("windowStart", Timestamp.from(now.minus(CODES_WINDOW)));
+			// one person's requests are counted one after the other
+			jdbc.queryForList("SELECT pg_advisory_xact_lock(hashtextextended(:key, 0))", p);
 			List<Timestamp> recent = jdbc.queryForList("""
-					SELECT created_at FROM parent_sign_in WHERE user_id = :user AND created_at > :windowStart
+					SELECT created_at FROM parent_sign_in
+					WHERE (user_id = :user OR guardian_id = :guardian) AND created_at > :windowStart
 					ORDER BY created_at""", p, Timestamp.class);
-			if (recent.size() >= ParentActivation.MAX_CODES) {
-				throw new RateLimitedException(Duration.between(now,
-						recent.getFirst().toInstant().plus(ParentActivation.CODES_WINDOW)));
+			if (recent.size() >= MAX_CODES) {
+				throw new RateLimitedException(Duration.between(now, recent.getFirst().toInstant().plus(CODES_WINDOW)));
 			}
 			jdbc.update("""
-					INSERT INTO parent_sign_in (id, school_id, user_id, otp_hash, created_at, expires_at)
-					VALUES (:id, :school, :user, :hash, :now, :expires)""", p);
+					INSERT INTO parent_sign_in (id, school_id, user_id, guardian_id, otp_hash, created_at, expires_at)
+					VALUES (:id, :school, :user, :guardian, :hash, :now, :expires)""", p);
 		});
-		if (!sms.send(account.schoolId(), id, PhoneNumbers.normalize(phone).orElseThrow(), account.language(), otp,
-				ParentActivation.OTP_VALIDITY)) {
+		if (!sms.send(target.schoolId(), id, normalized.orElseThrow(), target.language(), otp, OTP_VALIDITY)) {
 			throw new ApiException(HttpStatus.SERVICE_UNAVAILABLE, "auth.otp_not_sent", null);
 		}
 		return new Started(id, expiresAt);
 	}
 
-	/** Step 2: checks the one-time code and signs the parent in. */
+	/**
+	 * The parent account of this phone, or its guardian when the phone has no account at all. A
+	 * phone with another account (staff, D21, or disabled, D18) gets no code.
+	 */
+	private Optional<Target> target(UUID schoolId, String phone) {
+		List<UserAccount> existing = accounts.findByLogin(phone, schoolId);
+		if (!existing.isEmpty()) {
+			return existing.stream()
+				.filter(ParentSignIn::isParentOnly)
+				.findFirst()
+				.map(account -> new Target(account.schoolId(), account.id(), null, account.language()));
+		}
+		return guardians.withoutAccount(schoolId, phone)
+			.map(guardian -> new Target(schoolId, null, guardian.guardianId(), guardian.language()));
+	}
+
+	/** Step 2: checks the one-time code, makes the account the first time and signs the parent in. */
 	TokenResponse verify(UUID signInId, String otp, String clientIp) {
 		checkRate(limiter.tryConsume(VERIFY_PER_IP, clientIp));
 		MapSqlParameterSource p = new MapSqlParameterSource("id", signInId);
 		Optional<TokenResponse> tokens = transactions.execute(tx -> {
 			// locked: concurrent tries on one request are counted one after the other
 			Pending pending = jdbc.query("""
-					SELECT s.user_id, s.otp_hash, s.expires_at, s.failed_attempts, s.verified_at IS NOT NULL AS verified,
-					       EXISTS (SELECT 1 FROM parent_sign_in n WHERE n.user_id = s.user_id AND n.seq > s.seq) AS superseded
+					SELECT s.school_id, s.user_id, s.guardian_id, s.otp_hash, s.expires_at, s.failed_attempts,
+					       s.verified_at IS NOT NULL AS verified,
+					       EXISTS (SELECT 1 FROM parent_sign_in n
+					               WHERE (n.user_id = s.user_id OR n.guardian_id = s.guardian_id) AND n.seq > s.seq) AS superseded
 					FROM parent_sign_in s WHERE s.id = :id FOR UPDATE OF s""", p,
-					(rs, n) -> new Pending(rs.getObject("user_id", UUID.class), rs.getString("otp_hash"),
+					(rs, n) -> new Pending(rs.getObject("school_id", UUID.class), rs.getObject("user_id", UUID.class),
+							rs.getObject("guardian_id", UUID.class), rs.getString("otp_hash"),
 							rs.getTimestamp("expires_at").toInstant(), rs.getInt("failed_attempts"),
 							rs.getBoolean("verified"), rs.getBoolean("superseded")))
 				.stream()
 				.findFirst()
 				.orElseThrow(ParentSignIn::invalidOtp);
 			Instant now = clock.instant();
-			if (pending.failedAttempts() >= ParentActivation.MAX_FAILED_ATTEMPTS) {
+			if (pending.failedAttempts() >= MAX_FAILED_ATTEMPTS) {
 				Duration left = Duration.between(now, pending.expiresAt());
 				throw new RateLimitedException(left.isNegative() ? Duration.ofMinutes(1) : left);
 			}
@@ -162,8 +213,10 @@ class ParentSignIn {
 			}
 			jdbc.update("UPDATE parent_sign_in SET verified_at = :now WHERE id = :id",
 					p.addValue("now", Timestamp.from(now)));
-			// D18: an account disabled since the code was sent gets nothing
-			UserAccount account = accounts.findById(pending.userId())
+			UUID userId = pending.userId() != null ? pending.userId()
+					: parentAccounts.activate(pending.schoolId(), pending.guardianId()).orElseThrow(ParentSignIn::invalidOtp);
+			// D18, D21: an account disabled or given staff rights since the code was sent gets nothing
+			UserAccount account = accounts.findById(userId)
 				.filter(ParentSignIn::isParentOnly)
 				.orElseThrow(ParentSignIn::invalidOtp);
 			return Optional.of(new TokenResponse("Bearer", accessTokens.issue(account), accessTokens.ttlSeconds(),

@@ -11,7 +11,6 @@ import com.schoollink.notification.internal.Templates.Push;
 import com.schoollink.notification.internal.Templates.School;
 import com.schoollink.people.Guardians;
 import com.schoollink.people.Guardians.Contact;
-import com.schoollink.people.Invitations;
 import com.schoollink.school.SchoolCalendar;
 import com.schoollink.school.Schools;
 import java.sql.Timestamp;
@@ -40,9 +39,7 @@ import tools.jackson.databind.json.JsonMapper;
  *
  * <p>BR-24: a failed send is retried with backoff, up to 3 times ({@link #MAX_ATTEMPTS} in all),
  * then the row is FAILED. A refusal that cannot pass (no app account any more, an unknown number)
- * fails it at once. An invitation code leaves the row once the SMS is sent or has failed, and a
- * code revoked or expired in the meantime is not sent (D13, NFR-9). Once the school's monthly SMS
- * cap is reached, an SMS other than a summons fails without being sent (BR-25, D12, D33).
+ * fails it at once. Once the school's monthly SMS cap is reached, an SMS other than a summons fails without being sent (BR-25, D12, D33).
  */
 @Component
 class OutboxDispatcher {
@@ -77,8 +74,6 @@ class OutboxDispatcher {
 
 	private final Guardians guardians;
 
-	private final Invitations invitations;
-
 	private final Schools schools;
 
 	private final SchoolCalendar calendar;
@@ -90,7 +85,7 @@ class OutboxDispatcher {
 	private final Clock clock;
 
 	OutboxDispatcher(NamedParameterJdbcTemplate jdbc, PlatformTransactionManager transactionManager,
-			Templates templates, PushProvider push, SmsProvider sms, Guardians guardians, Invitations invitations,
+			Templates templates, PushProvider push, SmsProvider sms, Guardians guardians,
 			Schools schools, SchoolCalendar calendar, SmsUsage usage, JsonMapper json, Clock clock) {
 		this.jdbc = jdbc;
 		this.transactions = new TransactionTemplate(transactionManager);
@@ -98,7 +93,6 @@ class OutboxDispatcher {
 		this.push = push;
 		this.sms = sms;
 		this.guardians = guardians;
-		this.invitations = invitations;
 		this.schools = schools;
 		this.calendar = calendar;
 		this.usage = usage;
@@ -159,9 +153,6 @@ class OutboxDispatcher {
 					// BR-25, D12: at the cap only summons go by SMS; the rest is not sent this month
 					return new Rejected("monthly SMS cap reached");
 				}
-				if (row.eventType() == EventType.INVITATION && !invitations.isLive(row.schoolId(), row.eventId())) {
-					return new Rejected("the invitation code was revoked or has expired");
-				}
 				School school = new School(schools.name(row.schoolId()), calendar.zone(row.schoolId()));
 				text = templates.sms(row.eventType(), row.language(), payload, school);
 				message = null;
@@ -191,16 +182,13 @@ class OutboxDispatcher {
 	void complete(Claimed row, SendResult result) {
 		Instant now = clock.instant();
 		MapSqlParameterSource p = new MapSqlParameterSource("id", row.id()).addValue("now", Timestamp.from(now))
-			.addValue("claimedAt", Timestamp.from(row.claimedAt()))
-			// D13, NFR-9: the code leaves the row once it is no longer needed
-			.addValue("eraseCode", row.eventType() == EventType.INVITATION);
+			.addValue("claimedAt", Timestamp.from(row.claimedAt()));
 		String outcome = switch (result) {
 			case Sent sent -> {
 				// BR-24: the gateway's id, so its delivery report finds the row (task 3.7)
 				p.addValue("status", "SENT").addValue("next", null).addValue("error", null)
 					.addValue("providerRef", sent.providerId());
-				yield "sent_at = :now, provider_ref = :providerRef, "
-						+ "payload = CASE WHEN :eraseCode THEN payload - 'code' ELSE payload END";
+				yield "sent_at = :now, provider_ref = :providerRef";
 			}
 			case Retry retry when row.attempt() < MAX_ATTEMPTS -> {
 				p.addValue("status", "QUEUED")
@@ -210,11 +198,11 @@ class OutboxDispatcher {
 			}
 			case Retry retry -> {
 				p.addValue("status", "FAILED").addValue("next", null).addValue("error", truncate(retry.error()));
-				yield "payload = CASE WHEN :eraseCode THEN payload - 'code' ELSE payload END";
+				yield "payload = payload";
 			}
 			case Rejected rejected -> {
 				p.addValue("status", "FAILED").addValue("next", null).addValue("error", truncate(rejected.error()));
-				yield "payload = CASE WHEN :eraseCode THEN payload - 'code' ELSE payload END";
+				yield "payload = payload";
 			}
 		};
 		int updated = transactions.execute(tx -> jdbc.update("""

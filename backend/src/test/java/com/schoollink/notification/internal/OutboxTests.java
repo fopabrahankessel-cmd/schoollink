@@ -26,10 +26,8 @@ import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
 
-import static com.schoollink.testsupport.Actor.ADMIN_X;
 import static com.schoollink.testsupport.Actor.TEACHER_A;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -195,45 +193,6 @@ class OutboxTests {
 
 		assertThat(jdbc.queryForObject("SELECT count(*) FROM attendance_session WHERE id = ?", Integer.class, id)).isZero();
 		assertThat(jdbc.queryForObject("SELECT count(*) FROM notification_outbox", Integer.class)).isZero();
-	}
-
-	@Test
-	void anInvitationCodeGoesBySmsAtOnce() throws Exception { // D13, UC-A4
-		UUID guardian = guardian(awa, "+237690000101", "EN", false);
-
-		String code = json.readTree(mockMvc
-			.perform(post("/api/v1/guardians/{id}/invitations", guardian).header("Authorization",
-					"Bearer " + world.token(ADMIN_X)))
-			.andExpect(status().is2xxSuccessful())
-			.andReturn()
-			.getResponse()
-			.getContentAsString()).get("code").asString();
-
-		var row = jdbc.queryForMap("""
-				SELECT o.channel, o.status, o.language, o.student_id, o.payload->>'code' AS code, o.event_id = c.id AS is_code
-				FROM notification_outbox o JOIN invitation_code c ON c.guardian_id = o.guardian_id
-				WHERE o.guardian_id = ? AND o.event_type = 'INVITATION'""", guardian);
-		assertThat(row.get("channel")).isEqualTo("SMS");
-		assertThat(row.get("status")).isEqualTo("QUEUED");
-		assertThat(row.get("language")).isEqualTo("EN");
-		assertThat(row.get("student_id")).isNull();
-		assertThat(row.get("code")).isEqualTo(code);
-		assertThat(row.get("is_code")).isEqualTo(true);
-	}
-
-	@Test
-	void invitingAClassQueuesOneSmsPerGuardianWithoutAnAccount() throws Exception { // D7, D13: task 1.19's check
-		guardian(awa, "+237690000101", "FR", false);
-		guardian(paul, "+237690000102", "FR", false);
-		guardian(paul, "+237690000103", "FR", true);
-
-		mockMvc.perform(post("/api/v1/classes/{id}/invitations", world.classA).header("Authorization",
-				"Bearer " + world.token(ADMIN_X))).andExpect(status().is2xxSuccessful());
-
-		// TestWorld's PARENT_A has an account too: only the two guardians without one are invited
-		assertThat(jdbc.queryForList(
-				"SELECT channel || ' ' || status FROM notification_outbox WHERE event_type = 'INVITATION'", String.class))
-			.containsExactly("SMS QUEUED", "SMS QUEUED");
 	}
 
 	private AttendanceConfirmed event(List<AttendanceConfirmed.Absence> absences) {
