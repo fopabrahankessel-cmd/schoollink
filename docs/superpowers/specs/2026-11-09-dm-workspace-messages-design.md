@@ -1,6 +1,6 @@
 # DM workspace, parent messages, announcements and school contacts: design
 
-Date: 2026-11-09. Status: proposed. The user skipped the questions ("skip the questions and write the design"), so every decision below not quoted from them is **my call** and is marked so.
+Date: 2026-11-09. Status: approved by the user on 2026-11-09, with staff phone numbers shown to parents. The user skipped the questions ("skip the questions and write the design"), so every decision below not quoted from them is **my call** and is marked so.
 
 ## 1. What the user asked for
 
@@ -31,7 +31,7 @@ The SPEC put UC-A5, UC-D4, UC-D5 and UC-P4 in Wave 2, after the pilot. The user 
 - Replies from parents. Messages stay one-way (UC-D4 says so); parents who want to answer call the school.
 - A DM taking or editing a roll call. Teachers record attendance (UC-T1); a locked session is never edited (BR-4). A DM who sees a period not recorded can remind the teacher, not record it. *My call: recording on behalf of an absent teacher is a later decision.*
 - Showing disciplinary records to parents. The permission matrix (SPEC §3) gives parents no access to them. A DM who wants the family to know sends a message (§4.2), which they write themselves.
-- Staff phone numbers or emails for parents. Names, subjects and roles only. *My call: NFR-9 and staff privacy; the school decides how it is reached.*
+- Staff emails for parents. Parents see names, subjects, roles and phone numbers (§4.5, the user's decision on 2026-11-09).
 - Attachments, images, scheduled sending, editing a sent message.
 - The counsellor's screens (UC-C1 to C3) stay in Wave 2.
 
@@ -101,7 +101,9 @@ API: `POST /messages` (DM; `studentId` or `classId`), `POST /announcements` (adm
 
 ### 4.5 School contacts for parents (UC-P5, new)
 
-On each child's page in the parent app, a "Who to contact" section: the class name, then each teacher with their subject (from `teaching_assignment`), then the DM(s) and assistant DM(s) of the class's block (from `role_assignment`). Names and roles only (non-goal above). Disabled staff accounts are left out.
+On each child's page in the parent app, a "Who to contact" section: the class name, then each teacher with their subject (from `teaching_assignment`), then the DM(s) and assistant DM(s) of the class's block (from `role_assignment`). Disabled staff accounts are left out.
+
+**Phone numbers.** The user decided that parents see the staff members' phone numbers. Each contact shows the number of their account (`app_user.phone`) with two actions, call and send an SMS, which open the phone's own dialler or messaging app (SchoolLink sends nothing and pays nothing). A staff member whose account has an email and no phone shows "no number" instead. The numbers travel in the response body only, never in a URL or a log (NFR-9), and only to the guardians of a child that this staff member teaches or supervises. *My call: the parent information notice and the staff briefing say that staff numbers are shown to parents, since staff gave them to the school as a sign-in identifier.*
 
 API: `GET /me/children/{id}/contacts`, parent only, own children only (NFR-8).
 
@@ -220,7 +222,7 @@ Exact copy of labels and templates (within the FR/EN and GSM-7 rules), the icons
 1. A DM can message a whole class of their blocks, not only one student's parents.
 2. SMS for messages and announcements is optional per message: on by default for one student, off by default for a class or the school; no later SMS when a push is not opened.
 3. Sending is refused when the SMS would go past this month's limit.
-4. Parents see staff names and subjects only, no phone numbers.
+4. Parents see staff names, subjects and phone numbers, with call and SMS buttons (decided by the user on 2026-11-09).
 5. Disciplinary records are never shown or sent to parents automatically, and are never edited, only closed or cancelled.
 6. The DM sees missing roll calls but cannot record one for an absent teacher.
 7. The admin sends announcements from the web only.
