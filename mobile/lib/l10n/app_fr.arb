@@ -157,7 +157,6 @@
   "noChildrenHint": "Contactez l'établissement pour vérifier le numéro qu'il a pour vous.",
   "classLabel": "Classe : {name}",
   "historyTitle": "Historique",
-  "historyOf": "Historique de {name}",
   "periodFromTo": "Du {from} au {to}",
   "absentPeriodsLabel": "{count, plural, one{heure d'absence} other{heures d'absence}}",
   "unjustifiedAbsences": "{count, plural, =0{aucune non justifiée} =1{dont 1 non justifiée} other{dont {count} non justifiées}}",
@@ -248,5 +247,17 @@
   "fullDayGenerate": "Générer le document",
   "fullDayPreparing": "Préparation du document…",
   "fullDayShare": "Partager",
-  "fullDayNobody": "Aucun élève n'a été absent à toutes les heures de cours le {date}."
+  "fullDayNobody": "Aucun élève n'a été absent à toutes les heures de cours le {date}.",
+  "tabHistory": "Historique",
+  "tabContacts": "Contacts",
+  "contactsTeachers": "Enseignants",
+  "contactsDiscipline": "Surveillance",
+  "roleDm": "Surveillant général",
+  "roleAssistantDm": "Surveillant général adjoint",
+  "contactsNoPhone": "Pas de numéro",
+  "contactsNoDiscipline": "Aucun surveillant pour cette classe pour le moment.",
+  "contactsNoTeachers": "Aucun enseignant pour cette classe pour le moment.",
+  "contactsCall": "Appeler {name}",
+  "contactsSms": "Envoyer un SMS à {name}",
+  "contactsCannotOpen": "Impossible d'ouvrir l'application Téléphone."
 }

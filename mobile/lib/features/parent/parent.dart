@@ -6,6 +6,7 @@ import '../../core/cache/response_cache.dart';
 import '../../core/providers.dart';
 import '../auth/auth_controller.dart';
 import '../teacher/teacher_sessions.dart' show DayTime, responseCacheProvider;
+import 'contacts.dart';
 
 /// UC-P3: one of the parent's children, from the account's guardian links (NFR-8).
 class Child {
@@ -232,6 +233,12 @@ class ParentRepository {
     return ChildHistory.fromJson(json! as Map<String, dynamic>, fetchedAt: at);
   }
 
+  /// UC-P5, D39: the child's teachers and DMs; offline, the copy saved on the phone (NFR-2).
+  Future<ChildContacts> contacts(String userId, String childId) async {
+    final (json, at) = await _get(userId, '/me/children/$childId/contacts', 'contacts:$childId');
+    return ChildContacts.fromJson(json! as Map<String, dynamic>, fetchedAt: at);
+  }
+
   /// Messages opened on this phone whose receipt the server does not have yet.
   Future<Set<String>> pendingReceipts(String userId) async {
     final cached = await _cache.get(userId, _pendingKey);
@@ -290,7 +297,8 @@ final parentRepositoryProvider = Provider<ParentRepository>(
   (ref) => ParentRepository(ref.watch(dioProvider), ref.watch(responseCacheProvider)),
 );
 
-String _userId(Ref ref) {
+/// The signed-in parent, whose copies on the phone are kept apart from another user's.
+String parentUserId(Ref ref) {
   final userId = ref.watch(authControllerProvider.select((auth) => auth.value?.id));
   if (userId == null) {
     throw StateError('signed out');
@@ -300,12 +308,12 @@ String _userId(Ref ref) {
 
 /// UC-P3: the parent's children.
 final childrenProvider = FutureProvider.autoDispose<Fetched<List<Child>>>(
-  (ref) => ref.watch(parentRepositoryProvider).children(_userId(ref)),
+  (ref) => ref.watch(parentRepositoryProvider).children(parentUserId(ref)),
 );
 
 /// UC-P3: one child's history over the last 90 days.
 final childHistoryProvider = FutureProvider.autoDispose.family<ChildHistory, String>(
-  (ref, childId) => ref.watch(parentRepositoryProvider).history(_userId(ref), childId),
+  (ref, childId) => ref.watch(parentRepositoryProvider).history(parentUserId(ref), childId),
 );
 
 /// The inbox as shown: the messages loaded so far, newest first.
@@ -342,7 +350,7 @@ class InboxController extends AsyncNotifier<Inbox> {
 
   @override
   Future<Inbox> build() async {
-    final userId = _userId(ref);
+    final userId = parentUserId(ref);
     final repository = ref.watch(parentRepositoryProvider);
     final waiting = await repository.sendReceipts(userId, const []);
     final page = await repository.inbox(userId);
@@ -362,7 +370,7 @@ class InboxController extends AsyncNotifier<Inbox> {
     }
     _loadingMore = true;
     try {
-      final page = await ref.read(parentRepositoryProvider).inbox(_userId(ref), before: inbox.entries.last.id);
+      final page = await ref.read(parentRepositoryProvider).inbox(parentUserId(ref), before: inbox.entries.last.id);
       state = AsyncData(
         inbox.copyWith(
           entries: [...inbox.entries, ...page.value],
@@ -391,7 +399,7 @@ class InboxController extends AsyncNotifier<Inbox> {
       }
       state = AsyncData(inbox.copyWith(opened: {...inbox.opened, id}));
     }
-    await ref.read(parentRepositoryProvider).sendReceipts(_userId(ref), [id]);
+    await ref.read(parentRepositoryProvider).sendReceipts(parentUserId(ref), [id]);
   }
 }
 

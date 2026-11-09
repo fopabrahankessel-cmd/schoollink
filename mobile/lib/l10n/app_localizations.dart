@@ -527,13 +527,13 @@ abstract class AppLocalizations {
   /// No description provided for @roleAssistantDm.
   ///
   /// In en, this message translates to:
-  /// **'Assistant discipline master'**
+  /// **'Assistant Discipline Master'**
   String get roleAssistantDm;
 
   /// No description provided for @roleDm.
   ///
   /// In en, this message translates to:
-  /// **'Discipline master'**
+  /// **'Discipline Master'**
   String get roleDm;
 
   /// No description provided for @roleCounsellor.
@@ -1033,12 +1033,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'History'**
   String get historyTitle;
-
-  /// No description provided for @historyOf.
-  ///
-  /// In en, this message translates to:
-  /// **'{name}\'s history'**
-  String historyOf(String name);
 
   /// UC-P3: the period shown, last 90 days.
   ///
@@ -1585,6 +1579,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No student was absent from all the school periods on {date}.'**
   String fullDayNobody(String date);
+
+  /// No description provided for @tabHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get tabHistory;
+
+  /// UC-P5, D39: the child page tab with the teachers and DMs.
+  ///
+  /// In en, this message translates to:
+  /// **'Contacts'**
+  String get tabContacts;
+
+  /// No description provided for @contactsTeachers.
+  ///
+  /// In en, this message translates to:
+  /// **'Teachers'**
+  String get contactsTeachers;
+
+  /// No description provided for @contactsDiscipline.
+  ///
+  /// In en, this message translates to:
+  /// **'Discipline'**
+  String get contactsDiscipline;
+
+  /// No description provided for @contactsNoPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'No number'**
+  String get contactsNoPhone;
+
+  /// No description provided for @contactsNoDiscipline.
+  ///
+  /// In en, this message translates to:
+  /// **'No discipline staff for this class yet.'**
+  String get contactsNoDiscipline;
+
+  /// No description provided for @contactsNoTeachers.
+  ///
+  /// In en, this message translates to:
+  /// **'No teachers for this class yet.'**
+  String get contactsNoTeachers;
+
+  /// UC-P5: the tooltip of the button.
+  ///
+  /// In en, this message translates to:
+  /// **'Call {name}'**
+  String contactsCall(String name);
+
+  /// UC-P5: the tooltip of the button.
+  ///
+  /// In en, this message translates to:
+  /// **'Text {name}'**
+  String contactsSms(String name);
+
+  /// No description provided for @contactsCannotOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the Phone app.'**
+  String get contactsCannotOpen;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

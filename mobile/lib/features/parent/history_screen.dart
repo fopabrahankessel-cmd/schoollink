@@ -8,12 +8,14 @@ import '../../core/ui/skeleton.dart';
 import '../../core/ui/widgets.dart';
 import '../../l10n/app_localizations.dart';
 import '../auth/failure_text.dart';
+import 'contacts_view.dart';
 import 'inbox_screen.dart' show dayHeading;
 import 'parent.dart';
 
 /// UC-P3: a child's absences and lateness over the last 90 days, with the totals first and then
 /// day by day. Absences and lateness are shown side by side, never merged (BR-8, BR-9); cancelled
-/// records are not there (BR-15). In plain words, for a parent with no training (NFR-2).
+/// records are not there (BR-15). In plain words, for a parent with no training (NFR-2). A second
+/// tab lists whom to contact about the child (UC-P5, D39).
 class ChildHistoryScreen extends ConsumerWidget {
   const ChildHistoryScreen({super.key, required this.childId});
 
@@ -26,9 +28,8 @@ class ChildHistoryScreen extends ConsumerWidget {
     // the name is known from the children list while the history loads
     final child = ref.watch(childrenProvider).value?.value.where((c) => c.id == childId).firstOrNull;
     final name = history.value?.firstName ?? child?.firstName;
-    return Scaffold(
-      appBar: AppBar(title: Text(name == null ? l.historyTitle : l.historyOf(name))),
-      body: switch (history) {
+    final status = StatusColors.of(context);
+    final historyTab = switch (history) {
         AsyncValue(value: final history?) => RefreshIndicator(
           onRefresh: () => ref.refresh(childHistoryProvider(childId).future).then((_) {}, onError: (_) {}),
           child: _HistoryList(history: history),
@@ -38,7 +39,25 @@ class ChildHistoryScreen extends ConsumerWidget {
           onRetry: () => ref.invalidate(childHistoryProvider(childId)),
         ),
         _ => const _HistorySkeleton(),
-      },
+      };
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(name ?? l.historyTitle),
+          bottom: TabBar(
+            labelColor: status.onHeader,
+            unselectedLabelColor: status.onHeaderMuted,
+            indicatorColor: status.onHeader,
+            dividerColor: Colors.transparent,
+            tabs: [
+              Tab(text: l.tabHistory),
+              Tab(text: l.tabContacts),
+            ],
+          ),
+        ),
+        body: TabBarView(children: [historyTab, ContactsView(childId: childId)]),
+      ),
     );
   }
 }

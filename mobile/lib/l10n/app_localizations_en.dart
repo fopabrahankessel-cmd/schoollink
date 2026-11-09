@@ -271,10 +271,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get roleTeacher => 'Teacher';
 
   @override
-  String get roleAssistantDm => 'Assistant discipline master';
+  String get roleAssistantDm => 'Assistant Discipline Master';
 
   @override
-  String get roleDm => 'Discipline master';
+  String get roleDm => 'Discipline Master';
 
   @override
   String get roleCounsellor => 'Counsellor';
@@ -607,11 +607,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get historyTitle => 'History';
-
-  @override
-  String historyOf(String name) {
-    return '$name\'s history';
-  }
 
   @override
   String periodFromTo(String from, String to) {
@@ -989,4 +984,38 @@ class AppLocalizationsEn extends AppLocalizations {
   String fullDayNobody(String date) {
     return 'No student was absent from all the school periods on $date.';
   }
+
+  @override
+  String get tabHistory => 'History';
+
+  @override
+  String get tabContacts => 'Contacts';
+
+  @override
+  String get contactsTeachers => 'Teachers';
+
+  @override
+  String get contactsDiscipline => 'Discipline';
+
+  @override
+  String get contactsNoPhone => 'No number';
+
+  @override
+  String get contactsNoDiscipline => 'No discipline staff for this class yet.';
+
+  @override
+  String get contactsNoTeachers => 'No teachers for this class yet.';
+
+  @override
+  String contactsCall(String name) {
+    return 'Call $name';
+  }
+
+  @override
+  String contactsSms(String name) {
+    return 'Text $name';
+  }
+
+  @override
+  String get contactsCannotOpen => 'Could not open the Phone app.';
 }

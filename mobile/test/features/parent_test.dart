@@ -175,7 +175,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(ChildHistoryScreen), findsOneWidget);
-    expect(find.widgetWithText(AppBar, 'Historique de Awa'), findsOneWidget);
+    expect(find.widgetWithText(AppBar, 'Awa'), findsOneWidget);
+    expect(find.widgetWithText(Tab, 'Historique'), findsOneWidget);
     expect(find.text('Du 4 août au 2 novembre'), findsOneWidget);
     final absences = find.byKey(const ValueKey('total-absences'));
     expect(find.descendant(of: absences, matching: find.text('3')), findsOneWidget);
@@ -217,7 +218,7 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('child-st-2')));
     await tester.pumpAndSettle();
 
-    expect(find.widgetWithText(AppBar, 'Historique de Paul'), findsOneWidget);
+    expect(find.widgetWithText(AppBar, 'Paul'), findsOneWidget);
     expect(find.text('Aucune absence ni retard pour Paul'), findsOneWidget);
     expect(find.text('dont 0 non justifiée'), findsNothing);
   });

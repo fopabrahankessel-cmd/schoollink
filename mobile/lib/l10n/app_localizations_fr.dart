@@ -614,11 +614,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get historyTitle => 'Historique';
 
   @override
-  String historyOf(String name) {
-    return 'Historique de $name';
-  }
-
-  @override
   String periodFromTo(String from, String to) {
     return 'Du $from au $to';
   }
@@ -1000,4 +995,38 @@ class AppLocalizationsFr extends AppLocalizations {
   String fullDayNobody(String date) {
     return 'Aucun élève n\'a été absent à toutes les heures de cours le $date.';
   }
+
+  @override
+  String get tabHistory => 'Historique';
+
+  @override
+  String get tabContacts => 'Contacts';
+
+  @override
+  String get contactsTeachers => 'Enseignants';
+
+  @override
+  String get contactsDiscipline => 'Surveillance';
+
+  @override
+  String get contactsNoPhone => 'Pas de numéro';
+
+  @override
+  String get contactsNoDiscipline => 'Aucun surveillant pour cette classe pour le moment.';
+
+  @override
+  String get contactsNoTeachers => 'Aucun enseignant pour cette classe pour le moment.';
+
+  @override
+  String contactsCall(String name) {
+    return 'Appeler $name';
+  }
+
+  @override
+  String contactsSms(String name) {
+    return 'Envoyer un SMS à $name';
+  }
+
+  @override
+  String get contactsCannotOpen => 'Impossible d\'ouvrir l\'application Téléphone.';
 }

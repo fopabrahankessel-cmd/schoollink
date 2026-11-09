@@ -431,14 +431,6 @@
     }
   },
   "historyTitle": "History",
-  "historyOf": "{name}'s history",
-  "@historyOf": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
   "periodFromTo": "From {from} to {to}",
   "@periodFromTo": {
     "description": "UC-P3: the period shown, last 90 days.",
@@ -807,5 +799,36 @@
         "type": "String"
       }
     }
-  }
+  },
+  "tabHistory": "History",
+  "tabContacts": "Contacts",
+  "@tabContacts": {
+    "description": "UC-P5, D39: the child page tab with the teachers and DMs."
+  },
+  "contactsTeachers": "Teachers",
+  "contactsDiscipline": "Discipline",
+  "roleDm": "Discipline Master",
+  "roleAssistantDm": "Assistant Discipline Master",
+  "contactsNoPhone": "No number",
+  "contactsNoDiscipline": "No discipline staff for this class yet.",
+  "contactsNoTeachers": "No teachers for this class yet.",
+  "contactsCall": "Call {name}",
+  "@contactsCall": {
+    "description": "UC-P5: the tooltip of the button.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "contactsSms": "Text {name}",
+  "@contactsSms": {
+    "description": "UC-P5: the tooltip of the button.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "contactsCannotOpen": "Could not open the Phone app."
 }
