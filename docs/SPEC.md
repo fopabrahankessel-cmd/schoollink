@@ -85,6 +85,7 @@ Seven roles use SchoolLink; every role except the administrator and researcher i
 | Private case notes | — | — | — | — | W (own cases) | — | — |
 | Threshold settings | R | — | — | W (school) | — | — | R |
 | Announcements | W | R | R | R | R | R | — |
+| Staff names, subjects and phones | W | — | — | — | — | R (own children's teachers and DMs) | — |
 | Audit and technical logs | R | — | — | — | — | — | R |
 
 **Two rules behind the matrix**
@@ -180,6 +181,7 @@ The use cases are numbered by actor; the MVP column says which ones the first pi
 | UC-P2 | Parent | Receive absence, lateness, summons and correction alerts | Yes |
 | UC-P3 | Parent | Consult each child's attendance history | Yes |
 | UC-P4 | Parent | Read DM messages and announcements | Wave 2 |
+| UC-P5 | Parent | See each child's class, teachers with their subjects, and the block's DMs and assistant DMs, with their phone numbers | Yes |
 | UC-R1 | Researcher | Consult the research view: usage, delivery and response times, alert and case counts | Wave 2 |
 | UC-R2 | Researcher | Export anonymised datasets (CSV) | Wave 2 |
 | UC-R3 | Researcher | Consult technical logs | Wave 2 |
@@ -311,6 +313,7 @@ One REST API under `/api/v1`, secured by JWT; the server derives the school and 
 | Discipline | `POST /summons` | DM | Summon a parent; from an alert, decision SUMMON (D31) |
 | Counselling | `GET /cases`, `POST /cases`, `POST /cases/{id}/notes` | Counsellor | Case management |
 | Parent | `GET /me/children`, `GET /children/{id}/history` | Parent | Children and history |
+| Parent | `GET /me/children/{id}/contacts` | Parent | The child's class, teachers and the block's DMs, with names, subjects, roles and phones (UC-P5, D39) |
 | Parent | `GET /me/notifications`, `POST /notifications/{id}/opened` | Parent | Inbox + open receipt for the research metrics |
 | Devices | `PUT /me/device-token` | All app users | Register FCM token |
 | Reporting | `GET /dashboard/school`, `GET /dashboard/scope` | Admin, DM | Counts and trends (D34) |
