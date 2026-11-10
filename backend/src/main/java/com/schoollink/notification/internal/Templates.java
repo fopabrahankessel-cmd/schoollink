@@ -27,6 +27,8 @@ import tools.jackson.databind.JsonNode;
  * <li>CORRECTION: firstName, date, kind (ABSENCE or LATENESS), periodNumber for an absence</li>
  * <li>SUMMONS: firstName, meetingDate, meetingTime</li>
  * <li>DIGEST (SMS only): firstName, date, absentPeriods (a list, may be empty), arrivalTime if late</li>
+ * <li>DM_MESSAGE, ANNOUNCEMENT (D38): body, plainSms; firstName for a message about one student,
+ * className for one to a class</li>
  * </ul>
  * Absence and lateness never go by SMS one by one: guardians without the app get the daily
  * {@link #digest} (BR-22, D6).
@@ -84,8 +86,20 @@ class Templates {
 				yield digest(language, new Digest(text(payload, "firstName"), LocalDate.parse(text(payload, "date")),
 						periods, payload.hasNonNull("arrivalTime") ? text(payload, "arrivalTime") : null), school);
 			}
+			case DM_MESSAGE, ANNOUNCEMENT -> messageSms(type, language, text(payload, "body"),
+					payload.path("plainSms").asBoolean(false), school.name());
 			default -> throw new IllegalArgumentException("No immediate SMS for " + type + ": it goes in the digest");
 		};
+	}
+
+	/**
+	 * D38: "SchoolLink - SG Lycée X : {body}" for a DM's message, "SchoolLink - Lycée X : {body}" for
+	 * an announcement; {@code plain} removes the accents from the whole SMS (the push keeps them).
+	 */
+	String messageSms(EventType type, String language, String body, boolean plain, String school) {
+		String key = type == EventType.DM_MESSAGE ? "notification.dm_message.sms" : "notification.announcement.sms";
+		String sms = message(language, key, body, school);
+		return plain ? SmsText.plain(sms) : sms;
 	}
 
 	/** BR-22: "SchoolLink: Paul absent P1-P3 and late (07:48) on 28/10. Collège X." */

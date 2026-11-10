@@ -1,5 +1,6 @@
 package com.schoollink.school;
 
+import java.time.LocalDate;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -26,6 +27,12 @@ public interface SchoolClasses {
 
 	/** The names of the given classes of the school: id -> name; ids of other schools are left out. */
 	Map<UUID, String> names(UUID schoolId, Set<UUID> classIds);
+
+	/**
+	 * D38: the classes of the current academic year: the year that contains {@code today}, else the
+	 * latest one started before it, else the first one.
+	 */
+	Set<UUID> idsInCurrentYear(UUID schoolId, LocalDate today);
 
 	boolean yearExists(UUID schoolId, UUID academicYearId);
 

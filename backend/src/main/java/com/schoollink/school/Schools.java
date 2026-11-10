@@ -15,4 +15,13 @@ public interface Schools {
 	/** BR-25: the most SMS the school sends in a calendar month; at it, only summons go by SMS. */
 	int smsMonthlyCap(UUID schoolId);
 
+	/** D38: the price of one SMS in FCFA, for the cost shown before a message is sent. */
+	int smsUnitPrice(UUID schoolId);
+
+	/**
+	 * D38: holds the school's SMS budget until the transaction ends, so two messages sent at the same
+	 * time cannot both pass a cap that only one fits (BR-25). Needs a transaction.
+	 */
+	void lockSmsBudget(UUID schoolId);
+
 }

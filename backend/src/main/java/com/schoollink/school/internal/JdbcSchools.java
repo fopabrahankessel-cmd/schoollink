@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 class JdbcSchools implements Schools {
@@ -30,6 +32,17 @@ class JdbcSchools implements Schools {
 	@Override
 	public int smsMonthlyCap(UUID schoolId) {
 		return jdbc.queryForObject("SELECT sms_monthly_cap FROM school WHERE id = ?", Integer.class, schoolId);
+	}
+
+	@Override
+	public int smsUnitPrice(UUID schoolId) {
+		return jdbc.queryForObject("SELECT sms_unit_price FROM school WHERE id = ?", Integer.class, schoolId);
+	}
+
+	@Override
+	@Transactional(propagation = Propagation.MANDATORY)
+	public void lockSmsBudget(UUID schoolId) {
+		jdbc.queryForObject("SELECT id FROM school WHERE id = ? FOR UPDATE", UUID.class, schoolId);
 	}
 
 }

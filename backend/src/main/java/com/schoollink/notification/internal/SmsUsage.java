@@ -45,6 +45,18 @@ class SmsUsage {
 				Integer.class);
 	}
 
+	/**
+	 * D38: the SMS a message may still use this month: the cap, less those sent and those queued or
+	 * being sent, so a message cannot count on SMS another one has already taken.
+	 */
+	int left(UUID schoolId) {
+		int pending = jdbc.queryForObject("""
+				SELECT count(*) FROM notification_outbox
+				WHERE school_id = :school AND channel = 'SMS' AND status IN ('QUEUED', 'SENDING')""",
+				new MapSqlParameterSource("school", schoolId), Integer.class);
+		return Math.max(0, schools.smsMonthlyCap(schoolId) - sentThisMonth(schoolId) - pending);
+	}
+
 	/** BR-25: at the cap, only summons go by SMS (D12). */
 	boolean capReached(UUID schoolId) {
 		return sentThisMonth(schoolId) >= schools.smsMonthlyCap(schoolId);

@@ -1,6 +1,7 @@
 package com.schoollink.school.internal;
 
 import com.schoollink.school.SchoolClasses;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -21,6 +22,17 @@ class JdbcSchoolClasses implements SchoolClasses {
 	public Set<UUID> ids(UUID schoolId) {
 		return Set.copyOf(jdbc.queryForList("SELECT id FROM school_class WHERE school_id = :school",
 				Map.of("school", schoolId), UUID.class));
+	}
+
+	@Override
+	public Set<UUID> idsInCurrentYear(UUID schoolId, LocalDate today) {
+		return Set.copyOf(jdbc.queryForList("""
+				SELECT c.id FROM school_class c
+				WHERE c.school_id = :school AND c.academic_year_id = (
+				    SELECT y.id FROM academic_year y WHERE y.school_id = :school
+				    ORDER BY (y.start_date <= :today AND y.end_date >= :today) DESC, (y.start_date <= :today) DESC,
+				             CASE WHEN y.start_date <= :today THEN y.start_date END DESC, y.start_date
+				    LIMIT 1)""", Map.of("school", schoolId, "today", today), UUID.class));
 	}
 
 	@Override
