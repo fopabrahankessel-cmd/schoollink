@@ -315,7 +315,7 @@ One REST API under `/api/v1`, secured by JWT; the server derives the school and 
 | Messaging | `POST /messages/preview`, `POST /announcements/preview` | DM, Admin | Who gets it (by app, by SMS, unreached), SMS units and cost, SMS left this month; sends nothing (D38) |
 | Messaging | `POST /messages` | DM | Message the guardians of a student or a class of their blocks; idempotent on the device's id (D38) |
 | Messaging | `POST /announcements` | Admin | Announce to the whole school or a class; idempotent on the device's id (D38) |
-| Messaging | `GET /messages`, `GET /announcements` | DM, Admin | The DM's own messages, the school's announcements, newest first, with delivery counts (D38) |
+| Messaging | `GET /messages`, `GET /announcements` | DM, Admin | The DM's own messages, the school's announcements, newest first, with delivery counts (D38); `GET /messages?studentId=` keeps the DM's messages to that one student, for the student page (D41) |
 | Messaging | `GET /messages/classes` | DM, Admin | The classes the author may write to, with their number of students (D38) |
 | Discipline | `GET /students/{id}/disciplinary-records` | DM, Admin | A student's records, newest incident first, without cancelled ones (D37) |
 | Discipline | `POST /students/{id}/disciplinary-records` | DM | Record an incident: category, measure, date at most 30 days back, description (D37) |

@@ -399,6 +399,30 @@ class ParentMessageTests {
 	}
 
 	@Test
+	void aStudentsMessagesAreFilteredByStudent() throws Exception {
+		// D41: the student page's Messages tab
+		perform(DM_1, dmSend(Map.of("studentId", studentA2))).andExpect(status().isCreated());
+		perform(DM_1, dmSend(Map.of("classId", world.classA))).andExpect(status().isCreated());
+		perform(DM_1, get("/api/v1/messages").param("studentId", studentA2.toString())).andExpect(status().isOk())
+			.andExpect(jsonPath("$.length()").value(1))
+			.andExpect(jsonPath("$[0].audience").value("STUDENT"))
+			.andExpect(jsonPath("$[0].studentId").value(studentA2.toString()));
+	}
+
+	@Test
+	void anotherDmsStudentListsNothing() throws Exception {
+		// NFR-8: the filter only narrows the caller's own messages
+		perform(DM_1, dmSend(Map.of("studentId", studentA2))).andExpect(status().isCreated());
+		perform(DM_2, get("/api/v1/messages").param("studentId", studentA2.toString())).andExpect(status().isOk())
+			.andExpect(jsonPath("$.length()").value(0));
+	}
+
+	@Test
+	void aMalformedStudentIdIsRefused() throws Exception {
+		perform(DM_1, get("/api/v1/messages").param("studentId", "abc")).andExpect(status().isBadRequest());
+	}
+
+	@Test
 	void aDmDoesNotSeeAnotherDmsMessages() throws Exception {
 		perform(DM_1, dmSend(Map.of("classId", world.classA))).andExpect(status().isCreated());
 		perform(DM_2, get("/api/v1/messages")).andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(0));

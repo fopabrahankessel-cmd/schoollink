@@ -53,14 +53,15 @@ class ParentMessageController {
 
 	@GetMapping("/api/v1/messages")
 	List<SentMessage> sentMessages(@AuthenticationPrincipal CurrentUser user,
-			@RequestParam(required = false) Integer limit) {
-		return messages.sent(user, Kind.DM_MESSAGE, limit);
+			@RequestParam(required = false) Integer limit, @RequestParam(required = false) UUID studentId) {
+		// D41: with studentId, the student page's Messages tab
+		return messages.sent(user, Kind.DM_MESSAGE, limit, studentId);
 	}
 
 	@GetMapping("/api/v1/announcements")
 	List<SentMessage> sentAnnouncements(@AuthenticationPrincipal CurrentUser user,
 			@RequestParam(required = false) Integer limit) {
-		return messages.sent(user, Kind.ANNOUNCEMENT, limit);
+		return messages.sent(user, Kind.ANNOUNCEMENT, limit, null);
 	}
 
 	@GetMapping("/api/v1/messages/classes")

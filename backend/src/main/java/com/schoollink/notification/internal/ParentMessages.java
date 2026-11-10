@@ -255,10 +255,11 @@ class ParentMessages {
 
 	/**
 	 * Newest first: a DM's own messages, or the school's announcements for an administrator, each
-	 * with its delivery.
+	 * with its delivery. A {@code studentId} keeps the messages written to that one student's
+	 * guardians (D41).
 	 */
 	@Transactional(readOnly = true)
-	List<SentMessage> sent(CurrentUser user, Kind kind, Integer limit) {
+	List<SentMessage> sent(CurrentUser user, Kind kind, Integer limit, UUID studentId) {
 		UUID school = authorSchool(user, kind);
 		int size = limit == null ? DEFAULT_LIMIT : limit;
 		if (size < 1 || size > MAX_LIMIT) {
@@ -266,6 +267,7 @@ class ParentMessages {
 		}
 		MapSqlParameterSource p = new MapSqlParameterSource("school", school).addValue("kind", kind.name())
 			.addValue("author", kind == Kind.DM_MESSAGE ? user.userId() : null)
+			.addValue("student", studentId)
 			.addValue("limit", size);
 		List<SentMessage> rows = jdbc.query("""
 				SELECT m.id, m.kind, m.audience, m.student_id, m.class_id, m.body, m.sms, m.created_at,
@@ -281,6 +283,7 @@ class ParentMessages {
 				LEFT JOIN notification_outbox o ON o.school_id = m.school_id AND o.event_type = m.kind AND o.event_id = m.id
 				WHERE m.school_id = :school AND m.kind = :kind
 				  AND (CAST(:author AS uuid) IS NULL OR m.author_id = CAST(:author AS uuid))
+				  AND (CAST(:student AS uuid) IS NULL OR m.student_id = CAST(:student AS uuid))
 				GROUP BY m.id, u.first_name, u.last_name
 				ORDER BY m.created_at DESC, m.id DESC LIMIT :limit""", p,
 				(rs, n) -> new SentMessage(rs.getObject("id", UUID.class), rs.getString("kind"),
