@@ -3,10 +3,14 @@ package com.schoollink.discipline.internal;
 import com.schoollink.audit.AuditAction;
 import com.schoollink.audit.AuditEntry;
 import com.schoollink.audit.AuditLog;
+import com.schoollink.discipline.DisciplinaryCategory;
+import com.schoollink.discipline.DisciplinaryMeasure;
 import com.schoollink.discipline.DisciplineOutcomes;
+import com.schoollink.school.SchoolCalendar;
 import java.sql.Timestamp;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
@@ -28,21 +32,36 @@ class JdbcDisciplineOutcomes implements DisciplineOutcomes {
 
 	private final Clock clock;
 
-	JdbcDisciplineOutcomes(NamedParameterJdbcTemplate jdbc, AuditLog audit, Clock clock) {
+	private final SchoolCalendar calendar;
+
+	JdbcDisciplineOutcomes(NamedParameterJdbcTemplate jdbc, AuditLog audit, Clock clock, SchoolCalendar calendar) {
 		this.jdbc = jdbc;
 		this.audit = audit;
 		this.clock = clock;
+		this.calendar = calendar;
 	}
 
 	@Override
-	public UUID recordDisciplinary(UUID schoolId, UUID studentId, UUID alertId, UUID actorId, String description) {
+	public UUID recordDisciplinary(UUID schoolId, UUID studentId, UUID alertId, UUID actorId,
+			DisciplinaryCategory category, DisciplinaryMeasure measure, LocalDate occurredOn, String description) {
+		// D37: the day of the incident is a school day, in the school's time zone
+		LocalDate day = occurredOn != null ? occurredOn : clock.instant().atZone(calendar.zone(schoolId)).toLocalDate();
 		UUID id = jdbc.queryForObject("""
-				INSERT INTO disciplinary_record (school_id, student_id, alert_id, description, recorded_by, recorded_at)
-				VALUES (:school, :student, :alert, :description, :by, :now) RETURNING id""",
-				params(schoolId, studentId, alertId, actorId).addValue("description", description), UUID.class);
+				INSERT INTO disciplinary_record (school_id, student_id, alert_id, category, measure, occurred_on, description,
+				       recorded_by, recorded_at)
+				VALUES (:school, :student, :alert, :category, :measure, :day, :description, :by, :now) RETURNING id""",
+				params(schoolId, studentId, alertId, actorId).addValue("category", category.name())
+					.addValue("measure", measure.name())
+					.addValue("day", day)
+					.addValue("description", description),
+				UUID.class);
+		// NFR-11
 		Map<String, Object> after = new HashMap<>();
 		after.put("studentId", studentId.toString());
 		after.put("alertId", alertId == null ? null : alertId.toString());
+		after.put("category", category.name());
+		after.put("measure", measure.name());
+		after.put("occurredOn", day.toString());
 		after.put("description", description);
 		after.put("status", "OPEN");
 		audit.record(new AuditEntry(schoolId, actorId, AuditAction.CREATE, "disciplinary_record", id.toString(), null,

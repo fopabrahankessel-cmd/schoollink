@@ -4,6 +4,8 @@ import com.schoollink.audit.AuditAction;
 import com.schoollink.audit.AuditEntry;
 import com.schoollink.audit.AuditLog;
 import com.schoollink.detection.RuleType;
+import com.schoollink.discipline.DisciplinaryCategory;
+import com.schoollink.discipline.DisciplinaryMeasure;
 import com.schoollink.discipline.DisciplineOutcomes;
 import com.schoollink.discipline.Summonses;
 import com.schoollink.people.Students;
@@ -150,7 +152,9 @@ class Alerts {
 			// BR-23: sent at once, in this transaction
 			case SUMMON -> summonses.issue(school, alert.studentId(), id, user.userId(), request.meetingDate(),
 					request.meetingTime(), note);
-			case DISCIPLINARY -> outcomes.recordDisciplinary(school, alert.studentId(), id, user.userId(), note);
+			// D37: older clients send no category or measure
+			case DISCIPLINARY -> outcomes.recordDisciplinary(school, alert.studentId(), id, user.userId(),
+					DisciplinaryCategory.OTHER, DisciplinaryMeasure.NONE, null, note);
 			case REFER -> outcomes.refer(school, alert.studentId(), id, user.userId(), note);
 		};
 		Instant now = clock.instant().truncatedTo(ChronoUnit.MICROS);

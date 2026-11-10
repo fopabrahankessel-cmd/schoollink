@@ -169,7 +169,7 @@ The use cases are numbered by actor; the MVP column says which ones the first pi
 | UC-D2 | DM | Review risk alerts and decide: dismiss, summon, disciplinary issue, refer | Yes |
 | UC-D3 | DM | Summon a parent (one tap after a full-day absence, or from an alert) | Yes |
 | UC-D4 | DM | Send a one-way message to a student's guardians | Wave 2 |
-| UC-D5 | DM | Record a disciplinary issue for a student | Wave 2 |
+| UC-D5 | DM | Record a disciplinary issue for a student: category, date of the incident, measure; close or cancel it (D37) | Pilot |
 | UC-D6 | DM | Cancel an erroneous locked absence with a reason | Yes |
 | UC-D7 | DM | Configure thresholds, school start time and SMS digest times | Yes |
 | UC-D8 | DM | Consult a student's attendance and lateness history and the scope dashboard | Yes |
@@ -238,7 +238,7 @@ The model has about 25 tables in PostgreSQL; every school-owned row carries a `s
 | Detection | `ThresholdRule` | school\_id, type, count, unit, window, active | Edited by the DM |
 | Detection | `RiskAlert` | id, student\_id, rule\_id, raised\_at, status, decision, decided\_by, decided\_at, decision\_note | One open alert per student per rule |
 | Discipline | `Summons` | id, student\_id, alert\_id (nullable), reason, meeting\_date, sent\_by | Sent by push + SMS |
-| Discipline | `DisciplinaryRecord` | id, student\_id, type, description, recorded\_by, date | Wave 2 |
+| Discipline | `DisciplinaryRecord` | id, student\_id, alert\_id (nullable), category, measure, occurred\_on, description, status, close\_note, recorded\_by, cancelled\_at/by, cancel\_reason | Never edited or deleted; cancelled ones hidden (D37) |
 | Discipline | `DmMessage` | id, student\_id, author\_id, body | One-way, wave 2 |
 | Counselling | `CounsellingCase` | id, student\_id, referred\_by, alert\_id, counsellor\_id, status, opened\_at, closed\_at | Status visible to DM |
 | Counselling | `CaseNote` | case\_id, author\_id, body\_encrypted, created\_at, follow\_up\_date | Readable by author only |
@@ -311,6 +311,8 @@ One REST API under `/api/v1`, secured by JWT; the server derives the school and 
 | Detection | `POST /alerts/{id}/decision` | DM | Dismiss, summon, disciplinary, refer (D30) |
 | Detection | `GET/PUT /settings/thresholds` | DM | Configure rules, school start time and SMS digest times (UC-D7, D28) |
 | Discipline | `POST /summons` | DM | Summon a parent; from an alert, decision SUMMON (D31) |
+| Discipline | `GET /students/{id}/disciplinary-records` | DM, Admin | A student's records, newest incident first, without cancelled ones (D37) |
+| Discipline | `POST /students/{id}/disciplinary-records` | DM | Record an incident: category, measure, date at most 30 days back, description (D37) |
 | Counselling | `GET /cases`, `POST /cases`, `POST /cases/{id}/notes` | Counsellor | Case management |
 | Parent | `GET /me/children`, `GET /children/{id}/history` | Parent | Children and history |
 | Parent | `GET /me/children/{id}/contacts` | Parent | The child's class, teachers and the block's DMs, with names, subjects, roles and phones (UC-P5, D39) |
