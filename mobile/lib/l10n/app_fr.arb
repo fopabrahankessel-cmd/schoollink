@@ -252,8 +252,6 @@
   "tabContacts": "Contacts",
   "contactsTeachers": "Enseignants",
   "contactsDiscipline": "Surveillance",
-  "roleDm": "Surveillant général",
-  "roleAssistantDm": "Surveillant général adjoint",
   "contactsNoPhone": "Pas de numéro",
   "contactsNoDiscipline": "Aucun surveillant pour cette classe pour le moment.",
   "contactsNoTeachers": "Aucun enseignant pour cette classe pour le moment.",

@@ -271,10 +271,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get roleTeacher => 'Teacher';
 
   @override
-  String get roleAssistantDm => 'Assistant Discipline Master';
+  String get roleAssistantDm => 'Assistant discipline master';
 
   @override
-  String get roleDm => 'Discipline Master';
+  String get roleDm => 'Discipline master';
 
   @override
   String get roleCounsellor => 'Counsellor';

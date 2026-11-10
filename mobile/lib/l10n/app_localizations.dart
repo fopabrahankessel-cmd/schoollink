@@ -527,13 +527,13 @@ abstract class AppLocalizations {
   /// No description provided for @roleAssistantDm.
   ///
   /// In en, this message translates to:
-  /// **'Assistant Discipline Master'**
+  /// **'Assistant discipline master'**
   String get roleAssistantDm;
 
   /// No description provided for @roleDm.
   ///
   /// In en, this message translates to:
-  /// **'Discipline Master'**
+  /// **'Discipline master'**
   String get roleDm;
 
   /// No description provided for @roleCounsellor.

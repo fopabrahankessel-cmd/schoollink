@@ -119,9 +119,14 @@ class _ContactTile extends ConsumerWidget {
   Future<void> _open(BuildContext context, WidgetRef ref, Uri uri) async {
     final messenger = ScaffoldMessenger.of(context);
     final text = AppLocalizations.of(context).contactsCannotOpen;
-    if (!await ref.read(phoneLauncherProvider)(uri)) {
-      messenger.showSnackBar(SnackBar(content: Text(text)));
+    bool opened;
+    try {
+      opened = await ref.read(phoneLauncherProvider)(uri);
+    } on Exception {
+      // url_launcher throws (PlatformException) as well as returning false when no app can open it
+      opened = false;
     }
+    if (!opened) messenger.showSnackBar(SnackBar(content: Text(text)));
   }
 
   @override

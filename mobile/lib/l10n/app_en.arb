@@ -807,8 +807,6 @@
   },
   "contactsTeachers": "Teachers",
   "contactsDiscipline": "Discipline",
-  "roleDm": "Discipline Master",
-  "roleAssistantDm": "Assistant Discipline Master",
   "contactsNoPhone": "No number",
   "contactsNoDiscipline": "No discipline staff for this class yet.",
   "contactsNoTeachers": "No teachers for this class yet.",

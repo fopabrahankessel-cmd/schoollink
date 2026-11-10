@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:schoollink/core/storage/device_store.dart';
 import 'package:schoollink/features/parent/contacts.dart';
@@ -14,6 +15,7 @@ void main() {
   late MemoryDeviceStore store;
   late List<Uri> launched;
   late bool canLaunch;
+  late bool launchThrows;
   final parent = userJson(roles: ['PARENT']);
   final now = DateTime(2026, 11, 2, 18);
 
@@ -32,6 +34,7 @@ void main() {
   setUp(() {
     launched = [];
     canLaunch = true;
+    launchThrows = false;
     store = MemoryDeviceStore(signedIn(parent));
     server = FakeServer()
       ..on('GET /me', (_) => Reply.ok(parent))
@@ -70,6 +73,7 @@ void main() {
       overrides: [
         phoneLauncherProvider.overrideWithValue((uri) async {
           launched.add(uri);
+          if (launchThrows) throw PlatformException(code: 'NO_ACTIVITY');
           return canLaunch;
         }),
       ],
@@ -149,6 +153,16 @@ void main() {
     expect(find.text("Impossible d'ouvrir l'application Téléphone."), findsOneWidget);
   });
 
+  testWidgets('a launcher that fails with an error shows the same message (review focus 5)', (tester) async {
+    launchThrows = true;
+    await openContacts(tester);
+
+    await tester.tap(find.byTooltip('Appeler Paul Enseignant'));
+    await tester.pumpAndSettle();
+
+    expect(find.text("Impossible d'ouvrir l'application Téléphone."), findsOneWidget);
+  });
+
   testWidgets('the contacts read in English (NFR-12)', (tester) async {
     final english = userJson(roles: ['PARENT'], language: 'EN');
     store = MemoryDeviceStore(signedIn(english));
@@ -156,8 +170,9 @@ void main() {
     await openContacts(tester, language: 'en');
 
     expect(find.text('Teachers'), findsOneWidget);
-    expect(find.text('Discipline Master'), findsOneWidget);
-    expect(find.text('Assistant Discipline Master'), findsOneWidget);
+    // the role labels the home screen already uses
+    expect(find.text('Discipline master'), findsOneWidget);
+    expect(find.text('Assistant discipline master'), findsOneWidget);
     expect(find.textContaining('No number'), findsNWidgets(2));
     expect(find.byTooltip('Call Paul Enseignant'), findsOneWidget);
   });
