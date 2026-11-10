@@ -94,9 +94,15 @@ const withoutId = (body: Record<string, unknown>) => {
   return rest
 }
 
+/** Pastes the text: typing it key by key makes the test slow, and flaky on a busy machine. */
+async function write(user: ReturnType<typeof userEvent.setup>, text: string) {
+  await user.click(screen.getByLabelText('Votre message'))
+  await user.paste(text)
+}
+
 async function writeToClass(user: ReturnType<typeof userEvent.setup>, text: string) {
   await user.selectOptions(await screen.findByLabelText('Classe'), 'c1')
-  await user.type(screen.getByLabelText('Votre message'), text)
+  await write(user, text)
 }
 
 const sendButton = () => screen.getByRole('button', { name: 'Envoyer' })
@@ -164,7 +170,7 @@ describe('Messages to parents (UC-D4, D38)', () => {
     expect(await screen.findByText('Exemple Awa', { selector: '.MuiChip-label' })).toBeInTheDocument()
     expect(screen.getByRole('switch', { name: "Aussi par SMS pour les parents sans l'application" })).toBeChecked()
 
-    await user.type(screen.getByLabelText('Votre message'), 'Merci de passer au bureau.')
+    await write(user, 'Merci de passer au bureau.')
     expect(await screen.findByText("4 parents : 2 par l'app, 2 par SMS")).toBeInTheDocument()
     expect(screen.getByText(/≈ 362 FCFA/)).toBeInTheDocument()
     expect(screen.getByText('SchoolLink - SG Lycée Démo : Réunion vendredi.')).toBeInTheDocument()
@@ -213,7 +219,7 @@ describe('Messages to parents (UC-D4, D38)', () => {
     expect(sendButton()).toBeDisabled()
     expect(posted(api, '/messages/preview')).toHaveLength(0)
 
-    await user.type(screen.getByLabelText('Votre message'), 'Réunion vendredi.')
+    await write(user, 'Réunion vendredi.')
     await waitFor(() => expect(sendButton()).toBeEnabled())
     await user.click(sendButton())
     await user.dblClick(within(await screen.findByRole('dialog')).getByRole('button', { name: 'Envoyer' }))
