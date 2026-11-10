@@ -144,6 +144,26 @@ void main() {
     expect(server.sent('GET /attendance/day'), hasLength(2));
   });
 
+  testWidgets('a ticked absence that is then cancelled leaves the selection', (tester) async {
+    await open(tester);
+    await openFirstPeriod(tester);
+
+    await tap(tester, find.byKey(const ValueKey('day-absence-a1')));
+    await tap(tester, find.byKey(const ValueKey('day-absence-a2')));
+    expect(find.text('Justifier 2 éléments'), findsOneWidget);
+    await tap(tester, find.byKey(const ValueKey('day-record-menu-a1')));
+    await tap(tester, find.text('Annuler cet enregistrement'));
+    await tester.enterText(find.byKey(const ValueKey('cancel-reason')), 'Erreur de saisie');
+    await tester.pumpAndSettle();
+    await tap(tester, find.byKey(const ValueKey('sheet-submit')));
+
+    expect(find.text('Justifier 1 élément'), findsOneWidget);
+    await tap(tester, find.byKey(const ValueKey('day-justify')));
+    await tap(tester, find.byKey(const ValueKey('reason-illness')));
+    await tap(tester, find.byKey(const ValueKey('sheet-submit')));
+    expect((server.sent('POST /justifications').single.body! as Map)['absenceIds'], ['a2']);
+  });
+
   testWidgets('a cancelled absence is struck through and cannot be ticked', (tester) async {
     final first = ((day['classes'] as List).first as Map)['periods'] as List;
     first[0] = period(1, 'RECORDED', absences: [absence('a1', 'Awa', 'UNJUSTIFIED'), absence('a2', 'Bruno', 'CANCELLED')]);

@@ -80,6 +80,7 @@ class _DayScreenState extends ConsumerState<DayScreen> {
             onPick: () => _pick(day.date),
             selected: _lateness,
             onToggle: (id) => setState(() => _lateness.contains(id) ? _lateness.remove(id) : _lateness.add(id)),
+            onCancelled: (id) => setState(() => _lateness.remove(id)),
           ),
         ),
         AsyncError(:final error) => FailureView(
@@ -90,11 +91,7 @@ class _DayScreenState extends ConsumerState<DayScreen> {
       },
       bottomNavigationBar: _lateness.isEmpty
           ? null
-          : _JustifyBar(
-              count: _lateness.length,
-              onClear: () => setState(_lateness.clear),
-              onJustify: _justifyLateness,
-            ),
+          : _JustifyBar(count: _lateness.length, onClear: () => setState(_lateness.clear), onJustify: _justifyLateness),
     );
   }
 }
@@ -109,8 +106,9 @@ void dayChanged(BuildContext context, WidgetRef ref, DateTime? date, String mess
     ..showSnackBar(SnackBar(content: Text(message)));
 }
 
-/// Cancels one absence or lateness, with a mandatory reason (BR-13).
-Future<void> cancelDayRecord(
+/// Cancels one absence or lateness, with a mandatory reason (BR-13). True once cancelled: the
+/// caller drops it from its selection, since a cancelled record can no longer be justified.
+Future<bool> cancelDayRecord(
   BuildContext context,
   WidgetRef ref,
   DateTime? date, {
@@ -131,6 +129,7 @@ Future<void> cancelDayRecord(
   if (done && context.mounted) {
     dayChanged(context, ref, date, l.recordCancelled);
   }
+  return done;
 }
 
 class _JustifyBar extends StatelessWidget {
@@ -173,6 +172,7 @@ class _DayList extends StatelessWidget {
     required this.onPick,
     required this.selected,
     required this.onToggle,
+    required this.onCancelled,
   });
 
   final DayAttendance day;
@@ -180,6 +180,7 @@ class _DayList extends StatelessWidget {
   final VoidCallback onPick;
   final Set<String> selected;
   final void Function(String id) onToggle;
+  final void Function(String id) onCancelled;
 
   @override
   Widget build(BuildContext context) {
@@ -278,6 +279,7 @@ class _DayList extends StatelessWidget {
                     date: date,
                     selected: selected,
                     onToggle: onToggle,
+                    onCancelled: onCancelled,
                   ),
                 ],
             ],
@@ -290,12 +292,19 @@ class _DayList extends StatelessWidget {
 
 /// One class: its periods, then the day's lateness.
 class _ClassCard extends ConsumerWidget {
-  const _ClassCard({required this.schoolClass, required this.date, required this.selected, required this.onToggle});
+  const _ClassCard({
+    required this.schoolClass,
+    required this.date,
+    required this.selected,
+    required this.onToggle,
+    required this.onCancelled,
+  });
 
   final DayClass schoolClass;
   final DateTime? date;
   final Set<String> selected;
   final void Function(String id) onToggle;
+  final void Function(String id) onCancelled;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -323,14 +332,18 @@ class _ClassCard extends ConsumerWidget {
                 selected: selected.contains(late.recordId),
                 onToggle: late.state == RecordState.unjustified ? () => onToggle(late.recordId) : null,
                 menuKey: ValueKey('day-record-menu-${late.recordId}'),
-                onCancel: () => cancelDayRecord(
-                  context,
-                  ref,
-                  date,
-                  recordId: late.recordId,
-                  lateness: true,
-                  what: '${l.eventLateness}, ${late.fullName}, ${late.arrivalTime}',
-                ),
+                onCancel: () async {
+                  if (await cancelDayRecord(
+                    context,
+                    ref,
+                    date,
+                    recordId: late.recordId,
+                    lateness: true,
+                    what: '${l.eventLateness}, ${late.fullName}, ${late.arrivalTime}',
+                  )) {
+                    onCancelled(late.recordId);
+                  }
+                },
                 onHistory: () => context.push('/home/alerts/student/${late.studentId}'),
               ),
             const SizedBox(height: Gap.xs),
@@ -376,9 +389,10 @@ class _PeriodRow extends StatelessWidget {
           builder: (context) => _AbsenteesSheet(date: date, classId: schoolClass.classId, number: period.number),
         ),
         // information only (BR-4): the teacher records it, the DM cannot
-        PeriodStatus.notRecorded => () => ScaffoldMessenger.of(context)
-          ..hideCurrentSnackBar()
-          ..showSnackBar(SnackBar(content: Text(l.dayNotRecordedHint))),
+        PeriodStatus.notRecorded =>
+          () => ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(SnackBar(content: Text(l.dayNotRecordedHint))),
         PeriodStatus.upcoming => null,
       },
       child: Padding(
@@ -445,7 +459,10 @@ class _AbsenteesSheetState extends ConsumerState<_AbsenteesSheet> {
         .where((p) => p.number == widget.number)
         .firstOrNull;
     if (period == null) {
-      return const Padding(padding: EdgeInsets.all(Gap.xl), child: Center(child: CircularProgressIndicator()));
+      return const Padding(
+        padding: EdgeInsets.all(Gap.xl),
+        child: Center(child: CircularProgressIndicator()),
+      );
     }
     return Padding(
       padding: const EdgeInsets.only(bottom: Gap.l),
@@ -485,14 +502,19 @@ class _AbsenteesSheetState extends ConsumerState<_AbsenteesSheet> {
                           )
                         : null,
                     menuKey: ValueKey('day-record-menu-${absence.recordId}'),
-                    onCancel: () => cancelDayRecord(
-                      context,
-                      ref,
-                      widget.date,
-                      recordId: absence.recordId,
-                      lateness: false,
-                      what: '${l.eventAbsence}, ${absence.fullName}, ${l.dayPeriodShort(period.number)}',
-                    ),
+                    onCancel: () async {
+                      if (await cancelDayRecord(
+                            context,
+                            ref,
+                            widget.date,
+                            recordId: absence.recordId,
+                            lateness: false,
+                            what: '${l.eventAbsence}, ${absence.fullName}, ${l.dayPeriodShort(period.number)}',
+                          ) &&
+                          mounted) {
+                        setState(() => _selected.remove(absence.recordId));
+                      }
+                    },
                     onHistory: () {
                       Navigator.of(context).pop();
                       context.push('/home/alerts/student/${absence.studentId}');
@@ -575,10 +597,7 @@ class _RecordRow extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(Gap.xs, Gap.xs, 0, Gap.xs),
       child: Row(
         children: [
-          if (onToggle != null)
-            Checkbox(value: selected, onChanged: (_) => onToggle!())
-          else
-            const SizedBox(width: 48),
+          if (onToggle != null) Checkbox(value: selected, onChanged: (_) => onToggle!()) else const SizedBox(width: 48),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -590,7 +609,10 @@ class _RecordRow extends StatelessWidget {
                     decoration: cancelled ? TextDecoration.lineThrough : null,
                   ),
                 ),
-                Text(detail, style: theme.textTheme.bodyMedium?.copyWith(color: muted, fontFeatures: tabular)),
+                Text(
+                  detail,
+                  style: theme.textTheme.bodyMedium?.copyWith(color: muted, fontFeatures: tabular),
+                ),
               ],
             ),
           ),
