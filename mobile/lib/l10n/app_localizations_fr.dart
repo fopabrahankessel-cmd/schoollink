@@ -911,6 +911,10 @@ class AppLocalizationsFr extends AppLocalizations {
       'Seulement pour une erreur. L\'enregistrement reste dans les dossiers de l\'école mais ne compte plus. Les parents déjà prévenus reçoivent une correction.';
 
   @override
+  String get cancelIncidentBody =>
+      'Seulement pour une erreur. L\'incident reste dans les dossiers de l\'école mais n\'apparaît plus.';
+
+  @override
   String get cancelReason => 'Motif de l\'annulation';
 
   @override

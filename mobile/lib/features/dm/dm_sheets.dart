@@ -397,11 +397,14 @@ class _JustifySheetState extends State<JustifySheet> with Submitting {
 
 /// BR-13, D27: cancels a record entered by mistake, with the reason.
 class CancelRecordSheet extends StatefulWidget {
-  const CancelRecordSheet({super.key, required this.what, required this.send});
+  const CancelRecordSheet({super.key, required this.what, required this.send, this.body});
 
   /// The record, as the history shows it ("Absence, lesson at 08:25").
   final String what;
   final Future<void> Function(String reason) send;
+
+  /// The explanation, when the default one (about the parents' correction) does not apply.
+  final String? body;
 
   @override
   State<CancelRecordSheet> createState() => _CancelRecordSheetState();
@@ -431,7 +434,7 @@ class _CancelRecordSheetState extends State<CancelRecordSheet> with Submitting {
         Text(widget.what, style: theme.textTheme.titleMedium),
         const SizedBox(height: Gap.s),
         Text(
-          l.cancelRecordBody,
+          widget.body ?? l.cancelRecordBody,
           style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
         ),
         const SizedBox(height: Gap.l),

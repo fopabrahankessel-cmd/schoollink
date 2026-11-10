@@ -188,6 +188,9 @@ void main() {
     await tapAndSettle(tester, find.byKey(const ValueKey('incident-d-1')));
     await tapAndSettle(tester, find.text("Annuler l'incident"));
     expect(enabled(tester), isFalse);
+    // parents never see an incident, so nothing promises them a correction (D37)
+    expect(find.textContaining('correction'), findsNothing);
+    expect(find.textContaining("L'incident reste dans les dossiers"), findsOneWidget);
     await tester.enterText(find.byKey(const ValueKey('cancel-reason')), "Erreur d'élève");
     await tester.pumpAndSettle();
     await tapAndSettle(tester, submit());

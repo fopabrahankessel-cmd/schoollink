@@ -1448,6 +1448,12 @@ abstract class AppLocalizations {
   /// **'Only for a mistake. The record stays in the school\'s files but no longer counts. Parents who were told get a correction.'**
   String get cancelRecordBody;
 
+  /// D37: the cancel sheet of a disciplinary incident; parents never see incidents
+  ///
+  /// In en, this message translates to:
+  /// **'Only for a mistake. The incident stays in the school\'s files but is no longer shown.'**
+  String get cancelIncidentBody;
+
   /// No description provided for @cancelReason.
   ///
   /// In en, this message translates to:

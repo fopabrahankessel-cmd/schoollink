@@ -226,6 +226,7 @@
   "justifiedCount": "{count, plural, =1{1 élément justifié} other{{count} éléments justifiés}}",
   "cancelRecordTitle": "Annuler cet enregistrement ?",
   "cancelRecordBody": "Seulement pour une erreur. L'enregistrement reste dans les dossiers de l'école mais ne compte plus. Les parents déjà prévenus reçoivent une correction.",
+  "cancelIncidentBody": "Seulement pour une erreur. L'incident reste dans les dossiers de l'école mais n'apparaît plus.",
   "cancelReason": "Motif de l'annulation",
   "confirmCancelRecord": "Annuler l'enregistrement",
   "recordCancelled": "Enregistrement annulé",

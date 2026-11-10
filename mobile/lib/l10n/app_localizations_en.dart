@@ -901,6 +901,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Only for a mistake. The record stays in the school\'s files but no longer counts. Parents who were told get a correction.';
 
   @override
+  String get cancelIncidentBody =>
+      'Only for a mistake. The incident stays in the school\'s files but is no longer shown.';
+
+  @override
   String get cancelReason => 'Reason for cancelling';
 
   @override

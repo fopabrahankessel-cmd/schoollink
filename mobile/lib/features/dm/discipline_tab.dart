@@ -120,7 +120,11 @@ class DisciplineTab extends ConsumerWidget {
       context,
       switch (choice) {
         _Action.close => CloseIncidentSheet(what: what, send: (note) => repository.closeIncident(record.id, note: note)),
-        _Action.cancel => CancelRecordSheet(what: what, send: (reason) => repository.cancelIncident(record.id, reason)),
+        _Action.cancel => CancelRecordSheet(
+          what: what,
+          body: l.cancelIncidentBody,
+          send: (reason) => repository.cancelIncident(record.id, reason),
+        ),
       },
     );
     if (done) {

@@ -666,6 +666,10 @@
   },
   "cancelRecordTitle": "Cancel this record?",
   "cancelRecordBody": "Only for a mistake. The record stays in the school's files but no longer counts. Parents who were told get a correction.",
+  "cancelIncidentBody": "Only for a mistake. The incident stays in the school's files but is no longer shown.",
+  "@cancelIncidentBody": {
+    "description": "D37: the cancel sheet of a disciplinary incident; parents never see incidents"
+  },
   "@cancelRecordBody": {
     "description": "BR-13 to BR-15, D27."
   },
