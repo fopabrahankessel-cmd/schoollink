@@ -13,6 +13,7 @@ import 'features/dm/messages_screen.dart';
 import 'features/dm/student_history_screen.dart';
 import 'features/dm/student_search_screen.dart';
 import 'features/dm/full_day/full_day_screen.dart';
+import 'features/dm/day/day_screen.dart';
 import 'features/shell/destinations.dart';
 import 'features/shell/home_shell.dart';
 import 'features/shell/web_only_screen.dart';
@@ -80,6 +81,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(path: 'students', builder: (context, state) => const StudentSearchScreen()),
           GoRoute(path: 'full-day', builder: (context, state) => const FullDayScreen()),
+          // UC-D10, D40: the DM's day of attendance, period by period
+          GoRoute(path: 'day', builder: (context, state) => const DayScreen()),
           // UC-D4, D38: the DM's messages to parents; the student's name travels as extra
           GoRoute(path: 'messages', builder: (context, state) => const MessagesScreen()),
           GoRoute(

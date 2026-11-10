@@ -8,6 +8,7 @@ import '../../core/providers.dart';
 import '../parent/parent.dart' show HistoryDay;
 import '../teacher/attendance.dart' show isoDate;
 import '../teacher/teacher_sessions.dart' show DayTime;
+import 'day/day_models.dart';
 import 'discipline.dart';
 import 'full_day/full_day_models.dart';
 import 'messages.dart';
@@ -335,6 +336,17 @@ class DmRepository {
     return FullDayReport.fromJson(response.data!);
   }
 
+  /// UC-D10, D40: one day of attendance in the DM's classes; [date] null is today at school.
+  Future<DayAttendance> day(DateTime? date) async {
+    final response = await _call(
+      () => _dio.get<Map<String, dynamic>>(
+        '/attendance/day',
+        queryParameters: {if (date != null) 'date': isoDate(date)},
+      ),
+    );
+    return DayAttendance.fromJson(response.data!);
+  }
+
   /// UC-A7, D36: the header the report is printed under.
   Future<Letterhead> letterhead() async {
     final response = await _call(() => _dio.get<Map<String, dynamic>>('/school/letterhead'));
@@ -391,6 +403,11 @@ final dmRepositoryProvider = Provider<DmRepository>((ref) => DmRepository(ref.wa
 /// UC-D2: the open alerts of the DM's classes.
 final openAlertsProvider = FutureProvider.autoDispose<List<RiskAlert>>(
   (ref) => ref.watch(dmRepositoryProvider).openAlerts(),
+);
+
+/// UC-D10, D40: one day of attendance; null is today at school.
+final dayProvider = FutureProvider.autoDispose.family<DayAttendance, DateTime?>(
+  (ref, date) => ref.watch(dmRepositoryProvider).day(date),
 );
 
 /// UC-D8: one student's history.

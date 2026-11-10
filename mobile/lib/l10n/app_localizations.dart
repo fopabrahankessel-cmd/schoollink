@@ -2041,6 +2041,114 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'About {name}'**
   String messageAbout(String name);
+
+  /// No description provided for @dayTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s attendance'**
+  String get dayTitle;
+
+  /// No description provided for @dayEntryHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Each period\'s roll call, absentees and lateness'**
+  String get dayEntryHint;
+
+  /// No description provided for @dayPeriodShort.
+  ///
+  /// In en, this message translates to:
+  /// **'P{number}'**
+  String dayPeriodShort(int number);
+
+  /// No description provided for @dayRecorded.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Recorded · nobody absent} other{Recorded · {count} absent}}'**
+  String dayRecorded(int count);
+
+  /// No description provided for @dayNotRecorded.
+  ///
+  /// In en, this message translates to:
+  /// **'Not recorded'**
+  String get dayNotRecorded;
+
+  /// No description provided for @dayUpcoming.
+  ///
+  /// In en, this message translates to:
+  /// **'Upcoming'**
+  String get dayUpcoming;
+
+  /// No description provided for @dayNotRecordedHint.
+  ///
+  /// In en, this message translates to:
+  /// **'No roll call for this period. Only the teacher can record it.'**
+  String get dayNotRecordedHint;
+
+  /// No description provided for @dayAbsentees.
+  ///
+  /// In en, this message translates to:
+  /// **'Absent in P{number}'**
+  String dayAbsentees(int number);
+
+  /// No description provided for @dayLateness.
+  ///
+  /// In en, this message translates to:
+  /// **'Lateness'**
+  String get dayLateness;
+
+  /// No description provided for @dayCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get dayCancelled;
+
+  /// No description provided for @dayLatenessCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled'**
+  String get dayLatenessCancelled;
+
+  /// No description provided for @dayTotalNotRecorded.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{period not recorded} other{periods not recorded}}'**
+  String dayTotalNotRecorded(int count);
+
+  /// No description provided for @dayTotalAbsent.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{student absent} other{students absent}}'**
+  String dayTotalAbsent(int count);
+
+  /// No description provided for @dayTotalLateness.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{late arrival} other{late arrivals}}'**
+  String dayTotalLateness(int count);
+
+  /// No description provided for @dayNoLessons.
+  ///
+  /// In en, this message translates to:
+  /// **'No lessons that day.'**
+  String get dayNoLessons;
+
+  /// No description provided for @dayNoClasses.
+  ///
+  /// In en, this message translates to:
+  /// **'No class in your blocks.'**
+  String get dayNoClasses;
+
+  /// No description provided for @dayChangeDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Change day'**
+  String get dayChangeDate;
+
+  /// No description provided for @daySeeHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'See history'**
+  String get daySeeHistory;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

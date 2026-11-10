@@ -1091,5 +1091,29 @@
         "type": "String"
       }
     }
-  }
+  },
+  "dayTitle": "Today's attendance",
+  "dayEntryHint": "Each period's roll call, absentees and lateness",
+  "dayPeriodShort": "P{number}",
+  "@dayPeriodShort": {"placeholders": {"number": {"type": "int"}}},
+  "dayRecorded": "{count, plural, =0{Recorded · nobody absent} other{Recorded · {count} absent}}",
+  "@dayRecorded": {"placeholders": {"count": {"type": "int"}}},
+  "dayNotRecorded": "Not recorded",
+  "dayUpcoming": "Upcoming",
+  "dayNotRecordedHint": "No roll call for this period. Only the teacher can record it.",
+  "dayAbsentees": "Absent in P{number}",
+  "@dayAbsentees": {"placeholders": {"number": {"type": "int"}}},
+  "dayLateness": "Lateness",
+  "dayCancelled": "Cancelled",
+  "dayLatenessCancelled": "Cancelled",
+  "dayTotalNotRecorded": "{count, plural, =1{period not recorded} other{periods not recorded}}",
+  "@dayTotalNotRecorded": {"placeholders": {"count": {"type": "int"}}},
+  "dayTotalAbsent": "{count, plural, =1{student absent} other{students absent}}",
+  "@dayTotalAbsent": {"placeholders": {"count": {"type": "int"}}},
+  "dayTotalLateness": "{count, plural, =1{late arrival} other{late arrivals}}",
+  "@dayTotalLateness": {"placeholders": {"count": {"type": "int"}}},
+  "dayNoLessons": "No lessons that day.",
+  "dayNoClasses": "No class in your blocks.",
+  "dayChangeDate": "Change day",
+  "daySeeHistory": "See history"
 }

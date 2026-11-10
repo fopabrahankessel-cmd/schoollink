@@ -1258,4 +1258,84 @@ class AppLocalizationsEn extends AppLocalizations {
   String messageAbout(String name) {
     return 'About $name';
   }
+
+  @override
+  String get dayTitle => 'Today\'s attendance';
+
+  @override
+  String get dayEntryHint => 'Each period\'s roll call, absentees and lateness';
+
+  @override
+  String dayPeriodShort(int number) {
+    return 'P$number';
+  }
+
+  @override
+  String dayRecorded(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Recorded · $count absent',
+      zero: 'Recorded · nobody absent',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dayNotRecorded => 'Not recorded';
+
+  @override
+  String get dayUpcoming => 'Upcoming';
+
+  @override
+  String get dayNotRecordedHint => 'No roll call for this period. Only the teacher can record it.';
+
+  @override
+  String dayAbsentees(int number) {
+    return 'Absent in P$number';
+  }
+
+  @override
+  String get dayLateness => 'Lateness';
+
+  @override
+  String get dayCancelled => 'Cancelled';
+
+  @override
+  String get dayLatenessCancelled => 'Cancelled';
+
+  @override
+  String dayTotalNotRecorded(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'periods not recorded',
+      one: 'period not recorded',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String dayTotalAbsent(int count) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: 'students absent', one: 'student absent');
+    return '$_temp0';
+  }
+
+  @override
+  String dayTotalLateness(int count) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: 'late arrivals', one: 'late arrival');
+    return '$_temp0';
+  }
+
+  @override
+  String get dayNoLessons => 'No lessons that day.';
+
+  @override
+  String get dayNoClasses => 'No class in your blocks.';
+
+  @override
+  String get dayChangeDate => 'Change day';
+
+  @override
+  String get daySeeHistory => 'See history';
 }

@@ -89,6 +89,39 @@ class DmHomeScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: Gap.s),
+              // UC-D10, D40: the day's attendance in the DM's classes, period by period
+              Material(
+                color: status.onHeader.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(Radii.m),
+                child: InkWell(
+                  key: const ValueKey('dm-day-entry'),
+                  borderRadius: BorderRadius.circular(Radii.m),
+                  onTap: () => context.push('/home/alerts/day'),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: Gap.m, vertical: Gap.m),
+                    child: Row(
+                      children: [
+                        Icon(Icons.event_available_outlined, color: status.onHeader),
+                        const SizedBox(width: Gap.m),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(l.dayTitle, style: theme.textTheme.titleSmall?.copyWith(color: status.onHeader)),
+                              Text(
+                                l.dayEntryHint,
+                                style: theme.textTheme.bodySmall?.copyWith(color: status.onHeaderMuted),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Icon(Icons.chevron_right_rounded, color: status.onHeaderMuted),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: Gap.s),
               // UC-D9: the day's full-day absences, as a PDF to share
               Material(
                 color: status.onHeader.withValues(alpha: 0.1),

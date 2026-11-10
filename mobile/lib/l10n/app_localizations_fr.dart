@@ -1278,4 +1278,85 @@ class AppLocalizationsFr extends AppLocalizations {
   String messageAbout(String name) {
     return 'Concerne $name';
   }
+
+  @override
+  String get dayTitle => 'Présences du jour';
+
+  @override
+  String get dayEntryHint => 'Les appels de chaque heure, les absents et les retards';
+
+  @override
+  String dayPeriodShort(int number) {
+    return 'P$number';
+  }
+
+  @override
+  String dayRecorded(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Saisie · $count absents',
+      one: 'Saisie · 1 absent',
+      zero: 'Saisie · aucun absent',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get dayNotRecorded => 'Non saisie';
+
+  @override
+  String get dayUpcoming => 'À venir';
+
+  @override
+  String get dayNotRecordedHint => 'Aucun appel pour cette heure. Seul l\'enseignant peut le faire.';
+
+  @override
+  String dayAbsentees(int number) {
+    return 'Absents en P$number';
+  }
+
+  @override
+  String get dayLateness => 'Retards';
+
+  @override
+  String get dayCancelled => 'Annulée';
+
+  @override
+  String get dayLatenessCancelled => 'Annulé';
+
+  @override
+  String dayTotalNotRecorded(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'heures non saisies',
+      one: 'heure non saisie',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String dayTotalAbsent(int count) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: 'élèves absents', one: 'élève absent');
+    return '$_temp0';
+  }
+
+  @override
+  String dayTotalLateness(int count) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: 'retards', one: 'retard');
+    return '$_temp0';
+  }
+
+  @override
+  String get dayNoLessons => 'Pas de cours ce jour-là.';
+
+  @override
+  String get dayNoClasses => 'Aucune classe dans vos blocs.';
+
+  @override
+  String get dayChangeDate => 'Changer de jour';
+
+  @override
+  String get daySeeHistory => 'Voir l\'historique';
 }
