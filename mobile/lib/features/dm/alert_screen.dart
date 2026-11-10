@@ -61,7 +61,8 @@ class _AlertBody extends ConsumerWidget {
             )
           : DecisionSheet(
               decision: decision,
-              send: (note) => repository.decide(alert.id, decision, note: note),
+              send: (note, category, measure) =>
+                  repository.decide(alert.id, decision, note: note, category: category, measure: measure),
             ),
     );
     if (!done) {

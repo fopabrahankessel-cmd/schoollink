@@ -5,6 +5,8 @@ import '../../core/theme.dart';
 import '../../l10n/app_localizations.dart';
 import '../auth/failure_text.dart';
 import '../teacher/teacher_sessions.dart' show DayTime;
+import 'discipline.dart';
+import 'discipline_sheets.dart';
 import 'dm.dart';
 
 /// Opens one of the DM's action sheets. It sends the request itself and closes with true once the
@@ -21,8 +23,9 @@ Future<bool> showActionSheet(BuildContext context, Widget sheet) async {
 }
 
 /// The frame of every sheet: a title, the fields, the error if the server refused, and one button.
-class _SheetFrame extends StatelessWidget {
-  const _SheetFrame({
+class SheetFrame extends StatelessWidget {
+  const SheetFrame({
+    super.key,
     required this.title,
     required this.children,
     required this.action,
@@ -82,7 +85,7 @@ class _SheetFrame extends StatelessWidget {
 }
 
 /// Shared by the sheets: runs [request], keeps the sheet open with the error if it fails.
-mixin _Submitting<T extends StatefulWidget> on State<T> {
+mixin Submitting<T extends StatefulWidget> on State<T> {
   bool busy = false;
   String? error;
 
@@ -114,14 +117,18 @@ class DecisionSheet extends StatefulWidget {
   const DecisionSheet({super.key, required this.decision, required this.send});
 
   final Decision decision;
-  final Future<void> Function(String note) send;
+
+  /// [category] and [measure]: for a disciplinary decision only (D37), null otherwise.
+  final Future<void> Function(String note, DisciplinaryCategory? category, DisciplinaryMeasure? measure) send;
 
   @override
   State<DecisionSheet> createState() => _DecisionSheetState();
 }
 
-class _DecisionSheetState extends State<DecisionSheet> with _Submitting {
+class _DecisionSheetState extends State<DecisionSheet> with Submitting {
   final _note = TextEditingController();
+  DisciplinaryCategory? _category;
+  DisciplinaryMeasure _measure = DisciplinaryMeasure.none;
 
   @override
   void dispose() {
@@ -133,18 +140,30 @@ class _DecisionSheetState extends State<DecisionSheet> with _Submitting {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final decision = widget.decision;
-    final complete = !decision.needsNote || _note.text.trim().isNotEmpty;
-    return _SheetFrame(
+    final disciplinary = decision == Decision.disciplinary;
+    final complete = (!decision.needsNote || _note.text.trim().isNotEmpty) && (!disciplinary || _category != null);
+    return SheetFrame(
       title: decisionLabel(decision, l),
       action: decisionLabel(decision, l),
       busy: busy,
       error: error,
-      onSubmit: complete ? () => submit(() => widget.send(_note.text)) : null,
+      onSubmit: complete
+          ? () => submit(
+              () => widget.send(_note.text, disciplinary ? _category : null, disciplinary ? _measure : null),
+            )
+          : null,
       children: [
+        // D37: the incident recorded by the decision says what kind it was and what was decided
+        if (disciplinary) ...[
+          CategoryChips(selected: _category, onSelected: (c) => setState(() => _category = c)),
+          const SizedBox(height: Gap.l),
+          MeasureField(measure: _measure, onChanged: (m) => setState(() => _measure = m)),
+          const SizedBox(height: Gap.l),
+        ],
         TextField(
           key: const ValueKey('decision-note'),
           controller: _note,
-          autofocus: true,
+          autofocus: !disciplinary,
           minLines: 3,
           maxLines: 6,
           maxLength: 500,
@@ -187,7 +206,7 @@ class SummonSheet extends StatefulWidget {
   State<SummonSheet> createState() => _SummonSheetState();
 }
 
-class _SummonSheetState extends State<SummonSheet> with _Submitting {
+class _SummonSheetState extends State<SummonSheet> with Submitting {
   final _reason = TextEditingController();
   Meeting _meeting = const Meeting();
 
@@ -261,7 +280,7 @@ class _SummonSheetState extends State<SummonSheet> with _Submitting {
           ),
         );
 
-    return _SheetFrame(
+    return SheetFrame(
       title: l.summonTitle(widget.studentName),
       action: l.sendSummons,
       busy: busy,
@@ -315,7 +334,7 @@ class JustifySheet extends StatefulWidget {
   State<JustifySheet> createState() => _JustifySheetState();
 }
 
-class _JustifySheetState extends State<JustifySheet> with _Submitting {
+class _JustifySheetState extends State<JustifySheet> with Submitting {
   final _note = TextEditingController();
   JustificationReason? _reason;
 
@@ -331,7 +350,7 @@ class _JustifySheetState extends State<JustifySheet> with _Submitting {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final reason = _reason;
-    return _SheetFrame(
+    return SheetFrame(
       title: l.justifyCount(widget.count),
       action: l.justify,
       busy: busy,
@@ -388,7 +407,7 @@ class CancelRecordSheet extends StatefulWidget {
   State<CancelRecordSheet> createState() => _CancelRecordSheetState();
 }
 
-class _CancelRecordSheetState extends State<CancelRecordSheet> with _Submitting {
+class _CancelRecordSheetState extends State<CancelRecordSheet> with Submitting {
   final _reason = TextEditingController();
 
   @override
@@ -401,7 +420,7 @@ class _CancelRecordSheetState extends State<CancelRecordSheet> with _Submitting 
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    return _SheetFrame(
+    return SheetFrame(
       title: l.cancelRecordTitle,
       action: l.confirmCancelRecord,
       destructive: true,

@@ -1639,6 +1639,204 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not open the Phone app.'**
   String get contactsCannotOpen;
+
+  /// UC-D5, D37: the student page tab with the disciplinary records.
+  ///
+  /// In en, this message translates to:
+  /// **'Discipline'**
+  String get disciplineTab;
+
+  /// No description provided for @recordIncident.
+  ///
+  /// In en, this message translates to:
+  /// **'Record an incident'**
+  String get recordIncident;
+
+  /// No description provided for @incidentRecorded.
+  ///
+  /// In en, this message translates to:
+  /// **'Incident recorded.'**
+  String get incidentRecorded;
+
+  /// No description provided for @noIncidents.
+  ///
+  /// In en, this message translates to:
+  /// **'No incidents recorded.'**
+  String get noIncidents;
+
+  /// No description provided for @noIncidentsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Record an incident to keep track of it in the student\'s file.'**
+  String get noIncidentsBody;
+
+  /// No description provided for @incidentOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get incidentOpen;
+
+  /// No description provided for @incidentClosed.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get incidentClosed;
+
+  /// No description provided for @closeIncident.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get closeIncident;
+
+  /// No description provided for @cancelIncident.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel the incident'**
+  String get cancelIncident;
+
+  /// No description provided for @incidentClosedDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Incident closed.'**
+  String get incidentClosedDone;
+
+  /// No description provided for @incidentCancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'Incident cancelled.'**
+  String get incidentCancelled;
+
+  /// No description provided for @incidentCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Kind of incident'**
+  String get incidentCategory;
+
+  /// No description provided for @incidentMeasure.
+  ///
+  /// In en, this message translates to:
+  /// **'Measure taken'**
+  String get incidentMeasure;
+
+  /// No description provided for @incidentDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Date of the incident'**
+  String get incidentDate;
+
+  /// No description provided for @incidentDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'What happened'**
+  String get incidentDescription;
+
+  /// No description provided for @closeNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Closing note (optional)'**
+  String get closeNote;
+
+  /// No description provided for @incidentRecordedBy.
+  ///
+  /// In en, this message translates to:
+  /// **'Recorded by {name}'**
+  String incidentRecordedBy(String name);
+
+  /// No description provided for @incidentCloseNote.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed: {note}'**
+  String incidentCloseNote(String note);
+
+  /// No description provided for @categoryBehaviour.
+  ///
+  /// In en, this message translates to:
+  /// **'Behaviour'**
+  String get categoryBehaviour;
+
+  /// No description provided for @categoryInsolence.
+  ///
+  /// In en, this message translates to:
+  /// **'Insolence'**
+  String get categoryInsolence;
+
+  /// No description provided for @categoryFight.
+  ///
+  /// In en, this message translates to:
+  /// **'Fight'**
+  String get categoryFight;
+
+  /// No description provided for @categoryAbsenteeism.
+  ///
+  /// In en, this message translates to:
+  /// **'Absenteeism'**
+  String get categoryAbsenteeism;
+
+  /// No description provided for @categoryCheating.
+  ///
+  /// In en, this message translates to:
+  /// **'Cheating'**
+  String get categoryCheating;
+
+  /// No description provided for @categoryDress.
+  ///
+  /// In en, this message translates to:
+  /// **'Dress'**
+  String get categoryDress;
+
+  /// No description provided for @categoryPhone.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone'**
+  String get categoryPhone;
+
+  /// No description provided for @categoryDamage.
+  ///
+  /// In en, this message translates to:
+  /// **'Damage'**
+  String get categoryDamage;
+
+  /// No description provided for @categoryOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get categoryOther;
+
+  /// No description provided for @measureNone.
+  ///
+  /// In en, this message translates to:
+  /// **'None'**
+  String get measureNone;
+
+  /// No description provided for @measureWarning.
+  ///
+  /// In en, this message translates to:
+  /// **'Warning'**
+  String get measureWarning;
+
+  /// No description provided for @measureDetention.
+  ///
+  /// In en, this message translates to:
+  /// **'Detention'**
+  String get measureDetention;
+
+  /// No description provided for @measureSuspension.
+  ///
+  /// In en, this message translates to:
+  /// **'Suspension'**
+  String get measureSuspension;
+
+  /// No description provided for @measureOther.
+  ///
+  /// In en, this message translates to:
+  /// **'Other measure'**
+  String get measureOther;
+
+  /// No description provided for @incidentDateOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Date of the incident: {date}'**
+  String incidentDateOn(String date);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

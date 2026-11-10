@@ -1029,4 +1029,109 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get contactsCannotOpen => 'Impossible d\'ouvrir l\'application Téléphone.';
+
+  @override
+  String get disciplineTab => 'Discipline';
+
+  @override
+  String get recordIncident => 'Signaler un incident';
+
+  @override
+  String get incidentRecorded => 'Incident enregistré.';
+
+  @override
+  String get noIncidents => 'Aucun incident enregistré.';
+
+  @override
+  String get noIncidentsBody => 'Signalez un incident pour en garder la trace dans le dossier de l\'élève.';
+
+  @override
+  String get incidentOpen => 'En cours';
+
+  @override
+  String get incidentClosed => 'Clôturé';
+
+  @override
+  String get closeIncident => 'Clôturer';
+
+  @override
+  String get cancelIncident => 'Annuler l\'incident';
+
+  @override
+  String get incidentClosedDone => 'Incident clôturé.';
+
+  @override
+  String get incidentCancelled => 'Incident annulé.';
+
+  @override
+  String get incidentCategory => 'Type d\'incident';
+
+  @override
+  String get incidentMeasure => 'Mesure prise';
+
+  @override
+  String get incidentDate => 'Date de l\'incident';
+
+  @override
+  String get incidentDescription => 'Ce qui s\'est passé';
+
+  @override
+  String get closeNote => 'Note de clôture (facultative)';
+
+  @override
+  String incidentRecordedBy(String name) {
+    return 'Signalé par $name';
+  }
+
+  @override
+  String incidentCloseNote(String note) {
+    return 'Clôture : $note';
+  }
+
+  @override
+  String get categoryBehaviour => 'Comportement';
+
+  @override
+  String get categoryInsolence => 'Insolence';
+
+  @override
+  String get categoryFight => 'Bagarre';
+
+  @override
+  String get categoryAbsenteeism => 'Absentéisme';
+
+  @override
+  String get categoryCheating => 'Tricherie';
+
+  @override
+  String get categoryDress => 'Tenue';
+
+  @override
+  String get categoryPhone => 'Téléphone';
+
+  @override
+  String get categoryDamage => 'Dégradation';
+
+  @override
+  String get categoryOther => 'Autre';
+
+  @override
+  String get measureNone => 'Aucune';
+
+  @override
+  String get measureWarning => 'Avertissement';
+
+  @override
+  String get measureDetention => 'Retenue';
+
+  @override
+  String get measureSuspension => 'Exclusion temporaire';
+
+  @override
+  String get measureOther => 'Autre mesure';
+
+  @override
+  String incidentDateOn(String date) {
+    return 'Date de l\'incident : $date';
+  }
 }

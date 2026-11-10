@@ -828,5 +828,62 @@
       }
     }
   },
-  "contactsCannotOpen": "Could not open the Phone app."
+  "contactsCannotOpen": "Could not open the Phone app.",
+  "disciplineTab": "Discipline",
+  "@disciplineTab": {
+    "description": "UC-D5, D37: the student page tab with the disciplinary records."
+  },
+  "recordIncident": "Record an incident",
+  "incidentRecorded": "Incident recorded.",
+  "noIncidents": "No incidents recorded.",
+  "noIncidentsBody": "Record an incident to keep track of it in the student's file.",
+  "incidentOpen": "Open",
+  "incidentClosed": "Closed",
+  "closeIncident": "Close",
+  "cancelIncident": "Cancel the incident",
+  "incidentClosedDone": "Incident closed.",
+  "incidentCancelled": "Incident cancelled.",
+  "incidentCategory": "Kind of incident",
+  "incidentMeasure": "Measure taken",
+  "incidentDate": "Date of the incident",
+  "incidentDescription": "What happened",
+  "closeNote": "Closing note (optional)",
+  "incidentRecordedBy": "Recorded by {name}",
+  "@incidentRecordedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "incidentCloseNote": "Closed: {note}",
+  "@incidentCloseNote": {
+    "placeholders": {
+      "note": {
+        "type": "String"
+      }
+    }
+  },
+  "categoryBehaviour": "Behaviour",
+  "categoryInsolence": "Insolence",
+  "categoryFight": "Fight",
+  "categoryAbsenteeism": "Absenteeism",
+  "categoryCheating": "Cheating",
+  "categoryDress": "Dress",
+  "categoryPhone": "Phone",
+  "categoryDamage": "Damage",
+  "categoryOther": "Other",
+  "measureNone": "None",
+  "measureWarning": "Warning",
+  "measureDetention": "Detention",
+  "measureSuspension": "Suspension",
+  "measureOther": "Other measure",
+  "incidentDateOn": "Date of the incident: {date}",
+  "@incidentDateOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  }
 }

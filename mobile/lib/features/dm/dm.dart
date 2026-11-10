@@ -8,6 +8,7 @@ import '../../core/providers.dart';
 import '../parent/parent.dart' show HistoryDay;
 import '../teacher/attendance.dart' show isoDate;
 import '../teacher/teacher_sessions.dart' show DayTime;
+import 'discipline.dart';
 import 'full_day/full_day_models.dart';
 
 /// The three threshold rules (BR-16); [other] for a rule this version of the app does not know.
@@ -217,12 +218,63 @@ class DmRepository {
   }
 
   /// BR-18, D30, D31: the DM's decision; SUMMON stores the summons and closes the alert at once.
-  Future<void> decide(String alertId, Decision decision, {String? note, Meeting meeting = const Meeting()}) => _call(
+  /// D37: [category] and [measure] go with a disciplinary decision only.
+  Future<void> decide(
+    String alertId,
+    Decision decision, {
+    String? note,
+    Meeting meeting = const Meeting(),
+    DisciplinaryCategory? category,
+    DisciplinaryMeasure? measure,
+  }) => _call(
     () => _dio.post<void>(
       '/alerts/$alertId/decision',
-      data: {'decision': decision.wire, 'note': ?_blankToNull(note), ...meeting.toJson()},
+      data: {
+        'decision': decision.wire,
+        'note': ?_blankToNull(note),
+        ...meeting.toJson(),
+        'category': ?category?.wire,
+        'measure': ?measure?.wire,
+      },
     ),
   );
+
+  /// UC-D5, D37: the student's incidents, newest first, without cancelled ones.
+  Future<List<DisciplinaryRecord>> disciplinaryRecords(String studentId) async {
+    final response = await _call(() => _dio.get<List<dynamic>>('/students/$studentId/disciplinary-records'));
+    return [for (final json in response.data!.cast<Map<String, dynamic>>()) DisciplinaryRecord.fromJson(json)];
+  }
+
+  /// UC-D5, D37: records an incident; [occurredOn] is a school day, at most 30 days back.
+  Future<DisciplinaryRecord> recordIncident(
+    String studentId, {
+    required DisciplinaryCategory category,
+    required DisciplinaryMeasure measure,
+    required DateTime occurredOn,
+    required String description,
+  }) async {
+    final response = await _call(
+      () => _dio.post<Map<String, dynamic>>(
+        '/students/$studentId/disciplinary-records',
+        data: {
+          'category': category.wire,
+          'measure': measure.wire,
+          'occurredOn': isoDate(occurredOn),
+          'description': description.trim(),
+        },
+      ),
+    );
+    return DisciplinaryRecord.fromJson(response.data!);
+  }
+
+  /// D37: closes an open incident, with an optional note.
+  Future<void> closeIncident(String id, {String? note}) => _call(
+    () => _dio.post<void>('/disciplinary-records/$id/close', data: {'note': ?_blankToNull(note)}),
+  );
+
+  /// D37: cancels an incident recorded by mistake, with the reason.
+  Future<void> cancelIncident(String id, String reason) =>
+      _call(() => _dio.post<void>('/disciplinary-records/$id/cancel', data: {'reason': reason.trim()}));
 
   /// UC-D8, D34: the last 90 days of the student.
   Future<StudentHistory> history(String studentId) async {

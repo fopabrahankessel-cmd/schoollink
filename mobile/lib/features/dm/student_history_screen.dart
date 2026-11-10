@@ -12,6 +12,7 @@ import '../lateness/lateness.dart' show latenessDayProvider;
 import '../parent/inbox_screen.dart' show dayHeading;
 import '../parent/parent.dart' show HistoryDay;
 import 'dm.dart';
+import 'discipline_tab.dart';
 import 'dm_sheets.dart';
 
 /// A record of the history: an absent lesson or a lateness, apart (BR-8, BR-9).
@@ -29,8 +30,25 @@ class StudentHistoryScreen extends ConsumerStatefulWidget {
   ConsumerState<StudentHistoryScreen> createState() => _StudentHistoryScreenState();
 }
 
-class _StudentHistoryScreenState extends ConsumerState<StudentHistoryScreen> {
+class _StudentHistoryScreenState extends ConsumerState<StudentHistoryScreen> with SingleTickerProviderStateMixin {
   final Set<_Record> _selected = {};
+
+  /// UC-D5, D37: History, then Discipline.
+  late final TabController _tabs = TabController(length: 2, vsync: this)..addListener(_tabChanged);
+
+  void _tabChanged() {
+    if (!_tabs.indexIsChanging) {
+      setState(() {});
+    }
+  }
+
+  @override
+  void dispose() {
+    _tabs
+      ..removeListener(_tabChanged)
+      ..dispose();
+    super.dispose();
+  }
 
   void _toggle(_Record record) =>
       setState(() => _selected.contains(record) ? _selected.remove(record) : _selected.add(record));
@@ -122,8 +140,10 @@ class _StudentHistoryScreenState extends ConsumerState<StudentHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
+    final status = StatusColors.of(context);
     final history = ref.watch(studentHistoryProvider(widget.studentId));
     final loaded = history.value;
+    final onHistory = _tabs.index == 0;
     return Scaffold(
       appBar: AppBar(
         title: Text(loaded == null ? l.historyTitle : loaded.fullName),
@@ -136,19 +156,44 @@ class _StudentHistoryScreenState extends ConsumerState<StudentHistoryScreen> {
               onPressed: () => _summon(loaded),
             ),
         ],
+        bottom: TabBar(
+          controller: _tabs,
+          labelColor: status.onHeader,
+          unselectedLabelColor: status.onHeaderMuted,
+          indicatorColor: status.onHeader,
+          dividerColor: Colors.transparent,
+          tabs: [
+            Tab(text: l.tabHistory),
+            Tab(text: l.disciplineTab),
+          ],
+        ),
       ),
-      body: switch (history) {
-        AsyncValue(value: final history?) => RefreshIndicator(
-          onRefresh: () => ref.refresh(studentHistoryProvider(widget.studentId).future).then((_) {}, onError: (_) {}),
-          child: _HistoryList(history: history, selected: _selected, onToggle: _toggle, onCancel: _cancel),
-        ),
-        AsyncError(:final error) => FailureView(
-          message: failureText(error, l),
-          onRetry: () => ref.invalidate(studentHistoryProvider(widget.studentId)),
-        ),
-        _ => const Skeleton(child: SkeletonRows(count: 5)),
-      },
-      bottomNavigationBar: _selected.isEmpty
+      body: TabBarView(
+        controller: _tabs,
+        children: [
+          switch (history) {
+            AsyncValue(value: final history?) => RefreshIndicator(
+              onRefresh: () =>
+                  ref.refresh(studentHistoryProvider(widget.studentId).future).then((_) {}, onError: (_) {}),
+              child: _HistoryList(history: history, selected: _selected, onToggle: _toggle, onCancel: _cancel),
+            ),
+            AsyncError(:final error) => FailureView(
+              message: failureText(error, l),
+              onRetry: () => ref.invalidate(studentHistoryProvider(widget.studentId)),
+            ),
+            _ => const Skeleton(child: SkeletonRows(count: 5)),
+          },
+          DisciplineTab(studentId: widget.studentId),
+        ],
+      ),
+      floatingActionButton: onHistory
+          ? null
+          : FloatingActionButton.extended(
+              onPressed: () => recordIncident(context, ref, widget.studentId),
+              icon: const Icon(Icons.add_rounded),
+              label: Text(l.recordIncident),
+            ),
+      bottomNavigationBar: !onHistory || _selected.isEmpty
           ? null
           : SafeArea(
               child: Padding(
