@@ -281,6 +281,23 @@ void main() {
     expect(server.sent('POST /messages/preview'), isEmpty, reason: 'nothing to preview');
   });
 
+  testWidgets('send waits for the preview of the message as it now stands', (tester) async {
+    await openClassComposer(tester);
+    await typeAndWait(tester, 'Réunion vendredi.');
+    expect(enabled(tester), isTrue);
+
+    // SMS turned on: the counts on screen are still those without SMS
+    await tester.ensureVisible(find.byKey(const ValueKey('message-sms')));
+    await tester.tap(find.byKey(const ValueKey('message-sms')));
+    await tester.pump();
+    expect(enabled(tester), isFalse, reason: 'the preview is for the message without SMS');
+
+    await tester.pump(const Duration(milliseconds: 400));
+    await tester.pumpAndSettle();
+    expect(find.text("4 parents : 2 par l'app, 2 par SMS"), findsOneWidget);
+    expect(enabled(tester), isTrue);
+  });
+
   testWidgets('a second tap during sending sends once', (tester) async {
     final answer = Completer<Reply>();
     server.on('POST /messages', (_) => answer.future);

@@ -165,6 +165,10 @@ class ParentMessages {
 		if (body.length() > MAX_BODY) {
 			throw ApiException.invalid("messages.body_too_long", "body", MAX_BODY);
 		}
+		// D38: two sends of the same id that overlap (a retry after the app timed out) wait for each
+		// other here, so the second sees the first's committed row and answers like a repeat
+		jdbc.queryForList("SELECT pg_advisory_xact_lock(hashtextextended(:id, 0))",
+				Map.of("id", draft.id().toString()));
 		Optional<Sent> again = repeated(school, kind, target, draft, body);
 		if (again.isPresent()) {
 			return again.get();

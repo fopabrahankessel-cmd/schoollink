@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -39,6 +40,9 @@ class _MessageComposerScreenState extends ConsumerState<MessageComposerScreen> {
   Timer? _debounce;
   int _asked = 0;
   MessagePreview? _preview;
+
+  /// The draft [_preview] was asked for: Send waits until it is the draft on screen (D38).
+  String? _previewFor;
   bool _previewing = false;
   Object? _previewError;
   bool _sending = false;
@@ -78,14 +82,19 @@ class _MessageComposerScreenState extends ConsumerState<MessageComposerScreen> {
     }
   }
 
+  /// What the preview depends on, without the id.
+  String _key(MessageDraft draft) => jsonEncode(draft.toJson()..remove('id'));
+
   Future<void> _askPreview() async {
     final asked = ++_asked;
+    final draft = _draft;
     setState(() => _previewing = true);
     try {
-      final preview = await ref.read(dmRepositoryProvider).previewMessage(_draft);
+      final preview = await ref.read(dmRepositoryProvider).previewMessage(draft);
       if (mounted && asked == _asked) {
         setState(() {
           _preview = preview;
+          _previewFor = _key(draft);
           _previewError = null;
           _previewing = false;
         });
@@ -106,6 +115,7 @@ class _MessageComposerScreenState extends ConsumerState<MessageComposerScreen> {
         _hasTarget &&
         _hasText &&
         preview != null &&
+        _previewFor == _key(_draft) &&
         !preview.overCap &&
         preview.byApp + preview.bySms > 0;
   }
