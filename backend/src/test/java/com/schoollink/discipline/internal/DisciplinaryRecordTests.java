@@ -228,7 +228,134 @@ class DisciplinaryRecordTests {
 			.hasMessageContaining("cannot change");
 	}
 
+	// Closing and cancelling (Task 2)
+
+	@TestFactory
+	Stream<DynamicTest> onlyTheStudentsDmCloses() {
+		return PermissionMatrix.row("POST /disciplinary-records/{id}/close", w -> close(stored(), "Parents reçus"))
+			.expect(200, DM_1)
+			.expect(404, DM_2)
+			.expect(403, ADMIN_X, ADMIN_Y, TEACHER_A, ASSISTANT_DM_1, COUNSELLOR_X, PARENT_A, RESEARCHER)
+			.expect(401, ANONYMOUS)
+			.tests(mockMvc, world);
+	}
+
+	@TestFactory
+	Stream<DynamicTest> onlyTheStudentsDmCancels() {
+		return PermissionMatrix.row("POST /disciplinary-records/{id}/cancel", w -> cancel(stored(), "Erreur d'élève"))
+			.expect(204, DM_1)
+			.expect(404, DM_2)
+			.expect(403, ADMIN_X, ADMIN_Y, TEACHER_A, ASSISTANT_DM_1, COUNSELLOR_X, PARENT_A, RESEARCHER)
+			.expect(401, ANONYMOUS)
+			.tests(mockMvc, world);
+	}
+
+	@Test
+	void closingKeepsTheNoteAndIsAudited() throws Exception { // NFR-11
+		UUID id = stored();
+
+		perform(DM_1, close(id, "  Parents reçus  ")).andExpect(status().isOk())
+			.andExpect(jsonPath("$.status").value("CLOSED"))
+			.andExpect(jsonPath("$.closeNote").value("Parents reçus"))
+			.andExpect(jsonPath("$.closedAt").value(NOW.toString()));
+
+		Map<String, Object> audit = jdbc.queryForMap("""
+				SELECT actor_id, before ->> 'status' AS before, after ->> 'status' AS after FROM audit_log
+				WHERE entity = 'disciplinary_record' AND entity_id = ? AND action = 'UPDATE'""", id.toString());
+		assertThat(audit).containsEntry("actor_id", world.user(DM_1))
+			.containsEntry("before", "OPEN")
+			.containsEntry("after", "CLOSED");
+	}
+
+	@Test
+	void aBlankNoteClosesWithoutANote() throws Exception {
+		perform(DM_1, close(stored(), "   ")).andExpect(status().isOk())
+			.andExpect(jsonPath("$.closeNote").isEmpty());
+	}
+
+	@Test
+	void closingTwiceIsAConflictAndAuditsOnce() throws Exception { // Review Focus 3
+		UUID id = stored();
+		perform(DM_1, close(id, null)).andExpect(status().isOk());
+
+		perform(DM_1, close(id, null)).andExpect(status().isConflict())
+			.andExpect(jsonPath("$.code").value("discipline.already_closed"));
+		assertThat(jdbc.queryForObject("""
+				SELECT count(*) FROM audit_log WHERE entity = 'disciplinary_record' AND entity_id = ? AND action = 'UPDATE'""",
+				Integer.class, id.toString())).isOne();
+	}
+
+	@Test
+	void aClosedRecordCanStillBeCancelled() throws Exception {
+		UUID id = stored();
+		perform(DM_1, close(id, null)).andExpect(status().isOk());
+
+		perform(DM_1, cancel(id, "Mauvais élève")).andExpect(status().isNoContent());
+	}
+
+	@Test
+	void cancellingNeedsAReasonAndHidesTheRecord() throws Exception { // NFR-11
+		UUID id = stored();
+
+		perform(DM_1, cancel(id, "  ")).andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.code").value("discipline.reason_required"))
+			.andExpect(jsonPath("$.field").value("reason"));
+		perform(DM_1, cancel(id, "x".repeat(501))).andExpect(status().isBadRequest());
+		perform(DM_1, cancel(id, "  Erreur d'élève  ")).andExpect(status().isNoContent());
+
+		perform(DM_1, list(world.studentA)).andExpect(jsonPath("$.length()").value(0));
+		Map<String, Object> audit = jdbc.queryForMap("""
+				SELECT actor_id, after ->> 'cancelReason' AS reason FROM audit_log
+				WHERE entity = 'disciplinary_record' AND entity_id = ? AND action = 'CANCEL'""", id.toString());
+		assertThat(audit).containsEntry("actor_id", world.user(DM_1)).containsEntry("reason", "Erreur d'élève");
+	}
+
+	@Test
+	void aCancelledRecordIsNotFoundForCloseOrCancel() throws Exception {
+		UUID id = stored();
+		perform(DM_1, cancel(id, "Erreur")).andExpect(status().isNoContent());
+
+		perform(DM_1, close(id, null)).andExpect(status().isNotFound());
+		perform(DM_1, cancel(id, "Encore")).andExpect(status().isNotFound());
+	}
+
+	@Test
+	void theOldBlocksDmCannotCloseAfterTheStudentMoved() throws Exception { // Review Focus 2
+		UUID id = stored();
+		jdbc.update("UPDATE student SET class_id = ? WHERE id = ?", world.classB, world.studentA);
+
+		perform(DM_1, close(id, null)).andExpect(status().isNotFound());
+		perform(DM_1, cancel(id, "Erreur")).andExpect(status().isNotFound());
+		perform(DM_2, close(id, null)).andExpect(status().isOk());
+	}
+
+	@Test
+	void anotherSchoolsRecordIsNotFound() throws Exception { // NFR-8
+		perform(DM_1, close(UUID.randomUUID(), null)).andExpect(status().isNotFound());
+	}
+
 	// Helpers
+
+	/** An OPEN record of student A, written as the DM records it. */
+	private UUID stored() {
+		return jdbc.queryForObject("""
+				INSERT INTO disciplinary_record (school_id, student_id, category, measure, occurred_on, description,
+				       recorded_by, recorded_at)
+				VALUES (?, ?, 'FIGHT', 'NONE', ?, 'Bagarre', ?, ?) RETURNING id""", UUID.class, world.schoolX,
+				world.studentA, TODAY, world.user(DM_1), Timestamp.from(NOW));
+	}
+
+	private MockHttpServletRequestBuilder close(UUID id, String note) {
+		Map<String, Object> body = new HashMap<>();
+		body.put("note", note);
+		return post("/api/v1/disciplinary-records/{id}/close", id).contentType(MediaType.APPLICATION_JSON)
+			.content(json.writeValueAsString(body));
+	}
+
+	private MockHttpServletRequestBuilder cancel(UUID id, String reason) {
+		return post("/api/v1/disciplinary-records/{id}/cancel", id).contentType(MediaType.APPLICATION_JSON)
+			.content(json.writeValueAsString(Map.of("reason", reason)));
+	}
 
 	private static Map<String, Object> fight() {
 		return Map.of("category", "FIGHT", "description", "Bagarre à la récréation");

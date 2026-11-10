@@ -24,6 +24,13 @@ class DisciplinaryRecordController {
 		this.records = records;
 	}
 
+	/** {@code note} optional. */
+	record CloseRequest(String note) {
+	}
+
+	record CancelRequest(String reason) {
+	}
+
 	@GetMapping("/api/v1/students/{id}/disciplinary-records")
 	List<RecordView> list(@AuthenticationPrincipal CurrentUser user, @PathVariable UUID id) {
 		return records.list(user, id);
@@ -34,6 +41,18 @@ class DisciplinaryRecordController {
 	RecordView create(@AuthenticationPrincipal CurrentUser user, @PathVariable UUID id,
 			@RequestBody IncidentRequest body) {
 		return records.create(user, id, body);
+	}
+
+	@PostMapping("/api/v1/disciplinary-records/{id}/close")
+	RecordView close(@AuthenticationPrincipal CurrentUser user, @PathVariable UUID id,
+			@RequestBody(required = false) CloseRequest body) {
+		return records.close(user, id, body == null ? null : body.note());
+	}
+
+	@PostMapping("/api/v1/disciplinary-records/{id}/cancel")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	void cancel(@AuthenticationPrincipal CurrentUser user, @PathVariable UUID id, @RequestBody CancelRequest body) {
+		records.cancel(user, id, body.reason());
 	}
 
 }

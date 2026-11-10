@@ -313,6 +313,8 @@ One REST API under `/api/v1`, secured by JWT; the server derives the school and 
 | Discipline | `POST /summons` | DM | Summon a parent; from an alert, decision SUMMON (D31) |
 | Discipline | `GET /students/{id}/disciplinary-records` | DM, Admin | A student's records, newest incident first, without cancelled ones (D37) |
 | Discipline | `POST /students/{id}/disciplinary-records` | DM | Record an incident: category, measure, date at most 30 days back, description (D37) |
+| Discipline | `POST /disciplinary-records/{id}/close` | DM | Close an open record once, with an optional note (D37) |
+| Discipline | `POST /disciplinary-records/{id}/cancel` | DM | Cancel a record made by mistake, with a reason; it is hidden from then on (D37) |
 | Counselling | `GET /cases`, `POST /cases`, `POST /cases/{id}/notes` | Counsellor | Case management |
 | Parent | `GET /me/children`, `GET /children/{id}/history` | Parent | Children and history |
 | Parent | `GET /me/children/{id}/contacts` | Parent | The child's class, teachers and the block's DMs, with names, subjects, roles and phones (UC-P5, D39) |
