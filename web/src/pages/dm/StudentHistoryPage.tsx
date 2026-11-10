@@ -6,18 +6,20 @@ import {
   IconButton,
   Paper,
   Stack,
+  Tab,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
+  Tabs,
   Tooltip,
   Typography,
 } from '@mui/material'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useParams } from 'react-router'
+import { Link, useMatch, useParams } from 'react-router'
 import {
   DM_PATHS,
   hm,
@@ -33,9 +35,10 @@ import { PageHeader } from '../../components/PageHeader'
 import { Pill } from '../../components/Pill'
 import { formatDate } from '../../format'
 import { useResource } from '../../hooks/useResource'
-import { EnvelopeSimpleIcon, ProhibitIcon, StudentIcon } from '../../icons'
+import { EnvelopeSimpleIcon, PlusIcon, ProhibitIcon, StudentIcon } from '../../icons'
 import { tokens } from '../../theme'
 import { CancelRecordDialog, JustifyDialog, SummonDialog } from './dialogs'
+import { DisciplineTab } from './DisciplineTab'
 
 /** One line of the history: an absence from one lesson, or one arrival late at the gate (BR-8, BR-9). */
 interface Row {
@@ -50,7 +53,8 @@ interface Row {
 /**
  * UC-D8: one student's absences and lateness, newest first. The DM justifies several records at
  * once (UC-D1, BR-11, D26), cancels one entered by mistake (UC-D6, BR-13, D27), or summons the
- * parents (UC-D3, D31). Cancelled records are gone from the history (BR-15).
+ * parents (UC-D3, D31). Cancelled records are gone from the history (BR-15). The Discipline tab, at
+ * its own address, holds the student's disciplinary incidents (UC-D5, D37).
  */
 export function StudentHistoryPage() {
   const { id = '' } = useParams()
@@ -62,6 +66,9 @@ export function StudentHistoryPage() {
   const [cancelling, setCancelling] = useState<Row | null>(null)
   const [summoning, setSummoning] = useState(false)
   const [done, setDone] = useState<string | null>(null)
+  const [recording, setRecording] = useState(false)
+  const discipline = useMatch('/students/:id/discipline') !== null
+  const base = `/students/${encodeURIComponent(id)}`
 
   const student = history.data
   const rows = student ? toRows(student, (key, values) => t(key, values)) : []
@@ -129,106 +136,121 @@ export function StudentHistoryPage() {
         back={{ to: '/students', label: t('dm.studentsTitle') }}
         actions={
           student && (
-            <Button variant="outlined" startIcon={<EnvelopeSimpleIcon size={18} aria-hidden />} onClick={() => setSummoning(true)}>
-              {t('dm.summonParents')}
-            </Button>
+            <>
+              <Button variant="outlined" startIcon={<EnvelopeSimpleIcon size={18} aria-hidden />} onClick={() => setSummoning(true)}>
+                {t('dm.summonParents')}
+              </Button>
+              {discipline && (
+                <Button variant="contained" startIcon={<PlusIcon size={18} aria-hidden />} onClick={() => setRecording(true)}>
+                  {t('dm.recordIncident')}
+                </Button>
+              )}
+            </>
           )
         }
       />
-      <Stack spacing={2}>
-        {done && (
-          <Alert severity="success" onClose={() => setDone(null)}>
-            {done}
-          </Alert>
-        )}
-        {history.error !== null && <Alert severity="error">{errorMessage(history.error, t)}</Alert>}
-        {student && (
-          <>
-            <Box
-              component="dl"
-              sx={{ m: 0, display: 'grid', gap: 1.5, gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' } }}
-            >
-              <Figure label={t('dm.totals.absentPeriods')} value={student.totals.absentPeriods} />
-              <Figure label={t('dm.totals.unjustifiedAbsentPeriods')} value={student.totals.unjustifiedAbsentPeriods} />
-              <Figure label={t('dm.totals.lateness')} value={student.totals.lateness} />
-              <Figure label={t('dm.totals.unjustifiedLateness')} value={student.totals.unjustifiedLateness} />
-            </Box>
+      <Tabs value={discipline ? 'discipline' : 'history'} aria-label={name || t('dm.historyTitle')} sx={{ mb: 2 }}>
+        <Tab value="history" label={t('dm.tabHistory')} component={Link} to={base} />
+        <Tab value="discipline" label={t('dm.tabDiscipline')} component={Link} to={`${base}/discipline`} />
+      </Tabs>
+      {discipline ? (
+        <DisciplineTab studentId={id} recording={recording} onRecordingDone={() => setRecording(false)} />
+      ) : (
+        <Stack spacing={2}>
+          {done && (
+            <Alert severity="success" onClose={() => setDone(null)}>
+              {done}
+            </Alert>
+          )}
+          {history.error !== null && <Alert severity="error">{errorMessage(history.error, t)}</Alert>}
+          {student && (
+            <>
+              <Box
+                component="dl"
+                sx={{ m: 0, display: 'grid', gap: 1.5, gridTemplateColumns: { xs: '1fr 1fr', md: 'repeat(4, 1fr)' } }}
+              >
+                <Figure label={t('dm.totals.absentPeriods')} value={student.totals.absentPeriods} />
+                <Figure label={t('dm.totals.unjustifiedAbsentPeriods')} value={student.totals.unjustifiedAbsentPeriods} />
+                <Figure label={t('dm.totals.lateness')} value={student.totals.lateness} />
+                <Figure label={t('dm.totals.unjustifiedLateness')} value={student.totals.unjustifiedLateness} />
+              </Box>
 
-            {rows.length === 0 ? (
-              <Paper variant="outlined" sx={{ px: 2, py: 5, textAlign: 'center' }}>
-                <Typography color="text.secondary">{t('dm.noRecords')}</Typography>
-              </Paper>
-            ) : (
-              <Stack spacing={1}>
-                <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', gap: 2, minHeight: 40 }}>
-                  <Typography color="text.secondary" aria-live="polite">
-                    {chosen.length > 0 ? t('dm.selected', { count: chosen.length }) : t('dm.selectHint')}
-                  </Typography>
-                  <Button variant="contained" disabled={chosen.length === 0} onClick={() => setJustifying(true)}>
-                    {t('dm.justifySelected')}
-                  </Button>
-                </Stack>
-                <TableContainer component={Paper} variant="outlined">
-                  <Table size="small" sx={{ minWidth: 560 }}>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell padding="checkbox">
-                          <Checkbox
-                            checked={allChosen}
-                            indeterminate={chosen.length > 0 && !allChosen}
-                            disabled={open.length === 0}
-                            onChange={() => setSelected(allChosen ? new Set() : new Set(open.map((r) => r.key)))}
-                            slotProps={{ input: { 'aria-label': t('dm.selectAll') } }}
-                          />
-                        </TableCell>
-                        <TableCell>{t('dm.date')}</TableCell>
-                        <TableCell>{t('dm.record')}</TableCell>
-                        <TableCell>{t('dm.status')}</TableCell>
-                        <TableCell align="right">{t('crud.actions')}</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {rows.map((row) => (
-                        <TableRow key={row.key} selected={selected.has(row.key)}>
+              {rows.length === 0 ? (
+                <Paper variant="outlined" sx={{ px: 2, py: 5, textAlign: 'center' }}>
+                  <Typography color="text.secondary">{t('dm.noRecords')}</Typography>
+                </Paper>
+              ) : (
+                <Stack spacing={1}>
+                  <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', gap: 2, minHeight: 40 }}>
+                    <Typography color="text.secondary" aria-live="polite">
+                      {chosen.length > 0 ? t('dm.selected', { count: chosen.length }) : t('dm.selectHint')}
+                    </Typography>
+                    <Button variant="contained" disabled={chosen.length === 0} onClick={() => setJustifying(true)}>
+                      {t('dm.justifySelected')}
+                    </Button>
+                  </Stack>
+                  <TableContainer component={Paper} variant="outlined">
+                    <Table size="small" sx={{ minWidth: 560 }}>
+                      <TableHead>
+                        <TableRow>
                           <TableCell padding="checkbox">
-                            {!row.justified && (
-                              <Checkbox
-                                checked={selected.has(row.key)}
-                                onChange={() => toggle(row.key)}
-                                slotProps={{
-                                  input: { 'aria-label': `${formatDate(row.date, i18n.language)}, ${row.label}` },
-                                }}
-                              />
-                            )}
+                            <Checkbox
+                              checked={allChosen}
+                              indeterminate={chosen.length > 0 && !allChosen}
+                              disabled={open.length === 0}
+                              onChange={() => setSelected(allChosen ? new Set() : new Set(open.map((r) => r.key)))}
+                              slotProps={{ input: { 'aria-label': t('dm.selectAll') } }}
+                            />
                           </TableCell>
-                          <TableCell sx={{ whiteSpace: 'nowrap' }}>{formatDate(row.date, i18n.language)}</TableCell>
-                          <TableCell>{row.label}</TableCell>
-                          <TableCell>
-                            <Pill tone={row.justified ? 'positive' : 'warning'}>
-                              {row.justified ? t('dm.justifiedStatus') : t('dm.unjustifiedStatus')}
-                            </Pill>
-                          </TableCell>
-                          <TableCell align="right">
-                            <Tooltip title={t('dm.cancelRecord')}>
-                              <IconButton
-                                size="small"
-                                aria-label={t('dm.cancelRecordOf', { what: `${formatDate(row.date, i18n.language)}, ${row.label}` })}
-                                onClick={() => setCancelling(row)}
-                              >
-                                <ProhibitIcon size={18} aria-hidden />
-                              </IconButton>
-                            </Tooltip>
-                          </TableCell>
+                          <TableCell>{t('dm.date')}</TableCell>
+                          <TableCell>{t('dm.record')}</TableCell>
+                          <TableCell>{t('dm.status')}</TableCell>
+                          <TableCell align="right">{t('crud.actions')}</TableCell>
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-              </Stack>
-            )}
-          </>
-        )}
-      </Stack>
+                      </TableHead>
+                      <TableBody>
+                        {rows.map((row) => (
+                          <TableRow key={row.key} selected={selected.has(row.key)}>
+                            <TableCell padding="checkbox">
+                              {!row.justified && (
+                                <Checkbox
+                                  checked={selected.has(row.key)}
+                                  onChange={() => toggle(row.key)}
+                                  slotProps={{
+                                    input: { 'aria-label': `${formatDate(row.date, i18n.language)}, ${row.label}` },
+                                  }}
+                                />
+                              )}
+                            </TableCell>
+                            <TableCell sx={{ whiteSpace: 'nowrap' }}>{formatDate(row.date, i18n.language)}</TableCell>
+                            <TableCell>{row.label}</TableCell>
+                            <TableCell>
+                              <Pill tone={row.justified ? 'positive' : 'warning'}>
+                                {row.justified ? t('dm.justifiedStatus') : t('dm.unjustifiedStatus')}
+                              </Pill>
+                            </TableCell>
+                            <TableCell align="right">
+                              <Tooltip title={t('dm.cancelRecord')}>
+                                <IconButton
+                                  size="small"
+                                  aria-label={t('dm.cancelRecordOf', { what: `${formatDate(row.date, i18n.language)}, ${row.label}` })}
+                                  onClick={() => setCancelling(row)}
+                                >
+                                  <ProhibitIcon size={18} aria-hidden />
+                                </IconButton>
+                              </Tooltip>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </Stack>
+              )}
+            </>
+          )}
+        </Stack>
+      )}
       <JustifyDialog count={justifying ? chosen.length : 0} onSubmit={justify} onClose={() => setJustifying(false)} />
       <CancelRecordDialog
         what={cancelling ? `${formatDate(cancelling.date, i18n.language)}, ${cancelling.label}` : null}

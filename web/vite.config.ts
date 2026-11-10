@@ -5,8 +5,9 @@ import { defineConfig } from 'vitest/config'
 export default defineConfig({
   plugins: [react()],
   server: {
-    // The API runs on :8080 (backend, dev profile); same origin for the browser.
-    proxy: { '/api': 'http://localhost:8080' },
+    // The API runs on :8080 (backend, dev profile); same origin for the browser. API_PROXY points a
+    // second dev server at another backend.
+    proxy: { '/api': process.env.API_PROXY ?? 'http://localhost:8080' },
   },
   test: {
     environment: 'jsdom',

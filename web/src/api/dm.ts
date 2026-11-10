@@ -1,6 +1,6 @@
 // The DM's API: alerts and decisions (UC-D2, D30), summons (UC-D3, D31), justification (UC-D1,
-// D26), cancellation (UC-D6, D27), a student's history and the scope dashboard (UC-D8, D34), the
-// student search (D35) and the settings (UC-D7, D28). The school and the DM's classes come from
+// D26), cancellation (UC-D6, D27), disciplinary records (UC-D5, D37), a student's history and the
+// scope dashboard (UC-D8, D34), the student search (D35) and the settings (UC-D7, D28). The school and the DM's classes come from
 // the signed-in user (NFR-8), never from a parameter.
 
 export type RuleType = 'FULL_DAY_ABSENCE' | 'CONSECUTIVE_LATENESS' | 'UNJUSTIFIED_ABSENCES'
@@ -50,6 +50,65 @@ export interface Meeting {
 export interface DecisionRequest extends Meeting {
   decision: Decision
   note?: string
+  /** D37: a disciplinary decision records its category and measure. */
+  category?: DisciplinaryCategory
+  measure?: DisciplinaryMeasure
+}
+
+/** UC-D5, D37: what a disciplinary incident was about. */
+export type DisciplinaryCategory =
+  | 'BEHAVIOUR'
+  | 'INSOLENCE'
+  | 'FIGHT'
+  | 'ABSENTEEISM'
+  | 'CHEATING'
+  | 'DRESS'
+  | 'PHONE'
+  | 'DAMAGE'
+  | 'OTHER'
+
+export const CATEGORIES: DisciplinaryCategory[] = [
+  'BEHAVIOUR',
+  'INSOLENCE',
+  'FIGHT',
+  'ABSENTEEISM',
+  'CHEATING',
+  'DRESS',
+  'PHONE',
+  'DAMAGE',
+  'OTHER',
+]
+
+/** UC-D5, D37: what the DM decided about it. */
+export type DisciplinaryMeasure = 'NONE' | 'WARNING' | 'DETENTION' | 'SUSPENSION' | 'OTHER'
+
+export const MEASURES: DisciplinaryMeasure[] = ['NONE', 'WARNING', 'DETENTION', 'SUSPENSION', 'OTHER']
+
+/** D37: the date of an incident is at most this many days before today. */
+export const INCIDENT_DAYS_BACK = 30
+
+/** UC-D5, D37: one incident; never edited, closed once or cancelled (and then no longer listed). */
+export interface DisciplinaryRecord {
+  id: string
+  studentId: string
+  /** Set when the record came from a decision on a risk alert. */
+  alertId: string | null
+  category: DisciplinaryCategory
+  measure: DisciplinaryMeasure
+  occurredOn: string
+  description: string
+  status: 'OPEN' | 'CLOSED'
+  closeNote: string | null
+  recordedByName: string
+  recordedAt: string
+  closedAt: string | null
+}
+
+export interface IncidentRequest {
+  category: DisciplinaryCategory
+  measure: DisciplinaryMeasure
+  occurredOn: string
+  description: string
 }
 
 export interface SummonsRequest extends Meeting {
@@ -184,6 +243,9 @@ export const DM_PATHS = {
   cancelAbsence: (recordId: string) => `/records/${q(recordId)}/cancel`,
   cancelLateness: (recordId: string) => `/lateness/${q(recordId)}/cancel`,
   history: (studentId: string) => `/students/${q(studentId)}/history`,
+  disciplinary: (studentId: string) => `/students/${q(studentId)}/disciplinary-records`,
+  closeIncident: (id: string) => `/disciplinary-records/${q(id)}/close`,
+  cancelIncident: (id: string) => `/disciplinary-records/${q(id)}/cancel`,
   students: (query: string) => `/lateness/students?q=${q(query)}`,
   dashboard: (from: string, to: string) => `/dashboard/scope?from=${q(from)}&to=${q(to)}`,
   settings: '/settings/thresholds',

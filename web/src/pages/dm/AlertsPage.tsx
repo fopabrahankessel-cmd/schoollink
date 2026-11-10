@@ -28,7 +28,7 @@ import { formatDate, formatInstant } from '../../format'
 import { useList } from '../../hooks/useList'
 import { WarningIcon } from '../../icons'
 import { tokens } from '../../theme'
-import { DecisionDialog } from './dialogs'
+import { DecisionDialog, type IncidentKind } from './dialogs'
 
 type Status = 'open' | 'closed'
 
@@ -46,9 +46,14 @@ export function AlertsPage() {
   const [menu, setMenu] = useState<{ anchor: HTMLElement; alert: RiskAlert } | null>(null)
   const [done, setDone] = useState<string | null>(null)
 
-  const decide = async (note: string, meeting: Meeting | null) => {
+  const decide = async (note: string, meeting: Meeting | null, kind: IncidentKind | null) => {
     if (!deciding) return
-    const body: DecisionRequest = { decision: deciding.decision, ...(note ? { note } : {}), ...(meeting ?? {}) }
+    const body: DecisionRequest = {
+      decision: deciding.decision,
+      ...(note ? { note } : {}),
+      ...(meeting ?? {}),
+      ...(kind ?? {}),
+    }
     await client.request(DM_PATHS.decision(deciding.alert.id), { method: 'POST', body })
     setDone(t(`dm.decided.${deciding.decision}`, { name: fullName(deciding.alert) }))
     setDeciding(null)
