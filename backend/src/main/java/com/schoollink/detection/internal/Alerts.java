@@ -62,9 +62,11 @@ class Alerts {
 	 * {@code note}: the reason to dismiss, the issue to record, what the counsellor should know, or
 	 * why the parent is summoned. {@code meetingDate} and {@code meetingTime}: for SUMMON only; left
 	 * out, the next school day at the start of school (UC-D3: one tap after a full-day absence, D31).
+	 * {@code category} and {@code measure}: for DISCIPLINARY only; left out (older apps), OTHER and
+	 * NONE (D37).
 	 */
 	record DecisionRequest(@NotNull Decision decision, @Size(max = MAX_NOTE) String note, LocalDate meetingDate,
-			LocalTime meetingTime) {
+			LocalTime meetingTime, DisciplinaryCategory category, DisciplinaryMeasure measure) {
 	}
 
 	record AlertView(UUID id, UUID studentId, String firstName, String lastName, String matricule, UUID classId,
@@ -154,7 +156,8 @@ class Alerts {
 					request.meetingTime(), note);
 			// D37: older clients send no category or measure
 			case DISCIPLINARY -> outcomes.recordDisciplinary(school, alert.studentId(), id, user.userId(),
-					DisciplinaryCategory.OTHER, DisciplinaryMeasure.NONE, null, note);
+					request.category() == null ? DisciplinaryCategory.OTHER : request.category(),
+					request.measure() == null ? DisciplinaryMeasure.NONE : request.measure(), null, note);
 			case REFER -> outcomes.refer(school, alert.studentId(), id, user.userId(), note);
 		};
 		Instant now = clock.instant().truncatedTo(ChronoUnit.MICROS);

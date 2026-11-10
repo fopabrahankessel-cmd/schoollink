@@ -342,6 +342,32 @@ class AlertTests {
 			.isEqualTo("OPEN");
 	}
 
+	@Test
+	void aDisciplinaryDecisionRecordsTheChosenCategoryAndMeasure() throws Exception { // UC-D5, D37
+		UUID alert = alert(world.studentA, world.classA, RuleType.FULL_DAY_ABSENCE);
+
+		decide(DM_1, alert, Map.of("decision", "DISCIPLINARY", "note", "Insolence en classe", "category", "INSOLENCE",
+				"measure", "WARNING"))
+			.andExpect(status().isOk());
+
+		perform(DM_1, get("/api/v1/students/{id}/disciplinary-records", world.studentA))
+			.andExpect(jsonPath("$[0].alertId").value(alert.toString()))
+			.andExpect(jsonPath("$[0].category").value("INSOLENCE"))
+			.andExpect(jsonPath("$[0].measure").value("WARNING"))
+			.andExpect(jsonPath("$[0].description").value("Insolence en classe"));
+	}
+
+	@Test
+	void anOlderAppWithoutCategoryStillRecordsTheIncident() throws Exception { // Review Focus 4 (D37)
+		UUID alert = alert(world.studentA, world.classA, RuleType.FULL_DAY_ABSENCE);
+
+		decide(DM_1, alert, Map.of("decision", "DISCIPLINARY", "note", "Absences répétées")).andExpect(status().isOk());
+
+		perform(DM_1, get("/api/v1/students/{id}/disciplinary-records", world.studentA))
+			.andExpect(jsonPath("$[0].category").value("OTHER"))
+			.andExpect(jsonPath("$[0].measure").value("NONE"));
+	}
+
 	/** In a savepoint, so the test's transaction goes on after the database refuses. */
 	private void refused(String sql, Object... args) {
 		jdbc.execute("SAVEPOINT refused");
