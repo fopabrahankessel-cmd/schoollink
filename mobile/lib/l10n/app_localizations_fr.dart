@@ -1273,4 +1273,9 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get messageSent => 'Message envoyé.';
+
+  @override
+  String messageAbout(String name) {
+    return 'Concerne $name';
+  }
 }

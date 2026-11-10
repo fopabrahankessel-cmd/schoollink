@@ -323,5 +323,6 @@
   "messageSend": "Envoyer",
   "messageConfirmTitle": "Envoyer ce message ?",
   "messageConfirmBody": "Il ne pourra plus être modifié ni retiré.",
-  "messageSent": "Message envoyé."
+  "messageSent": "Message envoyé.",
+  "messageAbout": "Concerne {name}"
 }

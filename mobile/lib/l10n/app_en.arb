@@ -1082,5 +1082,14 @@
   "messageSent": "Message sent.",
   "@messageSent": {
     "description": "Snackbar after sending."
+  },
+  "messageAbout": "About {name}",
+  "@messageAbout": {
+    "description": "Parent message screen: the child a DM message is about (UC-P4).",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
   }
 }

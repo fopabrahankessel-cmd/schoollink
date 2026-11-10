@@ -2035,6 +2035,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Message sent.'**
   String get messageSent;
+
+  /// Parent message screen: the child a DM message is about (UC-P4).
+  ///
+  /// In en, this message translates to:
+  /// **'About {name}'**
+  String messageAbout(String name);
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

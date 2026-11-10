@@ -435,6 +435,11 @@ class _MessageScreenState extends ConsumerState<MessageScreen> {
     final theme = Theme.of(context);
     final style = EventStyle.of(context, entry.type);
     final locale = Localizations.localeOf(context).toLanguageTag();
+    final children = ref.watch(childrenProvider).value?.value ?? const <Child>[];
+    // UC-P4, D38: a message about one child names them; attendance messages already do
+    final child = entry.type.aboutAttendance
+        ? null
+        : children.where((c) => c.id == entry.studentId).firstOrNull?.firstName;
     final received = l.receivedAt(
       DateFormat.yMMMMEEEEd(locale).format(entry.createdAt),
       DateFormat.Hm(locale).format(entry.createdAt),
@@ -462,7 +467,12 @@ class _MessageScreenState extends ConsumerState<MessageScreen> {
           const SizedBox(height: Gap.l),
           const Divider(),
           const SizedBox(height: Gap.l),
-          Text(entry.body, style: theme.textTheme.bodyLarge?.copyWith(height: 1.5)),
+          if (child != null) ...[
+            Text(l.messageAbout(child), style: theme.textTheme.titleSmall),
+            const SizedBox(height: Gap.m),
+          ],
+          // the whole text, to copy a date or a phone number the school wrote
+          SelectableText(entry.body, style: theme.textTheme.bodyLarge?.copyWith(height: 1.5)),
           if (entry.type.aboutAttendance && entry.studentId != null) ...[
             const SizedBox(height: Gap.xl),
             FilledButton.tonalIcon(

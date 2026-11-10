@@ -1253,4 +1253,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get messageSent => 'Message sent.';
+
+  @override
+  String messageAbout(String name) {
+    return 'About $name';
+  }
 }
