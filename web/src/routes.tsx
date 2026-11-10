@@ -11,6 +11,7 @@ import { HomePage } from './pages/HomePage'
 import { SchoolDashboardPage } from './pages/dashboard/SchoolDashboardPage'
 import { LoginPage } from './pages/LoginPage'
 import { AlertsPage } from './pages/dm/AlertsPage'
+import { DayPage } from './pages/dm/DayPage'
 import { SettingsPage } from './pages/dm/SettingsPage'
 import { StudentHistoryPage } from './pages/dm/StudentHistoryPage'
 import { StudentsPage } from './pages/dm/StudentsPage'
@@ -61,6 +62,7 @@ export const routes: RouteObject[] = [
       { path: '/announcements', element: admin(<AnnouncementsPage />) },
       { path: '/announcements/new', element: admin(<ComposeAnnouncementPage />) },
       // UC-D1, UC-D2, UC-D5, UC-D6, UC-D7, UC-D8: the DM's alerts, students and settings; the home is the scope dashboard
+      { path: '/day', element: dm(<DayPage />) },
       { path: '/alerts', element: dm(<AlertsPage />) },
       { path: '/students', element: dm(<StudentsPage />) },
       { path: '/students/:id', element: dm(<StudentHistoryPage />) },

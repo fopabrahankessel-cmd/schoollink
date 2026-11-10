@@ -41,6 +41,7 @@
     "submit": "Enregistrer"
   },
   "nav": {
+    "day": "Présences du jour",
     "signOut": "Se déconnecter",
     "home": "Accueil",
     "calendar": "Calendrier",
@@ -708,5 +709,46 @@
     "write": "Nouvelle annonce",
     "writeIntro": "À tous les parents de l'école ou d'une classe. Une annonce envoyée ne peut plus être modifiée.",
     "none": "Aucune annonce envoyée."
+  },
+  "day": {
+    "title": "Présences du jour",
+    "intro": "Les appels de chaque période dans vos classes, les absents et les retards du jour.",
+    "date": "Jour",
+    "previous": "Jour précédent",
+    "today": "Aujourd'hui",
+    "totals": {
+      "notRecorded_one": "période non saisie",
+      "notRecorded_other": "périodes non saisies",
+      "absentStudents_one": "élève absent",
+      "absentStudents_other": "élèves absents",
+      "lateness_one": "retard",
+      "lateness_other": "retards"
+    },
+    "selectHint": "Cochez des absences ou des retards non justifiés pour les justifier ensemble.",
+    "justifySelected": "Justifier la sélection ({{count}})",
+    "period": "Période",
+    "time": "Horaire",
+    "subject": "Matière",
+    "teacher": "Enseignant",
+    "status": "Statut",
+    "absent": "Absents",
+    "periodShort": "P{{number}}",
+    "absentees": "Absents en P{{number}}",
+    "absenteesTable": "Absents",
+    "nobodyAbsent": "Aucun absent pour cette période.",
+    "lateness": "Retards",
+    "absenceOf": "Absence, {{name}}, P{{number}}",
+    "latenessOf": "Retard, {{name}}, {{time}}",
+    "status_RECORDED": "Saisie",
+    "status_NOT_RECORDED": "Non saisie",
+    "status_UPCOMING": "À venir",
+    "state_UNJUSTIFIED": "Non justifiée",
+    "state_JUSTIFIED": "Justifiée",
+    "state_CANCELLED": "Annulée",
+    "lateState_UNJUSTIFIED": "Non justifié",
+    "lateState_JUSTIFIED": "Justifié",
+    "lateState_CANCELLED": "Annulé",
+    "noLessons": "Pas de cours ce jour-là.",
+    "noClasses": "Aucune classe dans vos blocs."
   }
 }

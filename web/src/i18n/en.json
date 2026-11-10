@@ -41,6 +41,7 @@
     "submit": "Save"
   },
   "nav": {
+    "day": "Today's attendance",
     "signOut": "Sign out",
     "home": "Home",
     "calendar": "Calendar",
@@ -708,5 +709,46 @@
     "write": "New announcement",
     "writeIntro": "To every parent of the school or of one class. An announcement sent cannot be changed.",
     "none": "No announcement sent."
+  },
+  "day": {
+    "title": "Today's attendance",
+    "intro": "Each period's roll call in your classes, with the day's absentees and lateness.",
+    "date": "Day",
+    "previous": "Previous day",
+    "today": "Today",
+    "totals": {
+      "notRecorded_one": "period not recorded",
+      "notRecorded_other": "periods not recorded",
+      "absentStudents_one": "student absent",
+      "absentStudents_other": "students absent",
+      "lateness_one": "late arrival",
+      "lateness_other": "late arrivals"
+    },
+    "selectHint": "Tick unjustified absences or lateness to justify them together.",
+    "justifySelected": "Justify selection ({{count}})",
+    "period": "Period",
+    "time": "Time",
+    "subject": "Subject",
+    "teacher": "Teacher",
+    "status": "Status",
+    "absent": "Absent",
+    "periodShort": "P{{number}}",
+    "absentees": "Absent in P{{number}}",
+    "absenteesTable": "Absentees",
+    "nobodyAbsent": "Nobody absent in this period.",
+    "lateness": "Lateness",
+    "absenceOf": "Absence, {{name}}, P{{number}}",
+    "latenessOf": "Lateness, {{name}}, {{time}}",
+    "status_RECORDED": "Recorded",
+    "status_NOT_RECORDED": "Not recorded",
+    "status_UPCOMING": "Upcoming",
+    "state_UNJUSTIFIED": "Unjustified",
+    "state_JUSTIFIED": "Justified",
+    "state_CANCELLED": "Cancelled",
+    "lateState_UNJUSTIFIED": "Unjustified",
+    "lateState_JUSTIFIED": "Justified",
+    "lateState_CANCELLED": "Cancelled",
+    "noLessons": "No lessons that day.",
+    "noClasses": "No class in your blocks."
   }
 }
