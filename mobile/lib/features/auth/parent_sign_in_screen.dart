@@ -173,7 +173,7 @@ class _ParentSignInScreenState extends ConsumerState<ParentSignInScreen> {
         icon: Icons.error_outline_rounded,
         text: failureText(_error!, l),
         background: StatusColors.of(context).absentContainer,
-        foreground: const Color(0xFF7A1212),
+        foreground: StatusColors.of(context).onAbsentContainer,
       ),
     );
   }

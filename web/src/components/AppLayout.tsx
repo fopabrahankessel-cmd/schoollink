@@ -288,15 +288,16 @@ function PhoneBar({ onMenu }: { onMenu: () => void }) {
         px: 1,
         alignItems: 'center',
         gap: 1,
-        bgcolor: tokens.surface,
-        borderBottom: `1px solid ${tokens.border}`,
+        // the navy band that opens every Android screen, so phone and dashboard look like one app
+        bgcolor: tokens.navy,
+        color: tokens.surface,
       }}
     >
-      <IconButton onClick={onMenu} aria-label={t('nav.menu')} sx={{ width: 44, height: 44, color: tokens.text }}>
+      <IconButton onClick={onMenu} aria-label={t('nav.menu')} sx={{ width: 44, height: 44, color: 'inherit' }}>
         <ListIcon size={22} aria-hidden />
       </IconButton>
       <Mark size={26} />
-      <Typography component="p" sx={{ fontWeight: 700 }}>
+      <Typography component="p" sx={{ fontWeight: 700, color: 'inherit' }}>
         {t('app.name')}
       </Typography>
     </Stack>

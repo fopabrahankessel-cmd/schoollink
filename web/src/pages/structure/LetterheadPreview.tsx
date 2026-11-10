@@ -125,17 +125,17 @@ const lineStyle = (line: LetterheadLine): CSSProperties => ({ fontWeight: line.b
 
 /** The body of the report, sketched: where the header sits on the real document. */
 function ReportGhost() {
-  const bar = (width: string, height: number, mt: number, shade = '#e7eded') => (
+  const bar = (width: string, height: number, mt: number, shade = '#e6eaf0') => (
     <Box sx={{ width, height: pt(height), mt: pt(mt), bgcolor: shade, borderRadius: pt(2), mx: 'auto' }} />
   )
   return (
     <Box aria-hidden>
       {bar('46%', 9, 18)}
-      {bar('30%', 14, 8, '#dfe7e7')}
+      {bar('30%', 14, 8, '#dde3ec')}
       {bar('52%', 6, 8)}
       <Box sx={{ mt: pt(20), display: 'grid', gridTemplateColumns: '8% 1fr 22%', gap: pt(3) }}>
         {Array.from({ length: 12 }, (_, i) => (
-          <Box key={i} sx={{ height: pt(10), bgcolor: i < 3 ? '#dfe7e7' : '#f0f4f4', borderRadius: pt(1.5) }} />
+          <Box key={i} sx={{ height: pt(10), bgcolor: i < 3 ? '#dde3ec' : '#eef1f6', borderRadius: pt(1.5) }} />
         ))}
       </Box>
     </Box>

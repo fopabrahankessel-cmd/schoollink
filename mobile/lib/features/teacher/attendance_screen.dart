@@ -412,7 +412,7 @@ class _StudentRow extends StatelessWidget {
                           student.fullName,
                           style: theme.textTheme.titleMedium?.copyWith(
                             fontSize: 17,
-                            color: absent ? const Color(0xFF7A1212) : scheme.onSurface,
+                            color: absent ? StatusColors.of(context).onAbsentContainer : scheme.onSurface,
                           ),
                         ),
                         Text(
@@ -585,7 +585,7 @@ class _SyncStatus extends StatelessWidget {
       SyncState.conflict || SyncState.rejected => (
         Icons.error_outline_rounded,
         status.absentContainer,
-        const Color(0xFF7A1212),
+        status.onAbsentContainer,
         [l.syncNotAccepted, ?local.errorMessage].join(' '),
       ),
     };

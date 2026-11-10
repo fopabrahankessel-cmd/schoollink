@@ -183,7 +183,7 @@ function BrandPanel() {
         borderRadius: `${tokens.radius.sheet}px`,
         color: '#ffffff',
         bgcolor: tokens.brandDark,
-        backgroundImage: `radial-gradient(120% 80% at 0% 0%, ${tokens.brand} 0%, ${tokens.brandDark} 60%, #0b3f3b 100%)`,
+        backgroundImage: `radial-gradient(120% 80% at 0% 0%, ${tokens.brand} 0%, ${tokens.brandDark} 60%, ${tokens.navy} 100%)`,
         [theme.breakpoints.down('md')]: { display: 'none' },
       }}
     >

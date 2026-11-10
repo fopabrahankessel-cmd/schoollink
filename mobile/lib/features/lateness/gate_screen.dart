@@ -255,7 +255,7 @@ class _GateScreenState extends ConsumerState<GateScreen> {
               ?r.errorMessage,
             ].join(' '),
             background: StatusColors.of(context).absentContainer,
-            foreground: const Color(0xFF7A1212),
+            foreground: StatusColors.of(context).onAbsentContainer,
           ),
         ),
       if (day is AsyncError && rows.isEmpty)

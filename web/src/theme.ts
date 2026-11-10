@@ -1,41 +1,50 @@
 import { alpha, createTheme } from '@mui/material/styles'
 
 /**
- * Design tokens. Palette from the education (LMS) profile: a calm teal for the brand and the
- * selection, amber for what is in progress, green for done, red only for errors and danger. Every
- * text colour reaches 4.5:1 on the surface it sits on.
+ * Design tokens, shared with the Android app (mobile/lib/core/theme.dart, same names and values).
+ * Taken from the logo: its royal blue (Encre) for actions and selection, the navy (Nuit) of the
+ * header band, its teal (Lagune) as a second voice for people and messages, never for a status.
+ * Green, red and amber are reserved for attendance states. Every text colour reaches 4.5:1 on the
+ * surface it sits on.
  */
 export const tokens = {
-  ground: '#eef3f3',
+  ground: '#f3f5f9',
   surface: '#ffffff',
-  raised: '#f6f9f9',
-  active: '#e3f1ef',
-  border: '#dfe7e7',
-  rule: '#edf2f2',
-  control: '#c5d1d1',
-  text: '#10201f',
-  muted: '#4a5b5a',
-  brand: '#0f766e',
-  brandDark: '#115e59',
-  brandSoft: '#e3f1ef',
-  brandTint: '#f0f8f7',
+  raised: '#f8f9fc',
+  active: '#e3ebfa',
+  border: '#dde3ec',
+  rule: '#edf1f6',
+  control: '#c3ccda',
+  text: '#111a2b',
+  muted: '#4d596c',
+  brand: '#1d4fa8',
+  brandDark: '#133a80',
+  brandSoft: '#e3ebfa',
+  brandTint: '#f2f6fd',
+  navy: '#0f2a55',
+  onNavyMuted: '#b8c6e2',
+  onNavyAccent: '#5fd4c4',
+  teal: '#0e7c72',
+  tealBright: '#14a89a',
+  tealSoft: '#d6f1ec',
+  tealInk: '#053f39',
   amber: '#b45309',
-  amberSoft: '#fef3c7',
-  positive: '#15803d',
-  negative: '#dc2626',
+  amberSoft: '#fff0d9',
+  positive: '#16794a',
+  negative: '#c62828',
   warning: '#b45309',
   pill: {
-    positive: { bg: '#dcfce7', ink: '#14532d' },
-    negative: { bg: '#fee2e2', ink: '#7f1d1d' },
-    warning: { bg: '#fef3c7', ink: '#78350f' },
-    neutral: { bg: '#e8eeee', ink: '#334443' },
-    brand: { bg: '#e3f1ef', ink: '#134e4a' },
+    positive: { bg: '#ddf3e6', ink: '#0f5132' },
+    negative: { bg: '#fde8e8', ink: '#7a1212' },
+    warning: { bg: '#fff0d9', ink: '#6b3300' },
+    neutral: { bg: '#eceff4', ink: '#3e4a5e' },
+    brand: { bg: '#e3ebfa', ink: '#133a80' },
   },
   radius: { sheet: 20, card: 12, control: 8, chip: 6 },
   shadow: {
-    card: '0 1px 2px rgba(16, 32, 31, 0.04), 0 1px 3px rgba(16, 32, 31, 0.05)',
-    raised: '0 6px 16px rgba(16, 32, 31, 0.08), 0 1px 3px rgba(16, 32, 31, 0.06)',
-    float: '0 16px 40px rgba(16, 32, 31, 0.16), 0 2px 8px rgba(16, 32, 31, 0.08)',
+    card: '0 1px 2px rgba(15, 42, 85, 0.04), 0 1px 3px rgba(15, 42, 85, 0.05)',
+    raised: '0 6px 16px rgba(15, 42, 85, 0.08), 0 1px 3px rgba(15, 42, 85, 0.06)',
+    float: '0 16px 40px rgba(15, 42, 85, 0.16), 0 2px 8px rgba(15, 42, 85, 0.08)',
   },
   sidebarWidth: 248,
   sheetInset: 10,
@@ -45,14 +54,14 @@ export const tokens = {
 
 /** Pale identity tints for people and subjects (never data); picked by a stable hash of a key. */
 const TINTS = [
-  { bg: '#e0f2f1', ink: '#115e59' },
-  { bg: '#e0ecfb', ink: '#1e4f8a' },
-  { bg: '#fdeedc', ink: '#8a4b0f' },
-  { bg: '#f3e8f5', ink: '#6b2f7a' },
-  { bg: '#e6f4e1', ink: '#2f6b1f' },
-  { bg: '#fde7e7', ink: '#8c2b2b' },
-  { bg: '#e9edf5', ink: '#3a4766' },
-  { bg: '#fff4cc', ink: '#6e5300' },
+  { bg: '#d6f1ec', ink: '#053f39' },
+  { bg: '#e3ebfa', ink: '#133a80' },
+  { bg: '#ece6f8', ink: '#4a2f86' },
+  { bg: '#f6e4ef', ink: '#7a2457' },
+  { bg: '#e2eef7', ink: '#1d4e6e' },
+  { bg: '#efe9df', ink: '#5b4426' },
+  { bg: '#e6e9f0', ink: '#3e4a5e' },
+  { bg: '#e9eef2', ink: '#2f4858' },
 ] as const
 
 export function tintFor(key: string) {
@@ -69,7 +78,7 @@ const reducedMotion = '@media (prefers-reduced-motion: reduce)'
 export const theme = createTheme({
   palette: {
     primary: { main: tokens.brand, dark: tokens.brandDark, contrastText: '#ffffff' },
-    secondary: { main: tokens.amber },
+    secondary: { main: tokens.teal, contrastText: '#ffffff' },
     success: { main: tokens.positive },
     error: { main: tokens.negative },
     warning: { main: tokens.warning },
@@ -193,7 +202,7 @@ export const theme = createTheme({
         },
       },
     },
-    MuiBackdrop: { styleOverrides: { root: { '&:not(.MuiBackdrop-invisible)': { backgroundColor: 'rgba(16, 32, 31, 0.4)' } } } },
+    MuiBackdrop: { styleOverrides: { root: { '&:not(.MuiBackdrop-invisible)': { backgroundColor: 'rgba(15, 42, 85, 0.4)' } } } },
     MuiDialogTitle: { styleOverrides: { root: { fontSize: 18, fontWeight: 700, padding: '22px 24px 8px' } } },
     MuiDialogContent: { styleOverrides: { root: { overscrollBehavior: 'contain' } } },
     MuiDialogActions: {
@@ -231,13 +240,13 @@ export const theme = createTheme({
           transition: 'box-shadow 150ms ease',
           '& .MuiOutlinedInput-notchedOutline': { borderColor: tokens.control, top: 0, transition: 'border-color 150ms ease' },
           '& .MuiOutlinedInput-notchedOutline legend': { display: 'none' },
-          [hover]: { '&:hover:not(.Mui-focused):not(.Mui-error) .MuiOutlinedInput-notchedOutline': { borderColor: '#94a6a5' } },
+          [hover]: { '&:hover:not(.Mui-focused):not(.Mui-error) .MuiOutlinedInput-notchedOutline': { borderColor: '#8a95a7' } },
           '&.Mui-focused': { boxShadow: `0 0 0 3px ${alpha(tokens.brand, 0.16)}` },
           '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: tokens.brand, borderWidth: 1 },
           '&.Mui-error.Mui-focused': { boxShadow: `0 0 0 3px ${alpha(tokens.negative, 0.14)}` },
         },
         // 38px, the height of a button beside it
-        input: { minHeight: 22, paddingTop: 8, paddingBottom: 8, '&::placeholder': { color: '#6b7b7a', opacity: 1 } },
+        input: { minHeight: 22, paddingTop: 8, paddingBottom: 8, '&::placeholder': { color: '#6b7689', opacity: 1 } },
         adornedStart: { paddingLeft: 10 },
       },
     },

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-/// The blue and teal of the SchoolLink logo.
+/// The blue and teal of the SchoolLink logo. The web dashboard (web/src/theme.ts) uses the same
+/// palette under the same names: Encre #1D4FA8, Nuit #0F2A55, Lagune #0E7C72.
 const brandBlue = Color(0xFF1D4FA8);
 const brandTeal = Color(0xFF14A89A);
 
@@ -18,6 +19,7 @@ class StatusColors extends ThemeExtension<StatusColors> {
     required this.presentContainer,
     required this.absent,
     required this.absentContainer,
+    required this.onAbsentContainer,
     required this.late,
     required this.lateContainer,
     required this.onLateContainer,
@@ -31,6 +33,7 @@ class StatusColors extends ThemeExtension<StatusColors> {
     presentContainer: Color(0xFFDDF3E6),
     absent: Color(0xFFC62828),
     absentContainer: Color(0xFFFDE8E8),
+    onAbsentContainer: Color(0xFF7A1212),
     late: Color(0xFFB45309),
     lateContainer: Color(0xFFFFF0D9),
     onLateContainer: Color(0xFF6B3300),
@@ -43,6 +46,7 @@ class StatusColors extends ThemeExtension<StatusColors> {
   final Color presentContainer;
   final Color absent;
   final Color absentContainer;
+  final Color onAbsentContainer;
   final Color late;
   final Color lateContainer;
   final Color onLateContainer;
@@ -88,15 +92,15 @@ ThemeData buildTheme() {
       .copyWith(
         primary: brandBlue,
         onPrimary: Colors.white,
-        primaryContainer: const Color(0xFFDCE6FA),
-        onPrimaryContainer: const Color(0xFF0D2A5C),
+        primaryContainer: const Color(0xFFE3EBFA),
+        onPrimaryContainer: const Color(0xFF133A80),
         secondary: const Color(0xFF0E7C72),
-        secondaryContainer: const Color(0xFFD4F1EC),
+        secondaryContainer: const Color(0xFFD6F1EC),
         onSecondaryContainer: const Color(0xFF053F39),
         tertiary: status.present,
         error: status.absent,
         errorContainer: status.absentContainer,
-        onErrorContainer: const Color(0xFF7A1212),
+        onErrorContainer: status.onAbsentContainer,
         surface: const Color(0xFFF3F5F9),
         onSurface: const Color(0xFF111A2B),
         onSurfaceVariant: const Color(0xFF4D596C),
@@ -105,7 +109,7 @@ ThemeData buildTheme() {
         surfaceContainerLowest: Colors.white,
         surfaceContainerLow: const Color(0xFFF8F9FC),
         surfaceContainer: const Color(0xFFEDF1F6),
-        surfaceContainerHigh: const Color(0xFFE6EBF2),
+        surfaceContainerHigh: const Color(0xFFECEFF4),
         surfaceContainerHighest: const Color(0xFFDDE4EE),
       );
   final base = ThemeData(colorScheme: scheme, useMaterial3: true);
