@@ -8,13 +8,14 @@ import { useAuth } from '../auth/useAuth'
 import {
   CalendarBlankIcon,
   ChalkboardTeacherIcon,
-  ChatTextIcon,
   ChartLineIcon,
+  ChatTextIcon,
   ClockIcon,
   FileArrowUpIcon,
   HouseIcon,
   IdentificationCardIcon,
   ListIcon,
+  MegaphoneIcon,
   SlidersIcon,
   SquaresFourIcon,
   StampIcon,
@@ -36,12 +37,13 @@ interface NavItem {
   icon: Icon
 }
 
-/** The admin's screens (UC-A1 to UC-A4, UC-A6), grouped as the school office thinks of them. */
+/** The admin's screens (UC-A1 to UC-A7), grouped as the school office thinks of them. */
 const ADMIN_NAV: { group?: string; items: NavItem[] }[] = [
   {
     items: [
       { to: '/', label: 'nav.home', icon: HouseIcon },
       { to: '/dashboard', label: 'nav.schoolDashboard', icon: ChartLineIcon },
+      { to: '/announcements', label: 'nav.announcements', icon: MegaphoneIcon },
     ],
   },
   {

@@ -14,6 +14,8 @@ import { AlertsPage } from './pages/dm/AlertsPage'
 import { SettingsPage } from './pages/dm/SettingsPage'
 import { StudentHistoryPage } from './pages/dm/StudentHistoryPage'
 import { StudentsPage } from './pages/dm/StudentsPage'
+import { AnnouncementsPage } from './pages/messages/AnnouncementsPage'
+import { ComposeAnnouncementPage } from './pages/messages/ComposeAnnouncementPage'
 import { ComposeMessagePage } from './pages/messages/ComposeMessagePage'
 import { MessagesPage } from './pages/messages/MessagesPage'
 import { CalendarPage } from './pages/structure/CalendarPage'
@@ -55,6 +57,9 @@ export const routes: RouteObject[] = [
       { path: '/students/import/:id', element: admin(<ImportPreviewPage />) },
       // UC-A4: guardians, admin only
       { path: '/guardians', element: admin(<GuardiansPage />) },
+      // UC-A5, D38: announcements to the parents of the school or of one class, admin only
+      { path: '/announcements', element: admin(<AnnouncementsPage />) },
+      { path: '/announcements/new', element: admin(<ComposeAnnouncementPage />) },
       // UC-D1, UC-D2, UC-D5, UC-D6, UC-D7, UC-D8: the DM's alerts, students and settings; the home is the scope dashboard
       { path: '/alerts', element: dm(<AlertsPage />) },
       { path: '/students', element: dm(<StudentsPage />) },

@@ -62,7 +62,8 @@
     "settings": "Réglages des alertes",
     "schoolDashboard": "Tableau de bord",
     "letterhead": "En-tête des documents",
-    "messages": "Messages aux parents"
+    "messages": "Messages aux parents",
+    "announcements": "Annonces"
   },
   "home": {
     "welcome": "Bienvenue sur SchoolLink",
@@ -698,5 +699,14 @@
     "send": "Envoyer",
     "confirmTitle": "Envoyer ce message ?",
     "confirmBody": "Il ne pourra plus être modifié ni retiré."
+  },
+  "announcements": {
+    "title": "Annonces",
+    "intro": "Ce que l'école a annoncé aux parents, et ce qu'ils en ont reçu.",
+    "newAnnouncement": "Nouvelle annonce",
+    "sent": "Annonce envoyée.",
+    "write": "Nouvelle annonce",
+    "writeIntro": "À tous les parents de l'école ou d'une classe. Une annonce envoyée ne peut plus être modifiée.",
+    "none": "Aucune annonce envoyée."
   }
 }

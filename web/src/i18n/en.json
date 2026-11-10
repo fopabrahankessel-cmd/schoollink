@@ -62,7 +62,8 @@
     "settings": "Alert settings",
     "schoolDashboard": "School dashboard",
     "letterhead": "Document letterhead",
-    "messages": "Messages to parents"
+    "messages": "Messages to parents",
+    "announcements": "Announcements"
   },
   "home": {
     "welcome": "Welcome to SchoolLink",
@@ -698,5 +699,14 @@
     "send": "Send",
     "confirmTitle": "Send this message?",
     "confirmBody": "It cannot be changed or taken back."
+  },
+  "announcements": {
+    "title": "Announcements",
+    "intro": "What the school announced to parents, and what reached them.",
+    "newAnnouncement": "New announcement",
+    "sent": "Announcement sent.",
+    "write": "New announcement",
+    "writeIntro": "To every parent of the school or of one class. An announcement sent cannot be changed.",
+    "none": "No announcement sent."
   }
 }

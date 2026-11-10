@@ -8,14 +8,24 @@ import { tokens } from '../../theme'
  * D38: messages already sent, newest first, with what became of them (one count per guardian and
  * channel). Never edited or taken back; no phone numbers (NFR-9).
  */
-export function SentMessagesTable({ items, showAuthor = false }: { items: SentMessage[]; showAuthor?: boolean }) {
+export function SentMessagesTable({
+  items,
+  showAuthor = false,
+  empty,
+}: {
+  items: SentMessage[]
+  /** The announcements list shows who wrote each one. */
+  showAuthor?: boolean
+  /** The empty state's title; the DM's by default. */
+  empty?: string
+}) {
   const { t, i18n } = useTranslation()
   const when = new Intl.DateTimeFormat(i18n.language, { dateStyle: 'medium', timeStyle: 'short' })
 
   if (items.length === 0) {
     return (
       <Paper variant="outlined" sx={{ px: 2, py: 5, textAlign: 'center' }}>
-        <Typography sx={{ fontWeight: 600 }}>{t('messages.none')}</Typography>
+        <Typography sx={{ fontWeight: 600 }}>{empty ?? t('messages.none')}</Typography>
         <Typography color="text.secondary" sx={{ mt: 0.5 }}>
           {t('messages.noneBody')}
         </Typography>
