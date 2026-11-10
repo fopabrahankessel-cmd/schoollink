@@ -174,6 +174,7 @@ The use cases are numbered by actor; the MVP column says which ones the first pi
 | UC-D7 | DM | Configure thresholds, school start time and SMS digest times | Yes |
 | UC-D8 | DM | Consult a student's attendance and lateness history and the scope dashboard | Yes |
 | UC-D9 | DM | Generate the day's list of students absent the whole day in their blocks as a PDF under the school letterhead, preview it and share it from the phone (D36) | Yes |
+| UC-D10 | DM | See one day of attendance in their classes, period by period (recorded with its absentees, not recorded, upcoming) with the day's lateness, and justify or cancel from there (D40) | Yes |
 | UC-C1 | Counsellor | See referrals from DMs and open a case | Wave 2 |
 | UC-C2 | Counsellor | Study a student's attendance pattern (by day of week, period, subject) | Wave 2 |
 | UC-C3 | Counsellor | Write private case notes, set follow-up dates, close a case | Wave 2 |
@@ -328,6 +329,7 @@ One REST API under `/api/v1`, secured by JWT; the server derives the school and 
 | Reporting | `GET /dashboard/school`, `GET /dashboard/scope` | Admin, DM | Counts and trends (D34) |
 | Reporting | `GET /students/{id}/history` | DM, Admin | A student's attendance and lateness history (UC-D8, D34) |
 | Reporting | `GET /reports/full-day-absences?date=`, `GET /reports/full-day-absences/default-date` | DM | Students absent the whole day in the DM's blocks, and the default day (UC-D9, D36) |
+| Reporting | `GET /attendance/day?date=` | DM | One day of attendance in the DM's classes, period by period, with absentees, lateness and totals; date optional, never in the future (UC-D10, D40) |
 | School | `GET/PUT /school/letterhead`, `GET/PUT/DELETE /school/letterhead/logo` | Admin (write), Admin and DM (read) | The school letterhead and logo (UC-A7, D36) |
 | Research | `GET /research/summary`, `GET /research/export?dataset=` | Researcher | Anonymised statistics and CSV |
 | Webhooks | `POST /webhooks/sms/delivery` | SMS gateway | Delivery reports |

@@ -93,6 +93,24 @@ class JdbcSchoolCalendar implements SchoolCalendar {
 	}
 
 	@Override
+	public List<Slot> slotsOf(UUID schoolId, UUID classId, LocalDate date) {
+		if (!isSchoolDay(schoolId, date)) {
+			return List.of();
+		}
+		return jdbc.query("""
+				SELECT ts.period_id, p.number, p.start_time, p.end_time, ts.subject, ts.teacher_id
+				FROM timetable_slot ts JOIN period p ON p.id = ts.period_id AND p.school_id = ts.school_id
+				JOIN school_class c ON c.id = ts.class_id AND c.school_id = ts.school_id
+				WHERE ts.school_id = :school AND ts.class_id = :class AND ts.weekday = :weekday
+				  AND c.academic_year_id IN (SELECT t.academic_year_id FROM %s)
+				ORDER BY p.number""".formatted(TERM_DAY),
+				params(schoolId, date).addValue("class", classId).addValue("weekday", date.getDayOfWeek().getValue()),
+				(rs, n) -> new Slot(rs.getObject("period_id", UUID.class), rs.getInt("number"),
+						rs.getTime("start_time").toLocalTime(), rs.getTime("end_time").toLocalTime(),
+						rs.getString("subject"), rs.getObject("teacher_id", UUID.class)));
+	}
+
+	@Override
 	public Optional<Term> termOf(UUID schoolId, LocalDate date) {
 		return jdbc.query("""
 				SELECT id, start_date, end_date FROM term

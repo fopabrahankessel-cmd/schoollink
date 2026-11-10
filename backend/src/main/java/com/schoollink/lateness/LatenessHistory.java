@@ -25,6 +25,15 @@ public interface LatenessHistory {
 	 */
 	List<StudentLateness> latenessOf(UUID schoolId, Collection<UUID> studentIds, LocalDate from, LocalDate to);
 
+	/**
+	 * UC-D10, D40: the lateness of the given students on that date, cancelled ones included (the day
+	 * view lists them, BR-15 leaves them out of its counts).
+	 */
+	List<LatenessOnDay> onDay(UUID schoolId, Collection<UUID> studentIds, LocalDate date);
+
+	record LatenessOnDay(UUID recordId, UUID studentId, LocalTime arrivalTime, boolean justified, boolean cancelled) {
+	}
+
 	/** {@code justified}: the DM recorded a justification (BR-11). */
 	record StudentLateness(UUID studentId, LocalDate date, boolean justified) {
 	}

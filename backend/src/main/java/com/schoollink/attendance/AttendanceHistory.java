@@ -1,5 +1,6 @@
 package com.schoollink.attendance;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +24,23 @@ public interface AttendanceHistory {
 	 * absences (cancelled ones left out, BR-15), each in the class of its session.
 	 */
 	Day day(UUID schoolId, Set<UUID> classIds, LocalDate date);
+
+	/**
+	 * UC-D10, D40: the sessions of the given classes on that date, each with every absence recorded
+	 * in it, cancelled ones included (the day view lists them, BR-15 leaves them out of its counts).
+	 */
+	List<DaySession> sessionsOn(UUID schoolId, Set<UUID> classIds, LocalDate date);
+
+	record DaySession(UUID classId, UUID periodId, UUID teacherId, Instant confirmedAt, List<DayRecord> absences) {
+
+		public DaySession {
+			absences = List.copyOf(absences);
+		}
+
+	}
+
+	record DayRecord(UUID recordId, UUID studentId, boolean justified, boolean cancelled) {
+	}
 
 	record Day(Map<UUID, Set<UUID>> recordedPeriods, List<DayAbsence> absences) {
 

@@ -38,6 +38,12 @@ public interface SchoolCalendar {
 	 */
 	Set<UUID> periodsOf(UUID schoolId, UUID classId, LocalDate date);
 
+	/**
+	 * UC-D10, D40: the class's timetable on that date, by period number, with subject and teacher;
+	 * empty when the date is not a school day.
+	 */
+	List<Slot> slotsOf(UUID schoolId, UUID classId, LocalDate date);
+
 	/** The term holding the date, its holidays included; empty between terms. */
 	Optional<Term> termOf(UUID schoolId, LocalDate date);
 
@@ -45,6 +51,10 @@ public interface SchoolCalendar {
 	}
 
 	record Period(UUID id, int number, LocalTime startTime, LocalTime endTime) {
+	}
+
+	record Slot(UUID periodId, int periodNumber, LocalTime startTime, LocalTime endTime, String subject,
+			UUID teacherId) {
 	}
 
 	record Lesson(UUID classId, String className, UUID periodId, int periodNumber, LocalTime startTime,

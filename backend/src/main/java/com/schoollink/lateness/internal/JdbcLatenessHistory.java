@@ -34,6 +34,21 @@ class JdbcLatenessHistory implements LatenessHistory {
 	}
 
 	@Override
+	public List<LatenessOnDay> onDay(UUID schoolId, Collection<UUID> studentIds, LocalDate date) {
+		if (studentIds.isEmpty()) {
+			return List.of();
+		}
+		return jdbc.query("""
+				SELECT id, student_id, arrival_time, justification_id IS NOT NULL AS justified,
+				       cancelled_at IS NOT NULL AS cancelled
+				FROM lateness_record WHERE school_id = :school AND student_id IN (:students) AND date = :date
+				ORDER BY arrival_time""",
+				new MapSqlParameterSource("school", schoolId).addValue("students", studentIds).addValue("date", date),
+				(rs, n) -> new LatenessOnDay(rs.getObject("id", UUID.class), rs.getObject("student_id", UUID.class),
+						rs.getTime("arrival_time").toLocalTime(), rs.getBoolean("justified"), rs.getBoolean("cancelled")));
+	}
+
+	@Override
 	public List<StudentLateness> latenessOf(UUID schoolId, Collection<UUID> studentIds, LocalDate from, LocalDate to) {
 		if (studentIds.isEmpty()) {
 			return List.of();

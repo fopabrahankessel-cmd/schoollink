@@ -2,6 +2,7 @@ package com.schoollink.attendance.internal;
 
 import com.schoollink.attendance.AttendanceHistory;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -68,6 +69,32 @@ class JdbcAttendanceHistory implements AttendanceHistory {
 				(rs, n) -> new DayAbsence(rs.getObject("student_id", UUID.class), rs.getObject("class_id", UUID.class),
 						rs.getObject("period_id", UUID.class), rs.getBoolean("justified")));
 		return new Day(recorded, absences);
+	}
+
+	@Override
+	public List<DaySession> sessionsOn(UUID schoolId, Set<UUID> classIds, LocalDate date) {
+		if (classIds.isEmpty()) {
+			return List.of();
+		}
+		MapSqlParameterSource p = new MapSqlParameterSource("school", schoolId).addValue("classes", classIds)
+			.addValue("date", date);
+		Map<UUID, List<DayRecord>> records = new HashMap<>();
+		jdbc.query("""
+				SELECT r.id, r.session_id, r.student_id, r.justification_id IS NOT NULL AS justified,
+				       r.cancelled_at IS NOT NULL AS cancelled
+				FROM attendance_record r JOIN attendance_session s ON s.id = r.session_id AND s.school_id = r.school_id
+				WHERE r.school_id = :school AND s.class_id IN (:classes) AND s.date = :date AND r.status = 'ABSENT'""",
+				p, rs -> {
+					records.computeIfAbsent(rs.getObject("session_id", UUID.class), s -> new ArrayList<>())
+						.add(new DayRecord(rs.getObject("id", UUID.class), rs.getObject("student_id", UUID.class),
+								rs.getBoolean("justified"), rs.getBoolean("cancelled")));
+				});
+		return jdbc.query("""
+				SELECT id, class_id, period_id, teacher_id, confirmed_at FROM attendance_session
+				WHERE school_id = :school AND class_id IN (:classes) AND date = :date""", p,
+				(rs, n) -> new DaySession(rs.getObject("class_id", UUID.class), rs.getObject("period_id", UUID.class),
+						rs.getObject("teacher_id", UUID.class), rs.getTimestamp("confirmed_at").toInstant(),
+						records.getOrDefault(rs.getObject("id", UUID.class), List.of())));
 	}
 
 }
