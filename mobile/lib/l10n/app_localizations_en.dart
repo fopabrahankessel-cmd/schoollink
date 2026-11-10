@@ -1127,4 +1127,130 @@ class AppLocalizationsEn extends AppLocalizations {
   String incidentDateOn(String date) {
     return 'Date of the incident: $date';
   }
+
+  @override
+  String get messagesEntry => 'Messages to parents';
+
+  @override
+  String get messagesEntryHint => 'Write to the parents of a student or a class';
+
+  @override
+  String get newMessage => 'New message';
+
+  @override
+  String get noMessages => 'No message sent.';
+
+  @override
+  String get noMessagesBody => 'Parents get it in the app, or by SMS when they do not have it and you tick SMS.';
+
+  @override
+  String get messageToSchool => 'Whole school';
+
+  @override
+  String get messageWithSms => 'With SMS';
+
+  @override
+  String deliveryRecipients(int count) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count recipients', one: '1 recipient');
+    return '$_temp0';
+  }
+
+  @override
+  String deliveryOpened(int count) {
+    return '$count opened';
+  }
+
+  @override
+  String deliveryReceived(int count) {
+    return '$count received';
+  }
+
+  @override
+  String deliveryPending(int count) {
+    return '$count in progress';
+  }
+
+  @override
+  String deliveryFailed(int count) {
+    return '$count failed';
+  }
+
+  @override
+  String get writeToParents => 'Write to parents';
+
+  @override
+  String get messageClass => 'Class';
+
+  @override
+  String get messageBody => 'Your message';
+
+  @override
+  String get messageSms => 'Also by SMS for parents without the app';
+
+  @override
+  String get messageSmsHint => 'Paid, counted in the month\'s SMS.';
+
+  @override
+  String messageCounts(int count, int byApp, int without) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count parents', one: '1 parent');
+    return '$_temp0: $byApp by the app, $without without the app';
+  }
+
+  @override
+  String messageCountsSms(int count, int byApp, int bySms) {
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count parents', one: '1 parent');
+    return '$_temp0: $byApp by the app, $bySms by SMS';
+  }
+
+  @override
+  String messageCost(String cost, String left) {
+    return '≈ $cost FCFA · $left SMS left this month';
+  }
+
+  @override
+  String messageUnits(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count SMS per parent',
+      one: '1 SMS per parent',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String messageOverCap(int left) {
+    return 'Not enough SMS left this month: $left left. Untick SMS or write to fewer parents.';
+  }
+
+  @override
+  String get messageUnicode =>
+      'The text has special letters (ê, ç, ô…): each SMS holds fewer characters and costs more.';
+
+  @override
+  String get messagePlain => 'Replace special letters';
+
+  @override
+  String get messagePlainHint => 'In the SMS only; the app keeps the exact text.';
+
+  @override
+  String get messageSmsSample => 'The SMS sent';
+
+  @override
+  String get messageChooseClass => 'Choose a class.';
+
+  @override
+  String get messagePreviewHint => 'Write the message to see who gets it.';
+
+  @override
+  String get messageSend => 'Send';
+
+  @override
+  String get messageConfirmTitle => 'Send this message?';
+
+  @override
+  String get messageConfirmBody => 'It cannot be changed or taken back.';
+
+  @override
+  String get messageSent => 'Message sent.';
 }

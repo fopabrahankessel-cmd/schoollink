@@ -121,6 +121,42 @@ class DmHomeScreen extends ConsumerWidget {
                   ),
                 ),
               ),
+              const SizedBox(height: Gap.s),
+              // UC-D4, D38: messages to the parents of a student or a class
+              Material(
+                color: status.onHeader.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(Radii.m),
+                child: InkWell(
+                  key: const ValueKey('dm-messages-entry'),
+                  borderRadius: BorderRadius.circular(Radii.m),
+                  onTap: () => context.push('/home/alerts/messages'),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: Gap.m, vertical: Gap.m),
+                    child: Row(
+                      children: [
+                        Icon(Icons.forum_outlined, color: status.onHeader),
+                        const SizedBox(width: Gap.m),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                l.messagesEntry,
+                                style: theme.textTheme.titleSmall?.copyWith(color: status.onHeader),
+                              ),
+                              Text(
+                                l.messagesEntryHint,
+                                style: theme.textTheme.bodySmall?.copyWith(color: status.onHeaderMuted),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Icon(Icons.chevron_right_rounded, color: status.onHeaderMuted),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
           Padding(

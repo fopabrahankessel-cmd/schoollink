@@ -8,6 +8,8 @@ import 'features/auth/change_password_screen.dart';
 import 'features/auth/login_screen.dart';
 import 'features/auth/parent_sign_in_screen.dart';
 import 'features/dm/alert_screen.dart';
+import 'features/dm/message_composer_screen.dart';
+import 'features/dm/messages_screen.dart';
 import 'features/dm/student_history_screen.dart';
 import 'features/dm/student_search_screen.dart';
 import 'features/dm/full_day/full_day_screen.dart';
@@ -78,6 +80,15 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(path: 'students', builder: (context, state) => const StudentSearchScreen()),
           GoRoute(path: 'full-day', builder: (context, state) => const FullDayScreen()),
+          // UC-D4, D38: the DM's messages to parents; the student's name travels as extra
+          GoRoute(path: 'messages', builder: (context, state) => const MessagesScreen()),
+          GoRoute(
+            path: 'write',
+            builder: (context, state) => MessageComposerScreen(
+              studentId: state.uri.queryParameters['studentId'],
+              studentName: state.extra as String?,
+            ),
+          ),
           GoRoute(
             path: 'attendance/:classId/:periodId',
             builder: (context, state) => AttendanceScreen(

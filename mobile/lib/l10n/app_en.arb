@@ -889,5 +889,198 @@
         "type": "String"
       }
     }
+  },
+  "messagesEntry": "Messages to parents",
+  "@messagesEntry": {
+    "description": "DM home: entry to the sent messages (UC-D4)."
+  },
+  "messagesEntryHint": "Write to the parents of a student or a class",
+  "@messagesEntryHint": {
+    "description": "DM home: under the messages entry."
+  },
+  "newMessage": "New message",
+  "@newMessage": {
+    "description": "Messages screen: button to write one."
+  },
+  "noMessages": "No message sent.",
+  "@noMessages": {
+    "description": "Messages screen: empty."
+  },
+  "noMessagesBody": "Parents get it in the app, or by SMS when they do not have it and you tick SMS.",
+  "@noMessagesBody": {
+    "description": "Messages screen: empty, what happens."
+  },
+  "messageToSchool": "Whole school",
+  "@messageToSchool": {
+    "description": "A message to every parent of the school."
+  },
+  "messageWithSms": "With SMS",
+  "@messageWithSms": {
+    "description": "Sent list: the message also went by SMS."
+  },
+  "deliveryRecipients": "{count, plural, =1{1 recipient} other{{count} recipients}}",
+  "@deliveryRecipients": {
+    "description": "Sent list: guardians the message went to.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "deliveryOpened": "{count} opened",
+  "@deliveryOpened": {
+    "description": "Sent list: pushes opened.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "deliveryReceived": "{count} received",
+  "@deliveryReceived": {
+    "description": "Sent list: delivered, not opened yet.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "deliveryPending": "{count} in progress",
+  "@deliveryPending": {
+    "description": "Sent list: not delivered yet.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "deliveryFailed": "{count} failed",
+  "@deliveryFailed": {
+    "description": "Sent list: could not be delivered.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "writeToParents": "Write to parents",
+  "@writeToParents": {
+    "description": "Composer title and student page action."
+  },
+  "messageClass": "Class",
+  "@messageClass": {
+    "description": "Composer: the class written to."
+  },
+  "messageBody": "Your message",
+  "@messageBody": {
+    "description": "Composer: the text field."
+  },
+  "messageSms": "Also by SMS for parents without the app",
+  "@messageSms": {
+    "description": "Composer: SMS switch."
+  },
+  "messageSmsHint": "Paid, counted in the month's SMS.",
+  "@messageSmsHint": {
+    "description": "Composer: under the SMS switch."
+  },
+  "messageCounts": "{count, plural, =1{1 parent} other{{count} parents}}: {byApp} by the app, {without} without the app",
+  "@messageCounts": {
+    "description": "Preview: who gets the message, without SMS.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "byApp": {
+        "type": "int"
+      },
+      "without": {
+        "type": "int"
+      }
+    }
+  },
+  "messageCountsSms": "{count, plural, =1{1 parent} other{{count} parents}}: {byApp} by the app, {bySms} by SMS",
+  "@messageCountsSms": {
+    "description": "Preview: who gets the message, with SMS.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "byApp": {
+        "type": "int"
+      },
+      "bySms": {
+        "type": "int"
+      }
+    }
+  },
+  "messageCost": "≈ {cost} FCFA · {left} SMS left this month",
+  "@messageCost": {
+    "description": "Preview: the SMS cost and what the month has left (BR-25).",
+    "placeholders": {
+      "cost": {
+        "type": "String"
+      },
+      "left": {
+        "type": "String"
+      }
+    }
+  },
+  "messageUnits": "{count, plural, =1{1 SMS per parent} other{{count} SMS per parent}}",
+  "@messageUnits": {
+    "description": "Preview: SMS units of the text.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "messageOverCap": "Not enough SMS left this month: {left} left. Untick SMS or write to fewer parents.",
+  "@messageOverCap": {
+    "description": "Preview: sending is refused over the monthly cap (BR-25).",
+    "placeholders": {
+      "left": {
+        "type": "int"
+      }
+    }
+  },
+  "messageUnicode": "The text has special letters (ê, ç, ô…): each SMS holds fewer characters and costs more.",
+  "@messageUnicode": {
+    "description": "Preview: the SMS is not GSM-7."
+  },
+  "messagePlain": "Replace special letters",
+  "@messagePlain": {
+    "description": "Preview: plain SMS switch."
+  },
+  "messagePlainHint": "In the SMS only; the app keeps the exact text.",
+  "@messagePlainHint": {
+    "description": "Preview: under the plain SMS switch."
+  },
+  "messageSmsSample": "The SMS sent",
+  "@messageSmsSample": {
+    "description": "Preview: the SMS as parents will read it."
+  },
+  "messageChooseClass": "Choose a class.",
+  "@messageChooseClass": {
+    "description": "Preview: no class yet."
+  },
+  "messagePreviewHint": "Write the message to see who gets it.",
+  "@messagePreviewHint": {
+    "description": "Preview: no text yet."
+  },
+  "messageSend": "Send",
+  "@messageSend": {
+    "description": "Composer: send button."
+  },
+  "messageConfirmTitle": "Send this message?",
+  "@messageConfirmTitle": {
+    "description": "Confirm dialog title."
+  },
+  "messageConfirmBody": "It cannot be changed or taken back.",
+  "@messageConfirmBody": {
+    "description": "Confirm dialog: messages are never edited."
+  },
+  "messageSent": "Message sent.",
+  "@messageSent": {
+    "description": "Snackbar after sending."
   }
 }

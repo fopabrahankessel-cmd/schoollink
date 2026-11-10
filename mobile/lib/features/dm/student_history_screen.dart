@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../core/providers.dart';
@@ -148,6 +149,17 @@ class _StudentHistoryScreenState extends ConsumerState<StudentHistoryScreen> wit
       appBar: AppBar(
         title: Text(loaded == null ? l.historyTitle : loaded.fullName),
         actions: [
+          // UC-D4, D38: a message to this student's parents
+          if (loaded != null)
+            IconButton(
+              key: const ValueKey('history-message'),
+              tooltip: l.writeToParents,
+              icon: const Icon(Icons.chat_outlined),
+              onPressed: () => context.push(
+                Uri(path: '/home/alerts/write', queryParameters: {'studentId': loaded.studentId}).toString(),
+                extra: loaded.fullName,
+              ),
+            ),
           if (loaded != null)
             IconButton(
               key: const ValueKey('history-summon'),

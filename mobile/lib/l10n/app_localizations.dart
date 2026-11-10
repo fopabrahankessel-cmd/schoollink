@@ -1843,6 +1843,198 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Date of the incident: {date}'**
   String incidentDateOn(String date);
+
+  /// DM home: entry to the sent messages (UC-D4).
+  ///
+  /// In en, this message translates to:
+  /// **'Messages to parents'**
+  String get messagesEntry;
+
+  /// DM home: under the messages entry.
+  ///
+  /// In en, this message translates to:
+  /// **'Write to the parents of a student or a class'**
+  String get messagesEntryHint;
+
+  /// Messages screen: button to write one.
+  ///
+  /// In en, this message translates to:
+  /// **'New message'**
+  String get newMessage;
+
+  /// Messages screen: empty.
+  ///
+  /// In en, this message translates to:
+  /// **'No message sent.'**
+  String get noMessages;
+
+  /// Messages screen: empty, what happens.
+  ///
+  /// In en, this message translates to:
+  /// **'Parents get it in the app, or by SMS when they do not have it and you tick SMS.'**
+  String get noMessagesBody;
+
+  /// A message to every parent of the school.
+  ///
+  /// In en, this message translates to:
+  /// **'Whole school'**
+  String get messageToSchool;
+
+  /// Sent list: the message also went by SMS.
+  ///
+  /// In en, this message translates to:
+  /// **'With SMS'**
+  String get messageWithSms;
+
+  /// Sent list: guardians the message went to.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 recipient} other{{count} recipients}}'**
+  String deliveryRecipients(int count);
+
+  /// Sent list: pushes opened.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} opened'**
+  String deliveryOpened(int count);
+
+  /// Sent list: delivered, not opened yet.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} received'**
+  String deliveryReceived(int count);
+
+  /// Sent list: not delivered yet.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} in progress'**
+  String deliveryPending(int count);
+
+  /// Sent list: could not be delivered.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} failed'**
+  String deliveryFailed(int count);
+
+  /// Composer title and student page action.
+  ///
+  /// In en, this message translates to:
+  /// **'Write to parents'**
+  String get writeToParents;
+
+  /// Composer: the class written to.
+  ///
+  /// In en, this message translates to:
+  /// **'Class'**
+  String get messageClass;
+
+  /// Composer: the text field.
+  ///
+  /// In en, this message translates to:
+  /// **'Your message'**
+  String get messageBody;
+
+  /// Composer: SMS switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Also by SMS for parents without the app'**
+  String get messageSms;
+
+  /// Composer: under the SMS switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid, counted in the month\'s SMS.'**
+  String get messageSmsHint;
+
+  /// Preview: who gets the message, without SMS.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 parent} other{{count} parents}}: {byApp} by the app, {without} without the app'**
+  String messageCounts(int count, int byApp, int without);
+
+  /// Preview: who gets the message, with SMS.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 parent} other{{count} parents}}: {byApp} by the app, {bySms} by SMS'**
+  String messageCountsSms(int count, int byApp, int bySms);
+
+  /// Preview: the SMS cost and what the month has left (BR-25).
+  ///
+  /// In en, this message translates to:
+  /// **'≈ {cost} FCFA · {left} SMS left this month'**
+  String messageCost(String cost, String left);
+
+  /// Preview: SMS units of the text.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 SMS per parent} other{{count} SMS per parent}}'**
+  String messageUnits(int count);
+
+  /// Preview: sending is refused over the monthly cap (BR-25).
+  ///
+  /// In en, this message translates to:
+  /// **'Not enough SMS left this month: {left} left. Untick SMS or write to fewer parents.'**
+  String messageOverCap(int left);
+
+  /// Preview: the SMS is not GSM-7.
+  ///
+  /// In en, this message translates to:
+  /// **'The text has special letters (ê, ç, ô…): each SMS holds fewer characters and costs more.'**
+  String get messageUnicode;
+
+  /// Preview: plain SMS switch.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace special letters'**
+  String get messagePlain;
+
+  /// Preview: under the plain SMS switch.
+  ///
+  /// In en, this message translates to:
+  /// **'In the SMS only; the app keeps the exact text.'**
+  String get messagePlainHint;
+
+  /// Preview: the SMS as parents will read it.
+  ///
+  /// In en, this message translates to:
+  /// **'The SMS sent'**
+  String get messageSmsSample;
+
+  /// Preview: no class yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a class.'**
+  String get messageChooseClass;
+
+  /// Preview: no text yet.
+  ///
+  /// In en, this message translates to:
+  /// **'Write the message to see who gets it.'**
+  String get messagePreviewHint;
+
+  /// Composer: send button.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get messageSend;
+
+  /// Confirm dialog title.
+  ///
+  /// In en, this message translates to:
+  /// **'Send this message?'**
+  String get messageConfirmTitle;
+
+  /// Confirm dialog: messages are never edited.
+  ///
+  /// In en, this message translates to:
+  /// **'It cannot be changed or taken back.'**
+  String get messageConfirmBody;
+
+  /// Snackbar after sending.
+  ///
+  /// In en, this message translates to:
+  /// **'Message sent.'**
+  String get messageSent;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

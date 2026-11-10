@@ -10,6 +10,7 @@ import '../teacher/attendance.dart' show isoDate;
 import '../teacher/teacher_sessions.dart' show DayTime;
 import 'discipline.dart';
 import 'full_day/full_day_models.dart';
+import 'messages.dart';
 
 /// The three threshold rules (BR-16); [other] for a rule this version of the app does not know.
 enum AlertRule {
@@ -268,9 +269,8 @@ class DmRepository {
   }
 
   /// D37: closes an open incident, with an optional note.
-  Future<void> closeIncident(String id, {String? note}) => _call(
-    () => _dio.post<void>('/disciplinary-records/$id/close', data: {'note': ?_blankToNull(note)}),
-  );
+  Future<void> closeIncident(String id, {String? note}) =>
+      _call(() => _dio.post<void>('/disciplinary-records/$id/close', data: {'note': ?_blankToNull(note)}));
 
   /// D37: cancels an incident recorded by mistake, with the reason.
   Future<void> cancelIncident(String id, String reason) =>
@@ -352,6 +352,27 @@ class DmRepository {
       if (e.status == 404) return null;
       rethrow;
     }
+  }
+
+  /// UC-D4, D38: who would get [draft] and what its SMS would cost; sends nothing.
+  Future<MessagePreview> previewMessage(MessageDraft draft) async {
+    final response = await _call(() => _dio.post<Map<String, dynamic>>('/messages/preview', data: draft.toJson()));
+    return MessagePreview.fromJson(response.data!);
+  }
+
+  /// UC-D4, D38: sends [draft] to the guardians; the same id sent again sends once.
+  Future<void> sendMessage(MessageDraft draft) => _call(() => _dio.post<void>('/messages', data: draft.toJson()));
+
+  /// UC-D4, D38: the DM's own messages, newest first, with their delivery.
+  Future<List<SentMessage>> sentMessages() async {
+    final response = await _call(() => _dio.get<List<dynamic>>('/messages'));
+    return [for (final json in response.data!.cast<Map<String, dynamic>>()) SentMessage.fromJson(json)];
+  }
+
+  /// D38: the classes the DM may write to.
+  Future<List<ClassOption>> messageClasses() async {
+    final response = await _call(() => _dio.get<List<dynamic>>('/messages/classes'));
+    return [for (final json in response.data!.cast<Map<String, dynamic>>()) ClassOption.fromJson(json)];
   }
 
   static String? _blankToNull(String? text) => text == null || text.trim().isEmpty ? null : text.trim();
