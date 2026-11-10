@@ -157,7 +157,7 @@ The use cases are numbered by actor; the MVP column says which ones the first pi
 | UC-A2 | Administrator | Create staff accounts (teacher, assistant DM, DM, counsellor) and assign classes | Yes |
 | UC-A3 | Administrator | Import students and guardian phone numbers from CSV/Excel, with a preview and error list before commit | Yes |
 | UC-A4 | Administrator | Link guardians to children and see which guardians have signed in to the app | Yes |
-| UC-A5 | Administrator | Send a school-wide or class announcement | Wave 2 |
+| UC-A5 | Administrator | Send a school-wide or class announcement, by push and optionally SMS, seeing the count and cost first (D38) | Pilot |
 | UC-A6 | Administrator | Consult the school dashboard: attendance trends, alerts, delivery rate, SMS usage | Yes |
 | UC-A7 | Administrator | Set the school letterhead (French and English lines, layout, logo) used on generated documents (D36) | Yes |
 | UC-T1 | Teacher | Open today's session for a class and period, mark absentees, confirm twice, save | Yes |
@@ -168,7 +168,7 @@ The use cases are numbered by actor; the MVP column says which ones the first pi
 | UC-D1 | DM | Justify absences or lateness for one or several records | Yes |
 | UC-D2 | DM | Review risk alerts and decide: dismiss, summon, disciplinary issue, refer | Yes |
 | UC-D3 | DM | Summon a parent (one tap after a full-day absence, or from an alert) | Yes |
-| UC-D4 | DM | Send a one-way message to a student's guardians | Wave 2 |
+| UC-D4 | DM | Send a one-way message to the guardians of a student or a class of their blocks (D38) | Pilot |
 | UC-D5 | DM | Record a disciplinary issue for a student: category, date of the incident, measure; close or cancel it (D37) | Pilot |
 | UC-D6 | DM | Cancel an erroneous locked absence with a reason | Yes |
 | UC-D7 | DM | Configure thresholds, school start time and SMS digest times | Yes |
@@ -180,7 +180,7 @@ The use cases are numbered by actor; the MVP column says which ones the first pi
 | UC-P1 | Parent | Sign in with the school, the phone number the school holds and an SMS one-time code; the first sign-in creates the account | Yes |
 | UC-P2 | Parent | Receive absence, lateness, summons and correction alerts | Yes |
 | UC-P3 | Parent | Consult each child's attendance history | Yes |
-| UC-P4 | Parent | Read DM messages and announcements | Wave 2 |
+| UC-P4 | Parent | Read DM messages and announcements (D38) | Pilot |
 | UC-P5 | Parent | See each child's class, teachers with their subjects, and the block's DMs and assistant DMs, with their phone numbers | Yes |
 | UC-R1 | Researcher | Consult the research view: usage, delivery and response times, alert and case counts | Wave 2 |
 | UC-R2 | Researcher | Export anonymised datasets (CSV) | Wave 2 |
@@ -242,7 +242,7 @@ The model has about 25 tables in PostgreSQL; every school-owned row carries a `s
 | Discipline | `DmMessage` | id, student\_id, author\_id, body | One-way, wave 2 |
 | Counselling | `CounsellingCase` | id, student\_id, referred\_by, alert\_id, counsellor\_id, status, opened\_at, closed\_at | Status visible to DM |
 | Counselling | `CaseNote` | case\_id, author\_id, body\_encrypted, created\_at, follow\_up\_date | Readable by author only |
-| Messaging | `Announcement` | id, school\_id, audience (school, class), title, body, author\_id | Wave 2 |
+| Messaging | `ParentMessage` | id (from the author's device), school\_id, author\_id, kind (DM\_MESSAGE, ANNOUNCEMENT), audience (student, class, school), student\_id, class\_id, body (1-480), sms, plain\_sms, created\_at | Never edited or deleted; one outbox row per guardian and channel (D38) |
 | Notification | `NotificationOutbox` | id, guardian\_id, event\_type, event\_id, channel (PUSH, SMS), language, payload, status, attempts, sent\_at, delivered\_at, opened\_at | Drives delivery and the research metrics |
 | Notification | `DeviceToken` | user\_id, fcm\_token, platform, last\_seen | One per installed app |
 | Audit | `AuditLog` | actor\_id, action, entity, entity\_id, before, after, at | Append-only |
@@ -311,6 +311,11 @@ One REST API under `/api/v1`, secured by JWT; the server derives the school and 
 | Detection | `POST /alerts/{id}/decision` | DM | Dismiss, summon, disciplinary, refer (D30) |
 | Detection | `GET/PUT /settings/thresholds` | DM | Configure rules, school start time and SMS digest times (UC-D7, D28) |
 | Discipline | `POST /summons` | DM | Summon a parent; from an alert, decision SUMMON (D31) |
+| Messaging | `POST /messages/preview`, `POST /announcements/preview` | DM, Admin | Who gets it (by app, by SMS, unreached), SMS units and cost, SMS left this month; sends nothing (D38) |
+| Messaging | `POST /messages` | DM | Message the guardians of a student or a class of their blocks; idempotent on the device's id (D38) |
+| Messaging | `POST /announcements` | Admin | Announce to the whole school or a class; idempotent on the device's id (D38) |
+| Messaging | `GET /messages`, `GET /announcements` | DM, Admin | The DM's own messages, the school's announcements, newest first, with delivery counts (D38) |
+| Messaging | `GET /messages/classes` | DM, Admin | The classes the author may write to, with their number of students (D38) |
 | Discipline | `GET /students/{id}/disciplinary-records` | DM, Admin | A student's records, newest incident first, without cancelled ones (D37) |
 | Discipline | `POST /students/{id}/disciplinary-records` | DM | Record an incident: category, measure, date at most 30 days back, description (D37) |
 | Discipline | `POST /disciplinary-records/{id}/close` | DM | Close an open record once, with an optional note (D37) |
@@ -400,7 +405,9 @@ The MVP is the loop from attendance to parent notification to DM decision; couns
 
 **MVP (must work for the pilot)**: UC-A1 to A4, A6; UC-T1 to T3; UC-AD1, AD2; UC-D1 to D3, D6 to D8; UC-P1 to P3.
 
-**Wave 2**: UC-A5; UC-D4, D5; UC-C1 to C3; UC-P4; UC-R1 to R3.
+**Brought into the pilot (2026-11-09)**: UC-A5, UC-D4, UC-D5, UC-P4 (D37, D38).
+
+**Wave 2**: UC-C1 to C3; UC-R1 to R3.
 
 | Phase | Content | Exit criterion | Estimate |
 | --- | --- | --- | --- |
@@ -409,7 +416,7 @@ The MVP is the loop from attendance to parent notification to DM decision; couns
 | 2. Attendance loop | Flutter app shell, teacher attendance with double confirmation, offline sync, lateness at the gate, outbox, FCM push, parent sign-in and inbox | A teacher's confirmation reaches a parent's phone | 4 weeks |
 | 3. DM and detection | Justification, cancel with correction, threshold rules and alerts, decisions, summons, SMS digest, dashboards | A full test day produces correct alerts and one digest per student | 3 weeks |
 | 4. Pilot wave 1 | Training staff, issuing parent codes, live use in 2 schools, bug fixes | 80% of expected sessions recorded daily for 2 weeks | 4–6 weeks |
-| 5. Wave 2 | Counsellor cases, DM messages, disciplinary records, announcements, research view and export | Counsellor opens a real case from a referral | 3 weeks |
+| 5. Wave 2 | Counsellor cases, research view and export (DM messages, disciplinary records and announcements moved to the pilot: D37, D38) | Counsellor opens a real case from a referral | 3 weeks |
 | 6. Evaluation | Questionnaires, interviews, data analysis, report | Results chapter written | 3 weeks |
 
 **Main risks and responses**

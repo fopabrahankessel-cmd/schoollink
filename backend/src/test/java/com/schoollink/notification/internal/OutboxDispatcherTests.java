@@ -228,6 +228,38 @@ class OutboxDispatcherTests {
 			.containsEntry("last_error", "the guardian has no app account");
 	}
 
+	@Test
+	void sendsAQueuedAnnouncementSmsAndPush() { // D38, UC-A5
+		UUID event = UUID.randomUUID();
+		Map<String, Object> payload = Map.of("body", "Pas de cours lundi.", "plainSms", false, "school",
+				"Lycée Fictif X");
+		UUID pushRow = row(withApp, null, "ANNOUNCEMENT", event, "PUSH", "FR", payload);
+		UUID smsRow = row(withoutApp, null, "ANNOUNCEMENT", event, "SMS", "EN", payload);
+
+		assertThat(dispatcher.dispatchDue()).isEqualTo(2);
+
+		assertThat(push.sent).singleElement().satisfies(message -> {
+			assertThat(message.title()).isEqualTo("Annonce : Lycée Fictif X");
+			assertThat(message.body()).isEqualTo("Pas de cours lundi.");
+		});
+		assertThat(sms.sent).singleElement()
+			.satisfies(message -> assertThat(message.text()).isEqualTo("SchoolLink - Lycée Fictif X: Pas de cours lundi."));
+		assertThat(state(pushRow)).containsEntry("status", "SENT");
+		assertThat(state(smsRow)).containsEntry("status", "SENT");
+	}
+
+	@Test
+	void atTheCapAMessageSmsIsRejected() { // BR-25, D38: only summons pass the cap
+		jdbc.update("UPDATE school SET sms_monthly_cap = 0 WHERE id = ?", world.schoolX);
+		UUID row = row(withoutApp, world.studentA, "DM_MESSAGE", UUID.randomUUID(), "SMS", "FR",
+				Map.of("body", "Rendez-vous demain", "plainSms", false, "firstName", "Awa"));
+
+		dispatcher.dispatchDue();
+
+		assertThat(sms.sent).isEmpty();
+		assertThat(state(row)).containsEntry("status", "FAILED").containsEntry("last_error", "monthly SMS cap reached");
+	}
+
 	private Map<String, Object> state(UUID row) {
 		Map<String, Object> state = jdbc.queryForMap("""
 				SELECT status, attempts::int AS attempts, sent_at, claimed_at, next_attempt_at, last_error

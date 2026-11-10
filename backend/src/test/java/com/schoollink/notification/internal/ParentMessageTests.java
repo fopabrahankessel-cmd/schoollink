@@ -346,6 +346,92 @@ class ParentMessageTests {
 			.andExpect(jsonPath("$[0].className").value(startsWith("5e B")));
 	}
 
+	// Delivery and the sent lists (Task 2)
+
+	@Test
+	void theInboxShowsADmMessageWithItsFullText() throws Exception { // UC-P4
+		String text = "Réunion des parents vendredi à 15h. " + "Merci de venir. ".repeat(20);
+		perform(DM_1, dmSend(Map.of("studentId", world.studentA, "body", text))).andExpect(status().isCreated());
+
+		perform(PARENT_A, get("/api/v1/me/notifications")).andExpect(status().isOk())
+			.andExpect(jsonPath("$[0].eventType").value("DM_MESSAGE"))
+			.andExpect(jsonPath("$[0].studentId").value(world.studentA.toString()))
+			.andExpect(jsonPath("$[0].title").value("Message du surveillant général"))
+			.andExpect(jsonPath("$[0].body").value(text.strip()));
+	}
+
+	@Test
+	void theDmSeesTheirSentMessagesWithDelivery() throws Exception {
+		UUID id = UUID.randomUUID();
+		perform(DM_1, dmSend(id, Map.of("classId", world.classA, "sms", true))).andExpect(status().isCreated());
+		perform(DM_1, get("/api/v1/messages")).andExpect(status().isOk())
+			.andExpect(jsonPath("$.length()").value(1))
+			.andExpect(jsonPath("$[0].id").value(id.toString()))
+			.andExpect(jsonPath("$[0].kind").value("DM_MESSAGE"))
+			.andExpect(jsonPath("$[0].audience").value("CLASS"))
+			.andExpect(jsonPath("$[0].className").value("6e A"))
+			.andExpect(jsonPath("$[0].body").value(TEXT))
+			.andExpect(jsonPath("$[0].sms").value(true))
+			.andExpect(jsonPath("$[0].authorName").value("Test DM_1"))
+			.andExpect(jsonPath("$[0].delivery.recipients").value(4))
+			.andExpect(jsonPath("$[0].delivery.pending").value(4))
+			.andExpect(jsonPath("$[0].delivery.opened").value(0));
+
+		UUID push = jdbc.queryForObject(
+				"SELECT id FROM notification_outbox WHERE event_id = ? AND channel = 'PUSH' LIMIT 1", UUID.class, id);
+		UUID sms = jdbc.queryForObject(
+				"SELECT id FROM notification_outbox WHERE event_id = ? AND channel = 'SMS' LIMIT 1", UUID.class, id);
+		jdbc.update("UPDATE notification_outbox SET status = 'OPENED', sent_at = now(), opened_at = now() WHERE id = ?",
+				push);
+		jdbc.update("UPDATE notification_outbox SET status = 'FAILED' WHERE id = ?", sms);
+		perform(DM_1, get("/api/v1/messages")).andExpect(jsonPath("$[0].delivery.opened").value(1))
+			.andExpect(jsonPath("$[0].delivery.failed").value(1))
+			.andExpect(jsonPath("$[0].delivery.pending").value(2));
+	}
+
+	@Test
+	void aStudentMessageNamesTheStudent() throws Exception {
+		perform(DM_1, dmSend(Map.of("studentId", studentA2))).andExpect(status().isCreated());
+		perform(DM_1, get("/api/v1/messages")).andExpect(jsonPath("$[0].audience").value("STUDENT"))
+			.andExpect(jsonPath("$[0].studentId").value(studentA2.toString()))
+			.andExpect(jsonPath("$[0].studentName").value("Fictif Awa"))
+			.andExpect(jsonPath("$[0].className").value("6e A"));
+	}
+
+	@Test
+	void aDmDoesNotSeeAnotherDmsMessages() throws Exception {
+		perform(DM_1, dmSend(Map.of("classId", world.classA))).andExpect(status().isCreated());
+		perform(DM_2, get("/api/v1/messages")).andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(0));
+	}
+
+	@Test
+	void theAdminSeesTheSchoolsAnnouncements() throws Exception {
+		perform(ADMIN_X, adminSend(Map.of())).andExpect(status().isCreated());
+		perform(ADMIN_X, get("/api/v1/announcements")).andExpect(status().isOk())
+			.andExpect(jsonPath("$.length()").value(1))
+			.andExpect(jsonPath("$[0].audience").value("SCHOOL"))
+			.andExpect(jsonPath("$[0].delivery.recipients").value(2));
+		perform(ADMIN_Y, get("/api/v1/announcements")).andExpect(jsonPath("$.length()").value(0));
+	}
+
+	@TestFactory
+	Stream<DynamicTest> theDmsSentListIsForDms() {
+		return PermissionMatrix.row("GET /messages", w -> get("/api/v1/messages"))
+			.expect(200, DM_1, DM_2)
+			.expect(403, ADMIN_X, ADMIN_Y, TEACHER_A, ASSISTANT_DM_1, COUNSELLOR_X, PARENT_A, RESEARCHER)
+			.expect(401, ANONYMOUS)
+			.tests(mockMvc, world);
+	}
+
+	@TestFactory
+	Stream<DynamicTest> theAnnouncementListIsForAdmins() {
+		return PermissionMatrix.row("GET /announcements", w -> get("/api/v1/announcements"))
+			.expect(200, ADMIN_X, ADMIN_Y)
+			.expect(403, DM_1, DM_2, TEACHER_A, ASSISTANT_DM_1, COUNSELLOR_X, PARENT_A, RESEARCHER)
+			.expect(401, ANONYMOUS)
+			.tests(mockMvc, world);
+	}
+
 	// Helpers
 
 	private void assertNothingWritten() {

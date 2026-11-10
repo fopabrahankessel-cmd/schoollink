@@ -171,6 +171,52 @@ class TemplatesTests {
 			.isInstanceOf(IllegalArgumentException.class);
 	}
 
+	@Test
+	void dmMessagePushKeepsTheFullText() { // D38, UC-P4
+		String body = "Réunion des parents de 6e A vendredi à 15h. Venez nombreux, c'est important pour la fête.";
+		JsonNode payload = payload(Map.of("body", body, "plainSms", true, "className", "6e A"));
+
+		assertThat(templates.push(EventType.DM_MESSAGE, "FR", payload))
+			.isEqualTo(new Push("Message du surveillant général", body));
+		assertThat(templates.push(EventType.DM_MESSAGE, "EN", payload))
+			.isEqualTo(new Push("Message from the discipline master", body));
+	}
+
+	@Test
+	void announcementPushNamesTheSchool() { // D38, UC-A5
+		JsonNode payload = payload(Map.of("body", "Pas de cours lundi.", "plainSms", false, "school",
+				"Lycée Pilote (fictif)"));
+
+		assertThat(templates.push(EventType.ANNOUNCEMENT, "FR", payload))
+			.isEqualTo(new Push("Annonce : Lycée Pilote (fictif)", "Pas de cours lundi."));
+		assertThat(templates.push(EventType.ANNOUNCEMENT, "EN", payload))
+			.isEqualTo(new Push("Announcement: Lycée Pilote (fictif)", "Pas de cours lundi."));
+	}
+
+	@Test
+	void announcementSmsUsesTheSchoolTemplate() { // D38
+		JsonNode payload = payload(Map.of("body", "Réunion vendredi", "plainSms", false));
+
+		assertThat(templates.sms(EventType.ANNOUNCEMENT, "FR", payload, SCHOOL))
+			.isEqualTo("SchoolLink - Lycée Pilote (fictif) : Réunion vendredi");
+		assertThat(templates.sms(EventType.ANNOUNCEMENT, "EN", payload, SCHOOL))
+			.isEqualTo("SchoolLink - Lycée Pilote (fictif): Réunion vendredi");
+		assertThat(templates.sms(EventType.DM_MESSAGE, "FR", payload, SCHOOL))
+			.isEqualTo("SchoolLink - SG Lycée Pilote (fictif) : Réunion vendredi");
+		assertThat(templates.sms(EventType.DM_MESSAGE, "EN", payload, SCHOOL))
+			.isEqualTo("SchoolLink - DM Lycée Pilote (fictif): Réunion vendredi");
+	}
+
+	@Test
+	void plainSmsRemovesAccentsInTheSmsOnly() { // D38, Review Focus 4
+		JsonNode payload = payload(Map.of("body", "Fête à l'école, apportez un gâteau", "plainSms", true));
+
+		assertThat(templates.sms(EventType.DM_MESSAGE, "FR", payload, SCHOOL))
+			.isEqualTo("SchoolLink - SG Lycee Pilote (fictif) : Fete a l'ecole, apportez un gateau");
+		assertThat(templates.push(EventType.DM_MESSAGE, "FR", payload).body())
+			.isEqualTo("Fête à l'école, apportez un gâteau");
+	}
+
 	private JsonNode payload(Map<String, Object> fields) {
 		return json.valueToTree(fields);
 	}

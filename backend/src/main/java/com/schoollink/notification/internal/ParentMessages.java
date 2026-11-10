@@ -198,6 +198,7 @@ class ParentMessages {
 					.addValue("plain", draft.plainSms())
 					.addValue("now", Timestamp.from(now)));
 		EventType type = EventType.valueOf(kind.name());
+		String schoolName = schools.name(school);
 		String className = target.classId() == null ? null
 				: classes.names(school, Set.of(target.classId())).get(target.classId());
 		List<Row> rows = new ArrayList<>();
@@ -208,6 +209,7 @@ class ParentMessages {
 			Map<String, Object> payload = new HashMap<>();
 			payload.put("body", body);
 			payload.put("plainSms", draft.plainSms());
+			payload.put("school", schoolName);
 			if (r.firstName() != null) {
 				payload.put("firstName", r.firstName());
 			}
@@ -229,6 +231,77 @@ class ParentMessages {
 		audit.record(new AuditEntry(school, user.userId(), AuditAction.CREATE, "parent_message", draft.id().toString(),
 				null, after));
 		return new Sent(draft.id(), true);
+	}
+
+	/**
+	 * BR-24: what became of a message's notifications, one row per guardian and channel. No phone and
+	 * no guardian name (NFR-9). {@code pending}: queued or being sent.
+	 */
+	record Delivery(int recipients, int pending, int sent, int delivered, int opened, int failed) {
+	}
+
+	/** One message as its author's list shows it. */
+	record SentMessage(UUID id, String kind, String audience, UUID studentId, String studentName, UUID classId,
+			String className, String body, boolean sms, String authorName, Instant createdAt, Delivery delivery) {
+	}
+
+	static final int DEFAULT_LIMIT = 50;
+
+	static final int MAX_LIMIT = 100;
+
+	/**
+	 * Newest first: a DM's own messages, or the school's announcements for an administrator, each
+	 * with its delivery.
+	 */
+	@Transactional(readOnly = true)
+	List<SentMessage> sent(CurrentUser user, Kind kind, Integer limit) {
+		UUID school = authorSchool(user, kind);
+		int size = limit == null ? DEFAULT_LIMIT : limit;
+		if (size < 1 || size > MAX_LIMIT) {
+			throw ApiException.invalid("validation.max", "limit", "limit", MAX_LIMIT);
+		}
+		MapSqlParameterSource p = new MapSqlParameterSource("school", school).addValue("kind", kind.name())
+			.addValue("author", kind == Kind.DM_MESSAGE ? user.userId() : null)
+			.addValue("limit", size);
+		List<SentMessage> rows = jdbc.query("""
+				SELECT m.id, m.kind, m.audience, m.student_id, m.class_id, m.body, m.sms, m.created_at,
+				       u.first_name || ' ' || u.last_name AS author_name,
+				       count(DISTINCT o.guardian_id) AS recipients,
+				       count(o.id) FILTER (WHERE o.status IN ('QUEUED', 'SENDING')) AS pending,
+				       count(o.id) FILTER (WHERE o.status = 'SENT') AS sent,
+				       count(o.id) FILTER (WHERE o.status = 'DELIVERED') AS delivered,
+				       count(o.id) FILTER (WHERE o.status = 'OPENED') AS opened,
+				       count(o.id) FILTER (WHERE o.status = 'FAILED') AS failed
+				FROM parent_message m
+				JOIN app_user u ON u.id = m.author_id AND u.school_id = m.school_id
+				LEFT JOIN notification_outbox o ON o.school_id = m.school_id AND o.event_type = m.kind AND o.event_id = m.id
+				WHERE m.school_id = :school AND m.kind = :kind
+				  AND (CAST(:author AS uuid) IS NULL OR m.author_id = CAST(:author AS uuid))
+				GROUP BY m.id, u.first_name, u.last_name
+				ORDER BY m.created_at DESC, m.id DESC LIMIT :limit""", p,
+				(rs, n) -> new SentMessage(rs.getObject("id", UUID.class), rs.getString("kind"),
+						rs.getString("audience"), rs.getObject("student_id", UUID.class), null,
+						rs.getObject("class_id", UUID.class), null, rs.getString("body"), rs.getBoolean("sms"),
+						rs.getString("author_name"), rs.getTimestamp("created_at").toInstant(),
+						new Delivery(rs.getInt("recipients"), rs.getInt("pending"), rs.getInt("sent"),
+								rs.getInt("delivered"), rs.getInt("opened"), rs.getInt("failed"))));
+		Set<UUID> studentIds = rows.stream()
+			.map(SentMessage::studentId)
+			.filter(Objects::nonNull)
+			.collect(Collectors.toSet());
+		Map<UUID, Card> cards = students.cards(school, studentIds);
+		Set<UUID> classIds = new java.util.HashSet<>();
+		rows.stream().map(SentMessage::classId).filter(Objects::nonNull).forEach(classIds::add);
+		cards.values().forEach(c -> classIds.add(c.classId()));
+		Map<UUID, String> classNames = classes.names(school, classIds);
+		return rows.stream().map(m -> {
+			Card card = m.studentId() == null ? null : cards.get(m.studentId());
+			UUID classId = m.classId() != null ? m.classId() : card == null ? null : card.classId();
+			return new SentMessage(m.id(), m.kind(), m.audience(), m.studentId(),
+					card == null ? null : card.lastName() + " " + card.firstName(), m.classId(),
+					classId == null ? null : classNames.get(classId), m.body(), m.sms(), m.authorName(), m.createdAt(),
+					m.delivery());
+		}).toList();
 	}
 
 	/** The classes the author may write to, by name, with their number of students. */

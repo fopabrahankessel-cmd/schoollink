@@ -5,6 +5,7 @@ import com.schoollink.notification.internal.ParentMessages.Draft;
 import com.schoollink.notification.internal.ParentMessages.Kind;
 import com.schoollink.notification.internal.ParentMessages.Preview;
 import com.schoollink.notification.internal.ParentMessages.Sent;
+import com.schoollink.notification.internal.ParentMessages.SentMessage;
 import com.schoollink.shared.security.CurrentUser;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /** UC-D4, UC-A5, D38: the DM's messages and the administrator's announcements to parents. */
@@ -47,6 +49,18 @@ class ParentMessageController {
 	ResponseEntity<Map<String, UUID>> sendAnnouncement(@AuthenticationPrincipal CurrentUser user,
 			@RequestBody Draft draft) {
 		return answer(messages.send(user, Kind.ANNOUNCEMENT, draft));
+	}
+
+	@GetMapping("/api/v1/messages")
+	List<SentMessage> sentMessages(@AuthenticationPrincipal CurrentUser user,
+			@RequestParam(required = false) Integer limit) {
+		return messages.sent(user, Kind.DM_MESSAGE, limit);
+	}
+
+	@GetMapping("/api/v1/announcements")
+	List<SentMessage> sentAnnouncements(@AuthenticationPrincipal CurrentUser user,
+			@RequestParam(required = false) Integer limit) {
+		return messages.sent(user, Kind.ANNOUNCEMENT, limit);
 	}
 
 	@GetMapping("/api/v1/messages/classes")

@@ -27,8 +27,8 @@ import tools.jackson.databind.JsonNode;
  * <li>CORRECTION: firstName, date, kind (ABSENCE or LATENESS), periodNumber for an absence</li>
  * <li>SUMMONS: firstName, meetingDate, meetingTime</li>
  * <li>DIGEST (SMS only): firstName, date, absentPeriods (a list, may be empty), arrivalTime if late</li>
- * <li>DM_MESSAGE, ANNOUNCEMENT (D38): body, plainSms; firstName for a message about one student,
- * className for one to a class</li>
+ * <li>DM_MESSAGE, ANNOUNCEMENT (D38): body, plainSms, school; firstName for a message about one
+ * student, className for one to a class</li>
  * </ul>
  * Absence and lateness never go by SMS one by one: guardians without the app get the daily
  * {@link #digest} (BR-22, D6).
@@ -59,6 +59,15 @@ class Templates {
 	}
 
 	Push push(EventType type, String language, JsonNode payload) {
+		// D38: the author's role as the title, the whole text as the body, accents kept; a message to a
+		// class or the school concerns no one child
+		if (type == EventType.DM_MESSAGE) {
+			return new Push(message(language, "notification.dm_message.push.title"), text(payload, "body"));
+		}
+		if (type == EventType.ANNOUNCEMENT) {
+			return new Push(message(language, "notification.announcement.push.title", text(payload, "school")),
+					text(payload, "body"));
+		}
 		String firstName = text(payload, "firstName");
 		return switch (type) {
 			case ABSENCE -> push(language, "absence", firstName, text(payload, "periodNumber"),
