@@ -8,6 +8,7 @@ import { useAuth } from '../auth/useAuth'
 import {
   CalendarBlankIcon,
   ChalkboardTeacherIcon,
+  ChatTextIcon,
   ChartLineIcon,
   ClockIcon,
   FileArrowUpIcon,
@@ -71,6 +72,7 @@ const DM_NAV: { group?: string; items: NavItem[] }[] = [
     items: [
       { to: '/alerts', label: 'nav.alerts', icon: WarningIcon },
       { to: '/students', label: 'nav.students', icon: StudentIcon },
+      { to: '/messages', label: 'nav.messages', icon: ChatTextIcon },
       { to: '/settings', label: 'nav.settings', icon: SlidersIcon },
     ],
   },

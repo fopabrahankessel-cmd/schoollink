@@ -35,7 +35,7 @@ import { PageHeader } from '../../components/PageHeader'
 import { Pill } from '../../components/Pill'
 import { formatDate } from '../../format'
 import { useResource } from '../../hooks/useResource'
-import { EnvelopeSimpleIcon, PlusIcon, ProhibitIcon, StudentIcon } from '../../icons'
+import { ChatTextIcon, EnvelopeSimpleIcon, PlusIcon, ProhibitIcon, StudentIcon } from '../../icons'
 import { tokens } from '../../theme'
 import { CancelRecordDialog, JustifyDialog, SummonDialog } from './dialogs'
 import { DisciplineTab } from './DisciplineTab'
@@ -137,6 +137,15 @@ export function StudentHistoryPage() {
         actions={
           student && (
             <>
+              {/* UC-D4, D38 */}
+              <Button
+                component={Link}
+                to={`/messages/new?studentId=${encodeURIComponent(id)}`}
+                variant="outlined"
+                startIcon={<ChatTextIcon size={18} aria-hidden />}
+              >
+                {t('messages.writeToParents')}
+              </Button>
               <Button variant="outlined" startIcon={<EnvelopeSimpleIcon size={18} aria-hidden />} onClick={() => setSummoning(true)}>
                 {t('dm.summonParents')}
               </Button>

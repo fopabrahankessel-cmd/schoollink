@@ -14,6 +14,8 @@ import { AlertsPage } from './pages/dm/AlertsPage'
 import { SettingsPage } from './pages/dm/SettingsPage'
 import { StudentHistoryPage } from './pages/dm/StudentHistoryPage'
 import { StudentsPage } from './pages/dm/StudentsPage'
+import { ComposeMessagePage } from './pages/messages/ComposeMessagePage'
+import { MessagesPage } from './pages/messages/MessagesPage'
 import { CalendarPage } from './pages/structure/CalendarPage'
 import { ClassesPage } from './pages/structure/ClassesPage'
 import { LetterheadPage } from './pages/structure/LetterheadPage'
@@ -60,6 +62,9 @@ export const routes: RouteObject[] = [
       // UC-D5, D37: the same page on its Discipline tab
       { path: '/students/:id/discipline', element: dm(<StudentHistoryPage />) },
       { path: '/settings', element: dm(<SettingsPage />) },
+      // UC-D4, D38: the DM's messages to parents
+      { path: '/messages', element: dm(<MessagesPage />) },
+      { path: '/messages/new', element: dm(<ComposeMessagePage />) },
     ],
   },
   { path: '*', element: <Navigate to="/" replace /> },
