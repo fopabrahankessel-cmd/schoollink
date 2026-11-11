@@ -151,6 +151,19 @@ void main() {
     expect(find.text('3 alertes à traiter'), findsOneWidget, reason: 'alerts wait for a decision whatever the day');
   });
 
+  testWidgets('a day without lessons still opens the day view, to look at another day', (tester) async {
+    dayReply = const Reply.ok({
+      'date': '2026-11-14',
+      'schoolDay': false,
+      'totals': {'notRecorded': 0, 'absentStudents': 0, 'lateness': 0},
+      'classes': [],
+    });
+    final app = await open(tester);
+    await tap(tester, find.byKey(const ValueKey('today-no-lessons')));
+
+    expect(location(app), '/home/today/day');
+  });
+
   testWidgets('nothing left to do reads as such', (tester) async {
     server
       ..on('GET /alerts', (_) => const Reply.ok([]))

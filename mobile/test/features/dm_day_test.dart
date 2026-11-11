@@ -43,11 +43,7 @@ void main() {
         'classId': 'c-1',
         'className': '6e A',
         'periods': [
-          period(
-            1,
-            'RECORDED',
-            absences: [absence('a1', 'Awa', 'UNJUSTIFIED'), absence('a2', 'Bruno', 'UNJUSTIFIED')],
-          ),
+          period(1, 'RECORDED', absences: [absence('a1', 'Awa', 'UNJUSTIFIED'), absence('a2', 'Bruno', 'UNJUSTIFIED')]),
           period(2, 'NOT_RECORDED'),
           period(3, 'UPCOMING'),
         ],
@@ -90,11 +86,12 @@ void main() {
       ..devicePixelRatio = 2.75;
     addTearDown(tester.view.reset);
     await pumpApp(tester, server: server, store: MemoryDeviceStore(signedIn(user ?? dm)), clock: () => now);
-    await tap(tester, find.byKey(const ValueKey('today-not-recorded')));
+    // on a day without lessons, Today shows one card in place of the counts (D41)
+    final notRecorded = find.byKey(const ValueKey('today-not-recorded'));
+    await tap(tester, notRecorded.evaluate().isEmpty ? find.byKey(const ValueKey('today-no-lessons')) : notRecorded);
   }
 
-  Future<void> openFirstPeriod(WidgetTester tester) =>
-      tap(tester, find.byKey(const ValueKey('day-period-1-6e A')));
+  Future<void> openFirstPeriod(WidgetTester tester) => tap(tester, find.byKey(const ValueKey('day-period-1-6e A')));
 
   testWidgets("the Today tab leads to today's attendance", (tester) async {
     await open(tester);
@@ -166,7 +163,11 @@ void main() {
 
   testWidgets('a cancelled absence is struck through and cannot be ticked', (tester) async {
     final first = ((day['classes'] as List).first as Map)['periods'] as List;
-    first[0] = period(1, 'RECORDED', absences: [absence('a1', 'Awa', 'UNJUSTIFIED'), absence('a2', 'Bruno', 'CANCELLED')]);
+    first[0] = period(
+      1,
+      'RECORDED',
+      absences: [absence('a1', 'Awa', 'UNJUSTIFIED'), absence('a2', 'Bruno', 'CANCELLED')],
+    );
     await open(tester);
     expect(find.text('Saisie · 1 absent'), findsOneWidget);
     await openFirstPeriod(tester);

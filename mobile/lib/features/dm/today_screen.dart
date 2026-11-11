@@ -101,10 +101,14 @@ class TodayScreen extends ConsumerWidget {
                   Card(
                     key: const ValueKey('today-no-lessons'),
                     margin: EdgeInsets.zero,
+                    clipBehavior: Clip.antiAlias,
+                    // the day view picks another day, so it stays one tap away
                     child: ListTile(
                       minVerticalPadding: Gap.m,
                       leading: Icon(Icons.event_busy_outlined, color: scheme.onSurfaceVariant),
                       title: Text(l.todayNoLessons, style: theme.textTheme.titleMedium),
+                      trailing: Icon(Icons.chevron_right_rounded, color: scheme.onSurfaceVariant),
+                      onTap: () => context.push(underTab(context, 'day')),
                     ),
                   )
                 else ...[
