@@ -42,6 +42,10 @@ class HomeShell extends ConsumerWidget {
     final offline = ref.watch(onlineProvider).value == false;
     // UC-P2: unread messages counted on the tab, so a parent sees them from the children
     final unread = user?.roles.contains(Role.parent) == true ? ref.watch(inboxProvider).value?.unread ?? 0 : 0;
+    final overflow = overflowOf(all);
+    // D41: an inbox listed in More counts on More, so a DM who is also a parent still sees it
+    int badgeOf(Destination d) =>
+        d == Destination.inbox || (d == Destination.more && overflow.contains(Destination.inbox)) ? unread : 0;
 
     return Scaffold(
       appBar: AppBar(
@@ -60,7 +64,7 @@ class HomeShell extends ConsumerWidget {
               Destination.today => const TodayScreen(),
               Destination.students => const StudentSearchView(),
               Destination.messages => const SentMessagesView(),
-              Destination.more => MoreScreen(overflow: overflowOf(all)),
+              Destination.more => MoreScreen(overflow: overflow, unread: unread),
               Destination.children => const ChildrenScreen(),
               Destination.inbox => const InboxScreen(),
               _ => _Placeholder(current),
@@ -79,11 +83,8 @@ class HomeShell extends ConsumerWidget {
               destinations: [
                 for (final destination in destinations)
                   NavigationDestination(
-                    icon: _withBadge(Icon(destination.icon), destination == Destination.inbox ? unread : 0),
-                    selectedIcon: _withBadge(
-                      Icon(destination.selectedIcon),
-                      destination == Destination.inbox ? unread : 0,
-                    ),
+                    icon: _withBadge(Icon(destination.icon), badgeOf(destination)),
+                    selectedIcon: _withBadge(Icon(destination.selectedIcon), badgeOf(destination)),
                     label: destination.label(l),
                   ),
               ],

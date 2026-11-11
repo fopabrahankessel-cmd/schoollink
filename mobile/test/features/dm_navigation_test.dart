@@ -123,6 +123,35 @@ void main() {
     expect(overflowOf(destinationsFor({Role.dm})), isEmpty);
   });
 
+  testWidgets("a DM who is also a parent sees the unread count on More and on More's inbox entry", (tester) async {
+    final user = userJson(roles: ['DM', 'PARENT']);
+    Map<String, dynamic> unread(String id) => {
+      'id': id,
+      'eventType': 'ABSENCE',
+      'studentId': null,
+      'title': 'Titre $id',
+      'body': 'Texte du message $id.',
+      'createdAt': '2026-11-10T08:00:00Z',
+      'openedAt': null,
+    };
+    server
+      ..on('GET /me', (_) => Reply.ok(user))
+      ..on('GET /me/notifications', (_) => Reply.ok([unread('n-1'), unread('n-2')]))
+      ..on('GET /me/children', (_) => const Reply.ok([]));
+    await open(tester, user: user);
+
+    final more = find.descendant(of: find.byType(NavigationBar), matching: find.byKey(const ValueKey('unread-badge')));
+    expect(
+      find.descendant(of: more, matching: find.text('2')),
+      findsOneWidget,
+      reason: 'the inbox is in More',
+    );
+    await tester.tap(find.text('Plus'));
+    await tester.pumpAndSettle();
+
+    expect(find.descendant(of: find.byKey(const ValueKey('more-tab-inbox')), matching: find.text('2')), findsOneWidget);
+  });
+
   testWidgets('the Students tab searches without its own app bar', (tester) async {
     await open(tester);
     await tester.tap(find.text('Élèves'));

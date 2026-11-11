@@ -11,9 +11,12 @@ import '../shell/tab_path.dart';
 /// D41: the DM's More tab. First the tabs that did not fit in the bar, then the decided alerts
 /// (UC-D2), the scope dashboard (UC-D8), the settings (UC-D7), and signing out.
 class MoreScreen extends ConsumerWidget {
-  const MoreScreen({super.key, required this.overflow});
+  const MoreScreen({super.key, required this.overflow, this.unread = 0});
 
   final List<Destination> overflow;
+
+  /// The parent's unread messages (UC-P2), counted on the inbox entry when it is listed here.
+  final int unread;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -30,6 +33,7 @@ class MoreScreen extends ConsumerWidget {
                   key: ValueKey('more-tab-${destination.path}'),
                   icon: destination.icon,
                   title: destination.label(l),
+                  count: destination == Destination.inbox ? unread : 0,
                   onTap: () => context.go('/home/${destination.path}'),
                 ),
             ],
@@ -105,6 +109,7 @@ class _Entry extends StatelessWidget {
     this.subtitle,
     this.color,
     this.chevron = true,
+    this.count = 0,
   });
 
   final IconData icon;
@@ -112,6 +117,7 @@ class _Entry extends StatelessWidget {
   final String? subtitle;
   final Color? color;
   final bool chevron;
+  final int count;
   final VoidCallback onTap;
 
   @override
@@ -122,7 +128,13 @@ class _Entry extends StatelessWidget {
       leading: Icon(icon, color: color ?? scheme.primary),
       title: Text(title, style: TextStyle(color: color)),
       subtitle: subtitle == null ? null : Text(subtitle!),
-      trailing: chevron ? const Icon(Icons.chevron_right_rounded) : null,
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (count > 0) Badge(label: Text(count > 99 ? '99+' : '$count')),
+          if (chevron) const Icon(Icons.chevron_right_rounded),
+        ],
+      ),
       onTap: onTap,
     );
   }
