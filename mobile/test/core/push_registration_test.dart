@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:dio/dio.dart';
 import 'package:drift/drift.dart' hide isNull;
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:schoollink/core/push/push_client.dart';
 import 'package:schoollink/core/push/push_registration.dart';
@@ -165,6 +166,9 @@ void main() {
     await tester.tap(find.byTooltip('Compte'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Se déconnecter'));
+    await tester.pumpAndSettle();
+    // D24: a parent confirms, coming back takes a new SMS code
+    await tester.tap(find.widgetWithText(TextButton, 'Se déconnecter'));
     await tester.pumpAndSettle();
 
     expect(client.deleted, isTrue);
