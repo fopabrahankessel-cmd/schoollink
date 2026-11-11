@@ -13,6 +13,7 @@ import 'day/day_models.dart';
 import 'discipline.dart';
 import 'full_day/full_day_models.dart';
 import 'messages.dart';
+import 'settings/settings_models.dart';
 
 /// The three threshold rules (BR-16); [other] for a rule this version of the app does not know.
 enum AlertRule {
@@ -240,6 +241,16 @@ class DmRepository {
     return [for (final a in response.data!.cast<Map<String, dynamic>>()) RiskAlert.fromJson(a)];
   }
 
+  /// UC-D7, D28: the alert rules, the start of school and the SMS digest times.
+  Future<SettingsDraft> settings() async {
+    final response = await _call(() => _dio.get<Map<String, dynamic>>('/settings/thresholds'));
+    return SettingsDraft.fromJson(response.data!);
+  }
+
+  /// UC-D7: saved as a whole; the server checks the same bounds and says what is wrong.
+  Future<void> saveSettings(SettingsDraft draft) =>
+      _call(() => _dio.put<void>('/settings/thresholds', data: draft.toJson()));
+
   /// UC-D8, D34: the DM's classes over [span], both days included.
   Future<ScopeDashboard> scopeDashboard(DateSpan span) async {
     final response = await _call(
@@ -442,6 +453,9 @@ final dmRepositoryProvider = Provider<DmRepository>((ref) => DmRepository(ref.wa
 final openAlertsProvider = FutureProvider.autoDispose<List<RiskAlert>>(
   (ref) => ref.watch(dmRepositoryProvider).openAlerts(),
 );
+
+/// UC-D7, D41: the settings as saved.
+final settingsProvider = FutureProvider.autoDispose<SettingsDraft>((ref) => ref.watch(dmRepositoryProvider).settings());
 
 /// UC-D8, D41: the scope dashboard over a range.
 final scopeDashboardProvider = FutureProvider.autoDispose.family<ScopeDashboard, DateSpan>(

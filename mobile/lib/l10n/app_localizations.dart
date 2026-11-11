@@ -2335,6 +2335,162 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cancelled records are not counted.'**
   String get dashboardCancelledNote;
+
+  /// Settings screen intro (UC-D7).
+  ///
+  /// In en, this message translates to:
+  /// **'When SchoolLink raises an alert, when school starts, and when parents get the SMS digest. These settings apply to the whole school.'**
+  String get settingsIntro;
+
+  /// Settings: rules section.
+  ///
+  /// In en, this message translates to:
+  /// **'Alert rules'**
+  String get settingsRulesTitle;
+
+  /// Settings: rules intro.
+  ///
+  /// In en, this message translates to:
+  /// **'A rule switched off raises no alert. Alerts already raised stay.'**
+  String get settingsRulesIntro;
+
+  /// Settings: rule name.
+  ///
+  /// In en, this message translates to:
+  /// **'Absent all day'**
+  String get settingsRuleFullDay;
+
+  /// Settings: rule name.
+  ///
+  /// In en, this message translates to:
+  /// **'Late several days running'**
+  String get settingsRuleLateness;
+
+  /// Settings: rule name.
+  ///
+  /// In en, this message translates to:
+  /// **'Unjustified absences'**
+  String get settingsRuleUnjustified;
+
+  /// Settings: what the full-day rule does.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{An alert when a student misses every lesson of a day.} other{An alert when a student misses every lesson {count} days running.}}'**
+  String settingsHelpFullDay(int count);
+
+  /// Settings: what the lateness rule does.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{An alert when a student arrives late.} other{An alert when a student arrives late {count} school days running.}}'**
+  String settingsHelpLateness(int count);
+
+  /// Settings: what the unjustified rule does.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{An alert at the first unjustified missed lesson of the term.} other{An alert at {count} unjustified missed lessons in the term.}}'**
+  String settingsHelpUnjustified(int count);
+
+  /// Settings: count label.
+  ///
+  /// In en, this message translates to:
+  /// **'Days in a row'**
+  String get settingsCountFullDay;
+
+  /// Settings: count label.
+  ///
+  /// In en, this message translates to:
+  /// **'School days in a row'**
+  String get settingsCountLateness;
+
+  /// Settings: count label.
+  ///
+  /// In en, this message translates to:
+  /// **'Lessons in the term'**
+  String get settingsCountUnjustified;
+
+  /// Settings: a count's bounds.
+  ///
+  /// In en, this message translates to:
+  /// **'between {min} and {max}'**
+  String settingsCountRange(int min, int max);
+
+  /// Settings: lower the count.
+  ///
+  /// In en, this message translates to:
+  /// **'Less'**
+  String get settingsLess;
+
+  /// Settings: raise the count.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get settingsMore;
+
+  /// Settings: times section.
+  ///
+  /// In en, this message translates to:
+  /// **'School times'**
+  String get settingsTimesTitle;
+
+  /// Settings: times intro.
+  ///
+  /// In en, this message translates to:
+  /// **'Arriving after the start time counts as late at the gate.'**
+  String get settingsTimesIntro;
+
+  /// Settings: start time.
+  ///
+  /// In en, this message translates to:
+  /// **'Start of school'**
+  String get settingsStartTime;
+
+  /// Settings: start time help.
+  ///
+  /// In en, this message translates to:
+  /// **'Also the default time of a summons.'**
+  String get settingsStartTimeHelp;
+
+  /// Settings: a time out of bounds.
+  ///
+  /// In en, this message translates to:
+  /// **'Between {min} and {max}'**
+  String settingsTimeRange(String min, String max);
+
+  /// Settings: digest time label.
+  ///
+  /// In en, this message translates to:
+  /// **'SMS digest {n}'**
+  String settingsDigest(int n);
+
+  /// Settings: second digest must be later.
+  ///
+  /// In en, this message translates to:
+  /// **'After the first digest'**
+  String get settingsDigestOrder;
+
+  /// Settings: add a digest time.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a second digest'**
+  String get settingsAddDigest;
+
+  /// Settings: remove the second digest.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get settingsRemoveDigest;
+
+  /// Settings: digest help.
+  ///
+  /// In en, this message translates to:
+  /// **'Parents without the app get one SMS with the day\'s absences and lateness, at these times.'**
+  String get settingsDigestHelp;
+
+  /// Settings: saved.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings saved.'**
+  String get settingsSaved;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

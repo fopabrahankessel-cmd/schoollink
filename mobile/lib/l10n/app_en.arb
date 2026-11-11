@@ -1289,5 +1289,145 @@
   "dashboardCancelledNote": "Cancelled records are not counted.",
   "@dashboardCancelledNote": {
     "description": "Dashboard footnote (BR-15)."
+  },
+  "settingsIntro": "When SchoolLink raises an alert, when school starts, and when parents get the SMS digest. These settings apply to the whole school.",
+  "@settingsIntro": {
+    "description": "Settings screen intro (UC-D7)."
+  },
+  "settingsRulesTitle": "Alert rules",
+  "@settingsRulesTitle": {
+    "description": "Settings: rules section."
+  },
+  "settingsRulesIntro": "A rule switched off raises no alert. Alerts already raised stay.",
+  "@settingsRulesIntro": {
+    "description": "Settings: rules intro."
+  },
+  "settingsRuleFullDay": "Absent all day",
+  "@settingsRuleFullDay": {
+    "description": "Settings: rule name."
+  },
+  "settingsRuleLateness": "Late several days running",
+  "@settingsRuleLateness": {
+    "description": "Settings: rule name."
+  },
+  "settingsRuleUnjustified": "Unjustified absences",
+  "@settingsRuleUnjustified": {
+    "description": "Settings: rule name."
+  },
+  "settingsHelpFullDay": "{count, plural, =1{An alert when a student misses every lesson of a day.} other{An alert when a student misses every lesson {count} days running.}}",
+  "@settingsHelpFullDay": {
+    "description": "Settings: what the full-day rule does.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsHelpLateness": "{count, plural, =1{An alert when a student arrives late.} other{An alert when a student arrives late {count} school days running.}}",
+  "@settingsHelpLateness": {
+    "description": "Settings: what the lateness rule does.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsHelpUnjustified": "{count, plural, =1{An alert at the first unjustified missed lesson of the term.} other{An alert at {count} unjustified missed lessons in the term.}}",
+  "@settingsHelpUnjustified": {
+    "description": "Settings: what the unjustified rule does.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsCountFullDay": "Days in a row",
+  "@settingsCountFullDay": {
+    "description": "Settings: count label."
+  },
+  "settingsCountLateness": "School days in a row",
+  "@settingsCountLateness": {
+    "description": "Settings: count label."
+  },
+  "settingsCountUnjustified": "Lessons in the term",
+  "@settingsCountUnjustified": {
+    "description": "Settings: count label."
+  },
+  "settingsCountRange": "between {min} and {max}",
+  "@settingsCountRange": {
+    "description": "Settings: a count's bounds.",
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsLess": "Less",
+  "@settingsLess": {
+    "description": "Settings: lower the count."
+  },
+  "settingsMore": "More",
+  "@settingsMore": {
+    "description": "Settings: raise the count."
+  },
+  "settingsTimesTitle": "School times",
+  "@settingsTimesTitle": {
+    "description": "Settings: times section."
+  },
+  "settingsTimesIntro": "Arriving after the start time counts as late at the gate.",
+  "@settingsTimesIntro": {
+    "description": "Settings: times intro."
+  },
+  "settingsStartTime": "Start of school",
+  "@settingsStartTime": {
+    "description": "Settings: start time."
+  },
+  "settingsStartTimeHelp": "Also the default time of a summons.",
+  "@settingsStartTimeHelp": {
+    "description": "Settings: start time help."
+  },
+  "settingsTimeRange": "Between {min} and {max}",
+  "@settingsTimeRange": {
+    "description": "Settings: a time out of bounds.",
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsDigest": "SMS digest {n}",
+  "@settingsDigest": {
+    "description": "Settings: digest time label.",
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsDigestOrder": "After the first digest",
+  "@settingsDigestOrder": {
+    "description": "Settings: second digest must be later."
+  },
+  "settingsAddDigest": "Add a second digest",
+  "@settingsAddDigest": {
+    "description": "Settings: add a digest time."
+  },
+  "settingsRemoveDigest": "Remove",
+  "@settingsRemoveDigest": {
+    "description": "Settings: remove the second digest."
+  },
+  "settingsDigestHelp": "Parents without the app get one SMS with the day's absences and lateness, at these times.",
+  "@settingsDigestHelp": {
+    "description": "Settings: digest help."
+  },
+  "settingsSaved": "Settings saved.",
+  "@settingsSaved": {
+    "description": "Settings: saved."
   }
 }

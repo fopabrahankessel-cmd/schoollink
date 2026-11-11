@@ -1465,4 +1465,114 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dashboardCancelledNote => 'Cancelled records are not counted.';
+
+  @override
+  String get settingsIntro =>
+      'When SchoolLink raises an alert, when school starts, and when parents get the SMS digest. These settings apply to the whole school.';
+
+  @override
+  String get settingsRulesTitle => 'Alert rules';
+
+  @override
+  String get settingsRulesIntro => 'A rule switched off raises no alert. Alerts already raised stay.';
+
+  @override
+  String get settingsRuleFullDay => 'Absent all day';
+
+  @override
+  String get settingsRuleLateness => 'Late several days running';
+
+  @override
+  String get settingsRuleUnjustified => 'Unjustified absences';
+
+  @override
+  String settingsHelpFullDay(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'An alert when a student misses every lesson $count days running.',
+      one: 'An alert when a student misses every lesson of a day.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String settingsHelpLateness(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'An alert when a student arrives late $count school days running.',
+      one: 'An alert when a student arrives late.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String settingsHelpUnjustified(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'An alert at $count unjustified missed lessons in the term.',
+      one: 'An alert at the first unjustified missed lesson of the term.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get settingsCountFullDay => 'Days in a row';
+
+  @override
+  String get settingsCountLateness => 'School days in a row';
+
+  @override
+  String get settingsCountUnjustified => 'Lessons in the term';
+
+  @override
+  String settingsCountRange(int min, int max) {
+    return 'between $min and $max';
+  }
+
+  @override
+  String get settingsLess => 'Less';
+
+  @override
+  String get settingsMore => 'More';
+
+  @override
+  String get settingsTimesTitle => 'School times';
+
+  @override
+  String get settingsTimesIntro => 'Arriving after the start time counts as late at the gate.';
+
+  @override
+  String get settingsStartTime => 'Start of school';
+
+  @override
+  String get settingsStartTimeHelp => 'Also the default time of a summons.';
+
+  @override
+  String settingsTimeRange(String min, String max) {
+    return 'Between $min and $max';
+  }
+
+  @override
+  String settingsDigest(int n) {
+    return 'SMS digest $n';
+  }
+
+  @override
+  String get settingsDigestOrder => 'After the first digest';
+
+  @override
+  String get settingsAddDigest => 'Add a second digest';
+
+  @override
+  String get settingsRemoveDigest => 'Remove';
+
+  @override
+  String get settingsDigestHelp =>
+      'Parents without the app get one SMS with the day\'s absences and lateness, at these times.';
+
+  @override
+  String get settingsSaved => 'Settings saved.';
 }

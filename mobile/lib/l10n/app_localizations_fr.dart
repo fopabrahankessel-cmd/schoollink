@@ -1497,4 +1497,114 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get dashboardCancelledNote => 'Les enregistrements annulés ne comptent pas.';
+
+  @override
+  String get settingsIntro =>
+      'Quand SchoolLink lève une alerte, l\'heure de la rentrée des cours et l\'heure du SMS récapitulatif aux parents. Ces réglages valent pour toute l\'école.';
+
+  @override
+  String get settingsRulesTitle => 'Règles d\'alerte';
+
+  @override
+  String get settingsRulesIntro => 'Une règle désactivée ne lève plus d\'alerte. Les alertes déjà levées restent.';
+
+  @override
+  String get settingsRuleFullDay => 'Absent toute la journée';
+
+  @override
+  String get settingsRuleLateness => 'En retard plusieurs jours de suite';
+
+  @override
+  String get settingsRuleUnjustified => 'Absences non justifiées';
+
+  @override
+  String settingsHelpFullDay(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Une alerte quand un élève manque tous les cours $count jours de suite.',
+      one: 'Une alerte quand un élève manque tous les cours d\'une journée.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String settingsHelpLateness(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Une alerte quand un élève arrive en retard $count jours de classe de suite.',
+      one: 'Une alerte quand un élève arrive en retard.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String settingsHelpUnjustified(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Une alerte à $count cours manqués sans justification dans le trimestre.',
+      one: 'Une alerte au premier cours manqué sans justification du trimestre.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get settingsCountFullDay => 'Jours de suite';
+
+  @override
+  String get settingsCountLateness => 'Jours de classe de suite';
+
+  @override
+  String get settingsCountUnjustified => 'Cours dans le trimestre';
+
+  @override
+  String settingsCountRange(int min, int max) {
+    return 'entre $min et $max';
+  }
+
+  @override
+  String get settingsLess => 'Moins';
+
+  @override
+  String get settingsMore => 'Plus';
+
+  @override
+  String get settingsTimesTitle => 'Horaires';
+
+  @override
+  String get settingsTimesIntro => 'Arriver après l\'heure de la rentrée compte comme un retard au portail.';
+
+  @override
+  String get settingsStartTime => 'Rentrée des cours';
+
+  @override
+  String get settingsStartTimeHelp => 'C\'est aussi l\'heure par défaut d\'une convocation.';
+
+  @override
+  String settingsTimeRange(String min, String max) {
+    return 'Entre $min et $max';
+  }
+
+  @override
+  String settingsDigest(int n) {
+    return 'SMS récapitulatif $n';
+  }
+
+  @override
+  String get settingsDigestOrder => 'Après le premier récapitulatif';
+
+  @override
+  String get settingsAddDigest => 'Ajouter un second récapitulatif';
+
+  @override
+  String get settingsRemoveDigest => 'Retirer';
+
+  @override
+  String get settingsDigestHelp =>
+      'Les parents sans l\'application reçoivent un SMS avec les absences et retards du jour, à ces heures.';
+
+  @override
+  String get settingsSaved => 'Réglages enregistrés.';
 }
