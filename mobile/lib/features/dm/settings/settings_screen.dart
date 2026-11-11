@@ -156,16 +156,31 @@ class _FormState extends ConsumerState<_Form> {
                       const SizedBox(height: Gap.s),
                       Row(
                         children: [
+                          // a count the server holds out of its bounds blocks Save: say so, here
+                          if (rule.count < rule.min || rule.count > rule.max) ...[
+                            Icon(
+                              Icons.error_outline_rounded,
+                              key: ValueKey('rule-out-of-range-${rule.type}'),
+                              size: 18,
+                              color: scheme.error,
+                            ),
+                            const SizedBox(width: Gap.xs),
+                          ],
                           Expanded(
                             child: Text(
                               '${_ruleCountLabel(rule.rule, l)} · ${l.settingsCountRange(rule.min, rule.max)}',
-                              style: theme.textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: rule.count < rule.min || rule.count > rule.max
+                                    ? scheme.error
+                                    : scheme.onSurfaceVariant,
+                              ),
                             ),
                           ),
                           IconButton.outlined(
                             key: ValueKey('rule-minus-${rule.type}'),
                             tooltip: l.settingsLess,
-                            onPressed: rule.active && rule.count > rule.min
+                            // an inactive rule's count moves only back into its bounds
+                            onPressed: (rule.active || rule.count > rule.max) && rule.count > rule.min
                                 ? () => _setRule(i, rule.copyWith(count: rule.count - 1))
                                 : null,
                             icon: const Icon(Icons.remove_rounded),
@@ -181,7 +196,7 @@ class _FormState extends ConsumerState<_Form> {
                           IconButton.outlined(
                             key: ValueKey('rule-plus-${rule.type}'),
                             tooltip: l.settingsMore,
-                            onPressed: rule.active && rule.count < rule.max
+                            onPressed: (rule.active || rule.count < rule.min) && rule.count < rule.max
                                 ? () => _setRule(i, rule.copyWith(count: rule.count + 1))
                                 : null,
                             icon: const Icon(Icons.add_rounded),

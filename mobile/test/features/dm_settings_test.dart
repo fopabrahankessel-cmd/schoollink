@@ -71,6 +71,23 @@ void main() {
   bool saveEnabled(WidgetTester tester) =>
       tester.widget<FilledButton>(find.byKey(const ValueKey('settings-save'))).onPressed != null;
 
+  testWidgets('a count out of its bounds says why Save waits, and can be brought back', (tester) async {
+    settings['rules'] = [
+      rule('FULL_DAY_ABSENCE', 1),
+      rule('CONSECUTIVE_LATENESS', 3),
+      rule('UNJUSTIFIED_ABSENCES', 12, active: false, max: 10),
+    ];
+    await open(tester);
+
+    expect(saveEnabled(tester), isFalse);
+    expect(find.byKey(const ValueKey('rule-out-of-range-UNJUSTIFIED_ABSENCES')), findsOneWidget);
+    await tap(tester, find.byKey(const ValueKey('rule-minus-UNJUSTIFIED_ABSENCES')));
+    await tap(tester, find.byKey(const ValueKey('rule-minus-UNJUSTIFIED_ABSENCES')));
+
+    expect(find.byKey(const ValueKey('rule-out-of-range-UNJUSTIFIED_ABSENCES')), findsNothing);
+    expect(saveEnabled(tester), isTrue);
+  });
+
   testWidgets('the current settings are shown', (tester) async {
     await open(tester);
 
@@ -147,7 +164,10 @@ void main() {
   });
 
   testWidgets("a server refusal is shown in the server's words", (tester) async {
-    saveReply = const Reply(400, {'code': 'validation.range', 'message': "L'heure de début doit être entre 05:00 et 12:00."});
+    saveReply = const Reply(400, {
+      'code': 'validation.range',
+      'message': "L'heure de début doit être entre 05:00 et 12:00.",
+    });
     await open(tester);
 
     await tap(tester, find.byKey(const ValueKey('settings-save')));
