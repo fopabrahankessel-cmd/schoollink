@@ -1443,4 +1443,58 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get noClosedAlerts => 'Aucune alerte traitée pour le moment.';
+
+  @override
+  String dashboardRange(String from, String to) {
+    return 'Du $from au $to';
+  }
+
+  @override
+  String get kpiAbsenceRate => 'Taux d\'absence';
+
+  @override
+  String get kpiUnjustified => 'Absences non justifiées';
+
+  @override
+  String get kpiLateness => 'Retards';
+
+  @override
+  String get kpiOpenAlerts => 'Alertes à traiter';
+
+  @override
+  String get dashboardByClass => 'Par classe';
+
+  @override
+  String dashboardClassLine(int absent, int late) {
+    String _temp0 = intl.Intl.pluralLogic(
+      absent,
+      locale: localeName,
+      other: '$absent cours manqués',
+      one: '$absent cours manqué',
+    );
+    String _temp1 = intl.Intl.pluralLogic(late, locale: localeName, other: '$late retards', one: '$late retard');
+    return '$_temp0 · $_temp1';
+  }
+
+  @override
+  String get dashboardAlertsByRule => 'Alertes par règle';
+
+  @override
+  String dashboardRuleLine(int raised, int closed, int open) {
+    String _temp0 = intl.Intl.pluralLogic(raised, locale: localeName, other: '$raised levées', one: '$raised levée');
+    String _temp1 = intl.Intl.pluralLogic(
+      closed,
+      locale: localeName,
+      other: '$closed traitées',
+      one: '$closed traitée',
+    );
+    String _temp2 = intl.Intl.pluralLogic(open, locale: localeName, other: '$open ouvertes', one: '$open ouverte');
+    return '$_temp0 · $_temp1 · $_temp2';
+  }
+
+  @override
+  String get dashboardNoActivity => 'Aucun appel fait et aucun retard enregistré sur cette période.';
+
+  @override
+  String get dashboardCancelledNote => 'Les enregistrements annulés ne comptent pas.';
 }

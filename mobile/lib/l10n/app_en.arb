@@ -1218,5 +1218,76 @@
   "noClosedAlerts": "No alert decided yet.",
   "@noClosedAlerts": {
     "description": "Decided alerts: empty list."
+  },
+  "dashboardRange": "{from} to {to}",
+  "@dashboardRange": {
+    "description": "Dashboard: the range shown; tap to change it.",
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "kpiAbsenceRate": "Absence rate",
+  "@kpiAbsenceRate": {
+    "description": "Dashboard figure: absent periods over expected student periods."
+  },
+  "kpiUnjustified": "Unjustified absences",
+  "@kpiUnjustified": {
+    "description": "Dashboard figure: absent periods not justified."
+  },
+  "kpiLateness": "Lateness",
+  "@kpiLateness": {
+    "description": "Dashboard figure: lateness recorded."
+  },
+  "kpiOpenAlerts": "Alerts to decide",
+  "@kpiOpenAlerts": {
+    "description": "Dashboard figure: alerts open now."
+  },
+  "dashboardByClass": "By class",
+  "@dashboardByClass": {
+    "description": "Dashboard section: each class, most absences first."
+  },
+  "dashboardClassLine": "{absent, plural, =1{1 missed lesson} other{{absent} missed lessons}} · {late} late",
+  "@dashboardClassLine": {
+    "description": "Dashboard: one class's absent periods and lateness.",
+    "placeholders": {
+      "absent": {
+        "type": "int"
+      },
+      "late": {
+        "type": "int"
+      }
+    }
+  },
+  "dashboardAlertsByRule": "Alerts by rule",
+  "@dashboardAlertsByRule": {
+    "description": "Dashboard section: alerts per rule."
+  },
+  "dashboardRuleLine": "{raised} raised · {closed} decided · {open} open",
+  "@dashboardRuleLine": {
+    "description": "Dashboard: alerts of one rule in the range, and open now.",
+    "placeholders": {
+      "raised": {
+        "type": "int"
+      },
+      "closed": {
+        "type": "int"
+      },
+      "open": {
+        "type": "int"
+      }
+    }
+  },
+  "dashboardNoActivity": "No roll call and no lateness recorded in this period.",
+  "@dashboardNoActivity": {
+    "description": "Dashboard: empty range."
+  },
+  "dashboardCancelledNote": "Cancelled records are not counted.",
+  "@dashboardCancelledNote": {
+    "description": "Dashboard footnote (BR-15)."
   }
 }

@@ -10,6 +10,7 @@ import 'features/auth/parent_sign_in_screen.dart';
 import 'features/dm/alert_screen.dart';
 import 'features/dm/alerts_list.dart';
 import 'features/dm/closed_alerts_screen.dart';
+import 'features/dm/dashboard/scope_dashboard_screen.dart';
 import 'features/dm/message_composer_screen.dart';
 import 'features/dm/student_history_screen.dart';
 import 'features/dm/full_day/full_day_screen.dart';
@@ -83,6 +84,8 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(path: 'alerts', builder: (context, state) => const OpenAlertsScreen()),
           // D41: the decided alerts, from More
           GoRoute(path: 'alerts/closed', builder: (context, state) => const ClosedAlertsScreen()),
+          // UC-D8, D41: the scope dashboard, from More
+          GoRoute(path: 'dashboard', builder: (context, state) => const ScopeDashboardScreen()),
           GoRoute(path: 'full-day', builder: (context, state) => const FullDayScreen()),
           // UC-D10, D40: the DM's day of attendance, period by period
           GoRoute(path: 'day', builder: (context, state) => const DayScreen()),

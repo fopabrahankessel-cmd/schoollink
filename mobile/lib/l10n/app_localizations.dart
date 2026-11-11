@@ -2269,6 +2269,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No alert decided yet.'**
   String get noClosedAlerts;
+
+  /// Dashboard: the range shown; tap to change it.
+  ///
+  /// In en, this message translates to:
+  /// **'{from} to {to}'**
+  String dashboardRange(String from, String to);
+
+  /// Dashboard figure: absent periods over expected student periods.
+  ///
+  /// In en, this message translates to:
+  /// **'Absence rate'**
+  String get kpiAbsenceRate;
+
+  /// Dashboard figure: absent periods not justified.
+  ///
+  /// In en, this message translates to:
+  /// **'Unjustified absences'**
+  String get kpiUnjustified;
+
+  /// Dashboard figure: lateness recorded.
+  ///
+  /// In en, this message translates to:
+  /// **'Lateness'**
+  String get kpiLateness;
+
+  /// Dashboard figure: alerts open now.
+  ///
+  /// In en, this message translates to:
+  /// **'Alerts to decide'**
+  String get kpiOpenAlerts;
+
+  /// Dashboard section: each class, most absences first.
+  ///
+  /// In en, this message translates to:
+  /// **'By class'**
+  String get dashboardByClass;
+
+  /// Dashboard: one class's absent periods and lateness.
+  ///
+  /// In en, this message translates to:
+  /// **'{absent, plural, =1{1 missed lesson} other{{absent} missed lessons}} · {late} late'**
+  String dashboardClassLine(int absent, int late);
+
+  /// Dashboard section: alerts per rule.
+  ///
+  /// In en, this message translates to:
+  /// **'Alerts by rule'**
+  String get dashboardAlertsByRule;
+
+  /// Dashboard: alerts of one rule in the range, and open now.
+  ///
+  /// In en, this message translates to:
+  /// **'{raised} raised · {closed} decided · {open} open'**
+  String dashboardRuleLine(int raised, int closed, int open);
+
+  /// Dashboard: empty range.
+  ///
+  /// In en, this message translates to:
+  /// **'No roll call and no lateness recorded in this period.'**
+  String get dashboardNoActivity;
+
+  /// Dashboard footnote (BR-15).
+  ///
+  /// In en, this message translates to:
+  /// **'Cancelled records are not counted.'**
+  String get dashboardCancelledNote;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

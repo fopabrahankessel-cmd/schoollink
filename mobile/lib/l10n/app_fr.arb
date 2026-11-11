@@ -362,5 +362,16 @@
   "decidedDismiss": "Classée sans suite",
   "decidedDisciplinary": "Dossier disciplinaire ouvert",
   "decidedRefer": "Orienté vers le conseiller",
-  "noClosedAlerts": "Aucune alerte traitée pour le moment."
+  "noClosedAlerts": "Aucune alerte traitée pour le moment.",
+  "dashboardRange": "Du {from} au {to}",
+  "kpiAbsenceRate": "Taux d'absence",
+  "kpiUnjustified": "Absences non justifiées",
+  "kpiLateness": "Retards",
+  "kpiOpenAlerts": "Alertes à traiter",
+  "dashboardByClass": "Par classe",
+  "dashboardClassLine": "{absent, plural, one{{absent} cours manqué} other{{absent} cours manqués}} · {late, plural, one{{late} retard} other{{late} retards}}",
+  "dashboardAlertsByRule": "Alertes par règle",
+  "dashboardRuleLine": "{raised, plural, one{{raised} levée} other{{raised} levées}} · {closed, plural, one{{closed} traitée} other{{closed} traitées}} · {open, plural, one{{open} ouverte} other{{open} ouvertes}}",
+  "dashboardNoActivity": "Aucun appel fait et aucun retard enregistré sur cette période.",
+  "dashboardCancelledNote": "Les enregistrements annulés ne comptent pas."
 }

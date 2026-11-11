@@ -1420,4 +1420,49 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noClosedAlerts => 'No alert decided yet.';
+
+  @override
+  String dashboardRange(String from, String to) {
+    return '$from to $to';
+  }
+
+  @override
+  String get kpiAbsenceRate => 'Absence rate';
+
+  @override
+  String get kpiUnjustified => 'Unjustified absences';
+
+  @override
+  String get kpiLateness => 'Lateness';
+
+  @override
+  String get kpiOpenAlerts => 'Alerts to decide';
+
+  @override
+  String get dashboardByClass => 'By class';
+
+  @override
+  String dashboardClassLine(int absent, int late) {
+    String _temp0 = intl.Intl.pluralLogic(
+      absent,
+      locale: localeName,
+      other: '$absent missed lessons',
+      one: '1 missed lesson',
+    );
+    return '$_temp0 · $late late';
+  }
+
+  @override
+  String get dashboardAlertsByRule => 'Alerts by rule';
+
+  @override
+  String dashboardRuleLine(int raised, int closed, int open) {
+    return '$raised raised · $closed decided · $open open';
+  }
+
+  @override
+  String get dashboardNoActivity => 'No roll call and no lateness recorded in this period.';
+
+  @override
+  String get dashboardCancelledNote => 'Cancelled records are not counted.';
 }

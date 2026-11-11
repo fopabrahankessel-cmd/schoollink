@@ -8,6 +8,7 @@ import '../../core/providers.dart';
 import '../parent/parent.dart' show HistoryDay;
 import '../teacher/attendance.dart' show isoDate;
 import '../teacher/teacher_sessions.dart' show DayTime;
+import 'dashboard/scope_dashboard_models.dart';
 import 'day/day_models.dart';
 import 'discipline.dart';
 import 'full_day/full_day_models.dart';
@@ -239,6 +240,17 @@ class DmRepository {
     return [for (final a in response.data!.cast<Map<String, dynamic>>()) RiskAlert.fromJson(a)];
   }
 
+  /// UC-D8, D34: the DM's classes over [span], both days included.
+  Future<ScopeDashboard> scopeDashboard(DateSpan span) async {
+    final response = await _call(
+      () => _dio.get<Map<String, dynamic>>(
+        '/dashboard/scope',
+        queryParameters: {'from': isoDate(span.from), 'to': isoDate(span.to)},
+      ),
+    );
+    return ScopeDashboard.fromJson(response.data!);
+  }
+
   /// UC-D2, D41: the alerts already decided, the latest first as the server sends them.
   Future<List<RiskAlert>> closedAlerts() async {
     final response = await _call(() => _dio.get<List<dynamic>>('/alerts', queryParameters: {'status': 'closed'}));
@@ -429,6 +441,11 @@ final dmRepositoryProvider = Provider<DmRepository>((ref) => DmRepository(ref.wa
 /// UC-D2: the open alerts of the DM's classes.
 final openAlertsProvider = FutureProvider.autoDispose<List<RiskAlert>>(
   (ref) => ref.watch(dmRepositoryProvider).openAlerts(),
+);
+
+/// UC-D8, D41: the scope dashboard over a range.
+final scopeDashboardProvider = FutureProvider.autoDispose.family<ScopeDashboard, DateSpan>(
+  (ref, span) => ref.watch(dmRepositoryProvider).scopeDashboard(span),
 );
 
 /// UC-D2, D41: the decided alerts, from the More tab.
