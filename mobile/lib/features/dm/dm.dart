@@ -424,9 +424,12 @@ class DmRepository {
   /// UC-D4, D38: sends [draft] to the guardians; the same id sent again sends once.
   Future<void> sendMessage(MessageDraft draft) => _call(() => _dio.post<void>('/messages', data: draft.toJson()));
 
-  /// UC-D4, D38: the DM's own messages, newest first, with their delivery.
-  Future<List<SentMessage>> sentMessages() async {
-    final response = await _call(() => _dio.get<List<dynamic>>('/messages'));
+  /// UC-D4, D38: the DM's own messages, newest first, with their delivery; with [studentId], those
+  /// written to that one student's parents (D41).
+  Future<List<SentMessage>> sentMessages({String? studentId}) async {
+    final response = await _call(
+      () => _dio.get<List<dynamic>>('/messages', queryParameters: {'studentId': ?studentId}),
+    );
     return [for (final json in response.data!.cast<Map<String, dynamic>>()) SentMessage.fromJson(json)];
   }
 

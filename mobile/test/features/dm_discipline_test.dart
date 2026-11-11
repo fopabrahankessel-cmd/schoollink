@@ -124,12 +124,13 @@ void main() {
     await openDiscipline(tester);
 
     expect(find.text('Aucun incident enregistré.'), findsOneWidget);
-    expect(find.widgetWithText(FloatingActionButton, 'Signaler un incident'), findsOneWidget);
+    expect(find.byKey(const ValueKey('student-actions')), findsOneWidget, reason: 'D41: Agir records an incident');
   });
 
   testWidgets('recording an incident sends category, date, measure and text', (tester) async {
     await openDiscipline(tester);
-    await tapAndSettle(tester, find.widgetWithText(FloatingActionButton, 'Signaler un incident'));
+    await tapAndSettle(tester, find.byKey(const ValueKey('student-actions'))); // D41
+    await tapAndSettle(tester, find.byKey(const ValueKey('action-incident')));
 
     await tapAndSettle(tester, find.widgetWithText(ChoiceChip, 'Bagarre'));
     await tapAndSettle(tester, find.byKey(const ValueKey('incident-measure')));
@@ -150,7 +151,8 @@ void main() {
 
   testWidgets('the save button stays disabled for a blank description or no category', (tester) async {
     await openDiscipline(tester);
-    await tapAndSettle(tester, find.widgetWithText(FloatingActionButton, 'Signaler un incident'));
+    await tapAndSettle(tester, find.byKey(const ValueKey('student-actions'))); // D41
+    await tapAndSettle(tester, find.byKey(const ValueKey('action-incident')));
     expect(enabled(tester), isFalse);
 
     await tester.enterText(find.byKey(const ValueKey('incident-description')), 'Insolence en classe');
@@ -165,7 +167,8 @@ void main() {
 
   testWidgets('the date picker allows today back to 30 days only', (tester) async {
     await openDiscipline(tester);
-    await tapAndSettle(tester, find.widgetWithText(FloatingActionButton, 'Signaler un incident'));
+    await tapAndSettle(tester, find.byKey(const ValueKey('student-actions'))); // D41
+    await tapAndSettle(tester, find.byKey(const ValueKey('action-incident')));
     await tapAndSettle(tester, find.byKey(const ValueKey('incident-date')));
 
     final picker = tester.widget<DatePickerDialog>(find.byType(DatePickerDialog));
@@ -241,6 +244,6 @@ void main() {
     expect(find.text('Fight'), findsOneWidget);
     expect(find.textContaining('Detention'), findsOneWidget);
     expect(find.text('Open'), findsOneWidget);
-    expect(find.widgetWithText(FloatingActionButton, 'Record an incident'), findsOneWidget);
+    expect(find.widgetWithText(FloatingActionButton, 'Act'), findsOneWidget); // D41
   });
 }

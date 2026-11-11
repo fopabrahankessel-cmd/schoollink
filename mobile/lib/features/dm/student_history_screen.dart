@@ -15,6 +15,8 @@ import '../parent/parent.dart' show HistoryDay;
 import 'dm.dart';
 import 'discipline_tab.dart';
 import 'dm_sheets.dart';
+import 'messages.dart';
+import 'messages_screen.dart' show SentMessageCard;
 import '../shell/tab_path.dart';
 
 /// A record of the history: an absent lesson or a lateness, apart (BR-8, BR-9).
@@ -35,8 +37,8 @@ class StudentHistoryScreen extends ConsumerStatefulWidget {
 class _StudentHistoryScreenState extends ConsumerState<StudentHistoryScreen> with SingleTickerProviderStateMixin {
   final Set<_Record> _selected = {};
 
-  /// UC-D5, D37: History, then Discipline.
-  late final TabController _tabs = TabController(length: 2, vsync: this)..addListener(_tabChanged);
+  /// UC-D5, D37, D41: History, Discipline, then the messages to the parents.
+  late final TabController _tabs = TabController(length: 3, vsync: this)..addListener(_tabChanged);
 
   void _tabChanged() {
     if (!_tabs.indexIsChanging) {
@@ -111,6 +113,50 @@ class _StudentHistoryScreenState extends ConsumerState<StudentHistoryScreen> wit
     }
   }
 
+  /// D41: record an incident (UC-D5), write to the parents (UC-D4), or summon them (UC-D3).
+  Future<void> _act(StudentHistory history) async {
+    final l = AppLocalizations.of(context);
+    final action = await showModalBottomSheet<_Action>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            for (final (action, icon, label) in [
+              (_Action.incident, Icons.report_outlined, l.recordIncident),
+              (_Action.message, Icons.chat_outlined, l.writeToParents),
+              (_Action.summon, Icons.campaign_outlined, l.decisionSummon),
+            ])
+              ListTile(
+                key: ValueKey('action-${action.name}'),
+                minTileHeight: 56,
+                leading: Icon(icon),
+                title: Text(label),
+                onTap: () => Navigator.pop(context, action),
+              ),
+            const SizedBox(height: Gap.s),
+          ],
+        ),
+      ),
+    );
+    if (!mounted || action == null) {
+      return;
+    }
+    switch (action) {
+      case _Action.incident:
+        _tabs.animateTo(1);
+        await recordIncident(context, ref, widget.studentId);
+      case _Action.message:
+        await context.push(
+          underTab(context, Uri(path: 'write', queryParameters: {'studentId': history.studentId}).toString()),
+          extra: history.fullName,
+        );
+      case _Action.summon:
+        await _summon(history);
+    }
+  }
+
   Future<void> _summon(StudentHistory history) async {
     final l = AppLocalizations.of(context);
     final locale = Localizations.localeOf(context).toLanguageTag();
@@ -149,26 +195,6 @@ class _StudentHistoryScreenState extends ConsumerState<StudentHistoryScreen> wit
     return Scaffold(
       appBar: AppBar(
         title: Text(loaded == null ? l.historyTitle : loaded.fullName),
-        actions: [
-          // UC-D4, D38: a message to this student's parents
-          if (loaded != null)
-            IconButton(
-              key: const ValueKey('history-message'),
-              tooltip: l.writeToParents,
-              icon: const Icon(Icons.chat_outlined),
-              onPressed: () => context.push(
-                underTab(context, Uri(path: 'write', queryParameters: {'studentId': loaded.studentId}).toString()),
-                extra: loaded.fullName,
-              ),
-            ),
-          if (loaded != null)
-            IconButton(
-              key: const ValueKey('history-summon'),
-              tooltip: l.decisionSummon,
-              icon: const Icon(Icons.campaign_outlined),
-              onPressed: () => _summon(loaded),
-            ),
-        ],
         bottom: TabBar(
           controller: _tabs,
           labelColor: status.onHeader,
@@ -178,6 +204,7 @@ class _StudentHistoryScreenState extends ConsumerState<StudentHistoryScreen> wit
           tabs: [
             Tab(text: l.tabHistory),
             Tab(text: l.disciplineTab),
+            Tab(text: l.navMessages),
           ],
         ),
       ),
@@ -197,14 +224,17 @@ class _StudentHistoryScreenState extends ConsumerState<StudentHistoryScreen> wit
             _ => const Skeleton(child: SkeletonRows(count: 5)),
           },
           DisciplineTab(studentId: widget.studentId),
+          _StudentMessages(studentId: widget.studentId),
         ],
       ),
-      floatingActionButton: onHistory
+      // D41: one button for what the DM does about the student; hidden while records are ticked
+      floatingActionButton: loaded == null || _selected.isNotEmpty
           ? null
           : FloatingActionButton.extended(
-              onPressed: () => recordIncident(context, ref, widget.studentId),
-              icon: const Icon(Icons.add_rounded),
-              label: Text(l.recordIncident),
+              key: const ValueKey('student-actions'),
+              onPressed: () => _act(loaded),
+              icon: const Icon(Icons.bolt_rounded),
+              label: Text(l.studentActions),
             ),
       bottomNavigationBar: !onHistory || _selected.isEmpty
           ? null
@@ -504,6 +534,52 @@ class _RecordLine extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+enum _Action { incident, message, summon }
+
+/// D41, UC-D4: the messages written to this student's parents, newest first.
+class _StudentMessages extends ConsumerWidget {
+  const _StudentMessages({required this.studentId});
+
+  final String studentId;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+    final messages = ref.watch(studentMessagesProvider(studentId));
+    return RefreshIndicator(
+      onRefresh: () => ref.refresh(studentMessagesProvider(studentId).future).then((_) {}, onError: (_) {}),
+      child: ListView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        // room for the action button over the last card
+        padding: const EdgeInsets.fromLTRB(Gap.l, Gap.l, Gap.l, 96),
+        children: [
+          switch (messages) {
+            AsyncValue(value: final list?) when list.isNotEmpty => Column(
+              children: [
+                for (final message in list)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: Gap.m),
+                    child: SentMessageCard(message: message),
+                  ),
+              ],
+            ),
+            AsyncValue(value: final _?) => EmptyState(
+              icon: Icons.forum_outlined,
+              title: l.studentNoMessages,
+              body: l.studentNoMessagesBody,
+            ),
+            AsyncError(:final error) => FailureView(
+              message: failureText(error, l),
+              onRetry: () => ref.invalidate(studentMessagesProvider(studentId)),
+            ),
+            _ => const Skeleton(child: SkeletonRows(count: 3)),
+          },
+        ],
       ),
     );
   }

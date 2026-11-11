@@ -1607,4 +1607,13 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get settingsSaved => 'Réglages enregistrés.';
+
+  @override
+  String get studentActions => 'Agir';
+
+  @override
+  String get studentNoMessages => 'Aucun message envoyé à ses parents.';
+
+  @override
+  String get studentNoMessagesBody => 'Pour leur écrire, touchez « Agir ».';
 }

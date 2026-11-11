@@ -193,7 +193,8 @@ void main() {
     await tapAndSettle(tester, find.byKey(const ValueKey('today-alerts'))); // D41: the alerts open from Today
     await tapAndSettle(tester, find.byKey(const ValueKey('alert-al-1')));
     await tapAndSettle(tester, find.byKey(const ValueKey('alert-history')));
-    await tapAndSettle(tester, find.byKey(const ValueKey('history-message')));
+    await tapAndSettle(tester, find.byKey(const ValueKey('student-actions'))); // D41
+    await tapAndSettle(tester, find.byKey(const ValueKey('action-message')));
 
     expect(find.text('Écrire aux parents'), findsOneWidget);
     expect(find.widgetWithText(Chip, 'Fictif Awa'), findsOneWidget);

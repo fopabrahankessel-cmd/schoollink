@@ -159,7 +159,9 @@ class _MessageComposerScreenState extends ConsumerState<MessageComposerScreen> {
     setState(() => _sending = true);
     try {
       await ref.read(dmRepositoryProvider).sendMessage(_draft);
-      ref.invalidate(sentMessagesProvider);
+      ref
+        ..invalidate(sentMessagesProvider)
+        ..invalidate(studentMessagesProvider);
       messenger
         ..hideCurrentSnackBar()
         ..showSnackBar(SnackBar(content: Text(l.messageSent)));

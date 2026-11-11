@@ -2491,6 +2491,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Settings saved.'**
   String get settingsSaved;
+
+  /// Student page: the one button for incident, message, summons (D41).
+  ///
+  /// In en, this message translates to:
+  /// **'Act'**
+  String get studentActions;
+
+  /// Student page Messages tab: empty.
+  ///
+  /// In en, this message translates to:
+  /// **'No message sent to the parents.'**
+  String get studentNoMessages;
+
+  /// Student page Messages tab: what to do.
+  ///
+  /// In en, this message translates to:
+  /// **'To write to them, tap “Act”.'**
+  String get studentNoMessagesBody;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

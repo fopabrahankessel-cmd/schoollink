@@ -290,7 +290,8 @@ void main() {
       );
       await openHistory(tester);
 
-      await tapAndSettle(tester, find.byKey(const ValueKey('history-summon')));
+      await tapAndSettle(tester, find.byKey(const ValueKey('student-actions'))); // D41
+      await tapAndSettle(tester, find.byKey(const ValueKey('action-summon')));
       expect(find.text('Motif'), findsOneWidget);
       expect(enabled(tester, submit()), isFalse);
       await tester.enterText(find.byKey(const ValueKey('summons-reason')), 'Absences répétées');

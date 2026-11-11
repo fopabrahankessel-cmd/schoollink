@@ -182,6 +182,11 @@ final sentMessagesProvider = FutureProvider.autoDispose<List<SentMessage>>(
   (ref) => ref.watch(dmRepositoryProvider).sentMessages(),
 );
 
+/// D41: the messages written to one student's parents, for the student page.
+final studentMessagesProvider = FutureProvider.autoDispose.family<List<SentMessage>, String>(
+  (ref, studentId) => ref.watch(dmRepositoryProvider).sentMessages(studentId: studentId),
+);
+
 /// D38: the classes of the DM's blocks.
 final messageClassesProvider = FutureProvider.autoDispose<List<ClassOption>>(
   (ref) => ref.watch(dmRepositoryProvider).messageClasses(),

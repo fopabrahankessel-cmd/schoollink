@@ -399,5 +399,8 @@
   "settingsAddDigest": "Ajouter un second récapitulatif",
   "settingsRemoveDigest": "Retirer",
   "settingsDigestHelp": "Les parents sans l'application reçoivent un SMS avec les absences et retards du jour, à ces heures.",
-  "settingsSaved": "Réglages enregistrés."
+  "settingsSaved": "Réglages enregistrés.",
+  "studentActions": "Agir",
+  "studentNoMessages": "Aucun message envoyé à ses parents.",
+  "studentNoMessagesBody": "Pour leur écrire, touchez « Agir »."
 }

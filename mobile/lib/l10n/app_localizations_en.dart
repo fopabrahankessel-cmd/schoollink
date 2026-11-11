@@ -1575,4 +1575,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsSaved => 'Settings saved.';
+
+  @override
+  String get studentActions => 'Act';
+
+  @override
+  String get studentNoMessages => 'No message sent to the parents.';
+
+  @override
+  String get studentNoMessagesBody => 'To write to them, tap “Act”.';
 }

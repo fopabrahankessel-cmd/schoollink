@@ -1429,5 +1429,17 @@
   "settingsSaved": "Settings saved.",
   "@settingsSaved": {
     "description": "Settings: saved."
+  },
+  "studentActions": "Act",
+  "@studentActions": {
+    "description": "Student page: the one button for incident, message, summons (D41)."
+  },
+  "studentNoMessages": "No message sent to the parents.",
+  "@studentNoMessages": {
+    "description": "Student page Messages tab: empty."
+  },
+  "studentNoMessagesBody": "To write to them, tap “Act”.",
+  "@studentNoMessagesBody": {
+    "description": "Student page Messages tab: what to do."
   }
 }
