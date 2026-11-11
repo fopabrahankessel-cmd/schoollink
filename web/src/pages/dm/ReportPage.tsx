@@ -26,7 +26,7 @@ import { useLogoUrl } from '../../hooks/useLogoUrl'
 import { useResource } from '../../hooks/useResource'
 import { FileTextIcon, PrinterIcon } from '../../icons'
 import { tokens } from '../../theme'
-import { LetterheadPreview } from '../structure/LetterheadPreview'
+import { LetterheadHeader } from '../structure/LetterheadPreview'
 
 /**
  * Printing shows the sheet alone, on A4, without the app around it. The browser's print dialog
@@ -39,7 +39,8 @@ const PRINT_STYLES = (
         '@page': { size: 'A4', margin: 0 },
         'body *': { visibility: 'hidden' },
         '.report-sheet, .report-sheet *': { visibility: 'visible' },
-        '.report-sheet': { position: 'absolute', left: 0, top: 0, width: '210mm', boxShadow: 'none', border: 0 },
+        // doubled to outrank the outlined Paper's own border and corners
+        '.report-sheet.report-sheet': { position: 'absolute', left: 0, top: 0, width: '210mm', boxShadow: 'none', border: 0, borderRadius: 0 },
       },
     }}
   />
@@ -164,7 +165,7 @@ function Sheet({
       sx={{ width: '100%', maxWidth: '210mm', mx: 'auto', p: { xs: 2, sm: '15mm' }, bgcolor: '#fff', color: '#000' }}
     >
       {letterhead && (
-        <LetterheadPreview
+        <LetterheadHeader
           schoolName={letterhead.schoolName}
           layout={letterhead.layout}
           french={letterhead.french}

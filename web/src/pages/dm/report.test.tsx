@@ -81,6 +81,15 @@ describe('the day report (UC-D9, D41)', () => {
     expect(screen.getByText(/Heures non saisies.*4e C \(H2, H3\)/)).toBeInTheDocument()
   })
 
+  it("prints the school's header, not the settings page's preview of it", async () => {
+    const { client } = signedIn()
+    renderApp(client, '/report?date=2026-11-09')
+
+    expect(await screen.findByText('Lycée de Démo')).toBeInTheDocument()
+    // the preview draws a sketched page (a desk, a frame, grey bars) around the header
+    expect(screen.queryByRole('figure', { name: "Aperçu de l'en-tête" })).not.toBeInTheDocument()
+  })
+
   it('prints', async () => {
     const print = vi.spyOn(window, 'print').mockImplementation(() => undefined)
     const { client } = signedIn()

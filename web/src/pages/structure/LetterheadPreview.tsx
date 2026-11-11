@@ -27,7 +27,50 @@ interface Props {
   logoUrl: string | null
 }
 
-export function LetterheadPreview({ schoolName, layout, french, english, logoUrl }: Props) {
+export function LetterheadPreview(props: Props) {
+  const { t } = useTranslation()
+  return (
+    <Box
+      component="figure"
+      aria-label={t('letterhead.preview')}
+      sx={{
+        m: 0,
+        px: { xs: 1.5, sm: 4 },
+        pt: { xs: 2, sm: 4 },
+        borderRadius: `${tokens.radius.card}px`,
+        // the desk the sheet lies on
+        background: `radial-gradient(120% 90% at 50% 0%, ${tokens.surface} 0%, ${tokens.ground} 70%)`,
+        border: `1px solid ${tokens.border}`,
+        overflow: 'hidden',
+      }}
+    >
+      <Box sx={{ maxWidth: 860, mx: 'auto', containerType: 'inline-size' }}>
+        <Box
+          sx={{
+            '--pt': `calc(100cqw / ${PAGE})`,
+            bgcolor: '#fff',
+            px: pt(MARGIN),
+            pt: pt(MARGIN),
+            pb: pt(28),
+            borderRadius: '3px 3px 0 0',
+            boxShadow: '0 0 0 1px rgba(16, 32, 31, 0.06), 0 22px 48px -24px rgba(16, 32, 31, 0.45)',
+            // the page goes on below: it fades into the desk
+            maskImage: 'linear-gradient(to bottom, #000 72%, transparent)',
+          }}
+        >
+          <LetterheadHeader {...props} />
+          <ReportGhost />
+        </Box>
+      </Box>
+    </Box>
+  )
+}
+
+/**
+ * The header alone, then its double rule, as the PDF prints them: on the report's own sheet (D41).
+ * Its own width is the space between the A4 margins: its points are scaled from it.
+ */
+export function LetterheadHeader({ schoolName, layout, french, english, logoUrl }: Props) {
   const { t } = useTranslation()
   const logo = logoUrl && (
     <Box role="group" aria-label={t('letterhead.previewLogo')} sx={{ width: pt(LOGO), flex: 'none', display: 'flex', justifyContent: 'center' }}>
@@ -65,44 +108,20 @@ export function LetterheadPreview({ schoolName, layout, french, english, logoUrl
   }
 
   return (
-    <Box
-      component="figure"
-      aria-label={t('letterhead.preview')}
-      sx={{
-        m: 0,
-        px: { xs: 1.5, sm: 4 },
-        pt: { xs: 2, sm: 4 },
-        borderRadius: `${tokens.radius.card}px`,
-        // the desk the sheet lies on
-        background: `radial-gradient(120% 90% at 50% 0%, ${tokens.surface} 0%, ${tokens.ground} 70%)`,
-        border: `1px solid ${tokens.border}`,
-        overflow: 'hidden',
-      }}
-    >
-      <Box sx={{ maxWidth: 860, mx: 'auto', containerType: 'inline-size' }}>
-        <Box
-          sx={{
-            '--pt': `calc(100cqw / ${PAGE})`,
-            bgcolor: '#fff',
-            color: '#111',
-            fontFamily: '"Noto Sans", "Helvetica Neue", Arial, sans-serif',
-            lineHeight: 1.3,
-            px: pt(MARGIN),
-            pt: pt(MARGIN),
-            pb: pt(28),
-            borderRadius: '3px 3px 0 0',
-            boxShadow: '0 0 0 1px rgba(16, 32, 31, 0.06), 0 22px 48px -24px rgba(16, 32, 31, 0.45)',
-            // the page goes on below: it fades into the desk
-            maskImage: 'linear-gradient(to bottom, #000 72%, transparent)',
-            overflowWrap: 'anywhere',
-          }}
-        >
-          {header}
-          {/* a thick rule over a thin one, as on the PDF */}
-          <Box aria-hidden sx={{ mt: pt(10), borderTop: `${pt(1.4)} solid #111`, pt: pt(1.6) }}>
-            <Box sx={{ borderTop: `${pt(0.5)} solid #111` }} />
-          </Box>
-          <ReportGhost />
+    <Box sx={{ containerType: 'inline-size' }}>
+      <Box
+        sx={{
+          '--pt': `calc(100cqw / ${PAGE - 2 * MARGIN})`,
+          color: '#111',
+          fontFamily: '"Noto Sans", "Helvetica Neue", Arial, sans-serif',
+          lineHeight: 1.3,
+          overflowWrap: 'anywhere',
+        }}
+      >
+        {header}
+        {/* a thick rule over a thin one, as on the PDF */}
+        <Box aria-hidden sx={{ mt: pt(10), borderTop: `${pt(1.4)} solid #111`, pt: pt(1.6) }}>
+          <Box sx={{ borderTop: `${pt(0.5)} solid #111` }} />
         </Box>
       </Box>
     </Box>
