@@ -14,6 +14,7 @@ import {
   Typography,
 } from '@mui/material'
 import { useEffect, useState } from 'react'
+import type { TFunction } from 'i18next'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router'
 import { isoDate } from '../../api/dm'
@@ -107,6 +108,12 @@ export function ReportPage() {
         {data && !ready && (
           <Paper variant="outlined" sx={{ px: 2, py: 5, textAlign: 'center' }}>
             <Typography sx={{ fontWeight: 600 }}>{t('report.nobody', { date: longDate(data.date) })}</Typography>
+            {/* nobody absent where the roll was called: the classes that were not called stay named */}
+            {data.unrecorded.length > 0 && (
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 1, fontStyle: 'italic' }}>
+                {unrecordedLine(data, t)}
+              </Typography>
+            )}
           </Paper>
         )}
         {/* without its letterhead (not readable), the sheet still prints with the school's rows */}
@@ -128,6 +135,15 @@ export function ReportPage() {
 }
 
 const capitalised = (text: string) => text.charAt(0).toUpperCase() + text.slice(1)
+
+/** "Heures non saisies …: 4e C (H2, H3)", or '' when every lesson was recorded. */
+function unrecordedLine(report: FullDayReport, t: TFunction): string {
+  if (report.unrecorded.length === 0) return ''
+  const list = report.unrecorded
+    .map((u) => `${u.className} (${u.periods.map((p) => t('report.period', { number: p })).join(', ')})`)
+    .join(', ')
+  return t('report.unrecorded', { list })
+}
 
 /** The A4 sheet: letterhead, title, day, who and how many, one table per class, then the footer. */
 function Sheet({
@@ -154,9 +170,7 @@ function Sheet({
   ]
     .filter(Boolean)
     .join(' – ')
-  const unrecorded = report.unrecorded
-    .map((u) => `${u.className} (${u.periods.map((p) => t('report.period', { number: p })).join(', ')})`)
-    .join(', ')
+  const unrecorded = unrecordedLine(report, t)
 
   return (
     <Paper
@@ -185,7 +199,7 @@ function Sheet({
       )}
       {unrecorded && (
         <Typography variant="body2" sx={{ mt: 2, fontStyle: 'italic' }}>
-          {t('report.unrecorded', { list: unrecorded })}
+          {unrecorded}
         </Typography>
       )}
       <Typography variant="caption" component="p" sx={{ mt: 3, color: tokens.muted, textAlign: 'right' }}>

@@ -109,6 +109,14 @@ describe('the day report (UC-D9, D41)', () => {
     expect(screen.queryByRole('table')).not.toBeInTheDocument()
   })
 
+  it('nobody absent still names the lessons not recorded', async () => {
+    const { client } = signedIn(json(200, { ...REPORT, studentCount: 0, classCount: 0, blocks: [] }))
+    renderApp(client, '/report?date=2026-11-09')
+
+    expect(await screen.findByText(/Aucun élève n'a été absent/)).toBeInTheDocument()
+    expect(screen.getByText(/Heures non saisies.*4e C \(H2, H3\)/)).toBeInTheDocument()
+  })
+
   it("a refused day shows the server's message", async () => {
     const message = "La journée n'est pas terminée : le rapport du jour est disponible à partir de 17 h."
     const { client } = signedIn(json(400, { code: 'report.day_not_finished', message, field: 'date' }))
