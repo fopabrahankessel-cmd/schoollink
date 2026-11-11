@@ -2197,6 +2197,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'See history'**
   String get daySeeHistory;
+
+  /// More tab: alerts already decided (UC-D2, D41).
+  ///
+  /// In en, this message translates to:
+  /// **'Decided alerts'**
+  String get closedAlertsTitle;
+
+  /// More tab: subtitle of decided alerts.
+  ///
+  /// In en, this message translates to:
+  /// **'Decisions already taken'**
+  String get closedAlertsHint;
+
+  /// More tab: the DM's scope dashboard (UC-D8, D41).
+  ///
+  /// In en, this message translates to:
+  /// **'Dashboard'**
+  String get dashboardTitle;
+
+  /// More tab: subtitle of the dashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Absences and lateness of your classes over a period'**
+  String get dashboardHint;
+
+  /// More tab: thresholds and digest settings (UC-D7, D41).
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settingsTitle;
+
+  /// More tab: subtitle of the settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Alert thresholds, start time, SMS digests'**
+  String get settingsHint;
+
+  /// Decided alert: the day of the decision.
+  ///
+  /// In en, this message translates to:
+  /// **'Decided on {date}'**
+  String decidedOn(String date);
+
+  /// Decided alert: the parents were summoned.
+  ///
+  /// In en, this message translates to:
+  /// **'Parents summoned'**
+  String get decidedSummon;
+
+  /// Decided alert: closed with no action.
+  ///
+  /// In en, this message translates to:
+  /// **'Dismissed'**
+  String get decidedDismiss;
+
+  /// Decided alert: a disciplinary record was opened.
+  ///
+  /// In en, this message translates to:
+  /// **'Disciplinary record opened'**
+  String get decidedDisciplinary;
+
+  /// Decided alert: referred to the counsellor.
+  ///
+  /// In en, this message translates to:
+  /// **'Referred to the counsellor'**
+  String get decidedRefer;
+
+  /// Decided alerts: empty list.
+  ///
+  /// In en, this message translates to:
+  /// **'No alert decided yet.'**
+  String get noClosedAlerts;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

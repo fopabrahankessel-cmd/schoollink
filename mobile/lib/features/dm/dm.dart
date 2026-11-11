@@ -46,6 +46,9 @@ class RiskAlert {
     this.periods,
     this.from,
     this.to,
+    this.decision,
+    this.decisionNote,
+    this.decidedAt,
   });
 
   factory RiskAlert.fromJson(Map<String, dynamic> json) {
@@ -66,6 +69,9 @@ class RiskAlert {
       periods: (evidence['periods'] as num?)?.toInt(),
       from: date(evidence['from']),
       to: date(evidence['to']),
+      decision: Decision.parse(json['decision'] as String?),
+      decisionNote: json['decisionNote'] as String?,
+      decidedAt: (json['decidedAt'] as String?) == null ? null : DateTime.parse(json['decidedAt'] as String).toLocal(),
     );
   }
 
@@ -92,6 +98,11 @@ class RiskAlert {
   final DateTime? from;
   final DateTime? to;
 
+  /// A closed alert: what the DM decided, why, and when (UC-D2, D41).
+  final Decision? decision;
+  final String? decisionNote;
+  final DateTime? decidedAt;
+
   String get fullName => '$lastName $firstName';
 }
 
@@ -105,6 +116,15 @@ enum Decision {
   const Decision(this.wire);
 
   final String wire;
+
+  static Decision? parse(String? wire) {
+    for (final d in values) {
+      if (d.wire == wire) {
+        return d;
+      }
+    }
+    return null;
+  }
 
   /// D30: dismiss and disciplinary need the note (the reason, or the issue recorded).
   bool get needsNote => this == dismiss || this == disciplinary;
@@ -216,6 +236,12 @@ class DmRepository {
   /// D30: the open alerts of the DM's classes, the longest waiting first.
   Future<List<RiskAlert>> openAlerts() async {
     final response = await _call(() => _dio.get<List<dynamic>>('/alerts', queryParameters: {'status': 'open'}));
+    return [for (final a in response.data!.cast<Map<String, dynamic>>()) RiskAlert.fromJson(a)];
+  }
+
+  /// UC-D2, D41: the alerts already decided, the latest first as the server sends them.
+  Future<List<RiskAlert>> closedAlerts() async {
+    final response = await _call(() => _dio.get<List<dynamic>>('/alerts', queryParameters: {'status': 'closed'}));
     return [for (final a in response.data!.cast<Map<String, dynamic>>()) RiskAlert.fromJson(a)];
   }
 
@@ -403,6 +429,11 @@ final dmRepositoryProvider = Provider<DmRepository>((ref) => DmRepository(ref.wa
 /// UC-D2: the open alerts of the DM's classes.
 final openAlertsProvider = FutureProvider.autoDispose<List<RiskAlert>>(
   (ref) => ref.watch(dmRepositoryProvider).openAlerts(),
+);
+
+/// UC-D2, D41: the decided alerts, from the More tab.
+final closedAlertsProvider = FutureProvider.autoDispose<List<RiskAlert>>(
+  (ref) => ref.watch(dmRepositoryProvider).closedAlerts(),
 );
 
 /// UC-D10, D40: one day of attendance; null is today at school.

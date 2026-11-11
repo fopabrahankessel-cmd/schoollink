@@ -1165,5 +1165,58 @@
   "dayNoLessons": "No lessons that day.",
   "dayNoClasses": "No class in your blocks.",
   "dayChangeDate": "Change day",
-  "daySeeHistory": "See history"
+  "daySeeHistory": "See history",
+  "closedAlertsTitle": "Decided alerts",
+  "@closedAlertsTitle": {
+    "description": "More tab: alerts already decided (UC-D2, D41)."
+  },
+  "closedAlertsHint": "Decisions already taken",
+  "@closedAlertsHint": {
+    "description": "More tab: subtitle of decided alerts."
+  },
+  "dashboardTitle": "Dashboard",
+  "@dashboardTitle": {
+    "description": "More tab: the DM's scope dashboard (UC-D8, D41)."
+  },
+  "dashboardHint": "Absences and lateness of your classes over a period",
+  "@dashboardHint": {
+    "description": "More tab: subtitle of the dashboard."
+  },
+  "settingsTitle": "Settings",
+  "@settingsTitle": {
+    "description": "More tab: thresholds and digest settings (UC-D7, D41)."
+  },
+  "settingsHint": "Alert thresholds, start time, SMS digests",
+  "@settingsHint": {
+    "description": "More tab: subtitle of the settings."
+  },
+  "decidedOn": "Decided on {date}",
+  "@decidedOn": {
+    "description": "Decided alert: the day of the decision.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "decidedSummon": "Parents summoned",
+  "@decidedSummon": {
+    "description": "Decided alert: the parents were summoned."
+  },
+  "decidedDismiss": "Dismissed",
+  "@decidedDismiss": {
+    "description": "Decided alert: closed with no action."
+  },
+  "decidedDisciplinary": "Disciplinary record opened",
+  "@decidedDisciplinary": {
+    "description": "Decided alert: a disciplinary record was opened."
+  },
+  "decidedRefer": "Referred to the counsellor",
+  "@decidedRefer": {
+    "description": "Decided alert: referred to the counsellor."
+  },
+  "noClosedAlerts": "No alert decided yet.",
+  "@noClosedAlerts": {
+    "description": "Decided alerts: empty list."
+  }
 }

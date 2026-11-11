@@ -350,5 +350,17 @@
   "dayNoLessons": "Pas de cours ce jour-là.",
   "dayNoClasses": "Aucune classe dans vos blocs.",
   "dayChangeDate": "Changer de jour",
-  "daySeeHistory": "Voir l'historique"
+  "daySeeHistory": "Voir l'historique",
+  "closedAlertsTitle": "Alertes traitées",
+  "closedAlertsHint": "Les décisions déjà prises",
+  "dashboardTitle": "Tableau de bord",
+  "dashboardHint": "Absences et retards de vos classes sur une période",
+  "settingsTitle": "Paramètres",
+  "settingsHint": "Seuils des alertes, heure de début, envois SMS",
+  "decidedOn": "Décidée le {date}",
+  "decidedSummon": "Parents convoqués",
+  "decidedDismiss": "Classée sans suite",
+  "decidedDisciplinary": "Dossier disciplinaire ouvert",
+  "decidedRefer": "Orienté vers le conseiller",
+  "noClosedAlerts": "Aucune alerte traitée pour le moment."
 }

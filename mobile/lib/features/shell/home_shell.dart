@@ -10,6 +10,7 @@ import '../../l10n/app_localizations.dart';
 import '../auth/auth_controller.dart';
 import '../dm/today_screen.dart';
 import '../dm/messages_screen.dart';
+import '../dm/more_screen.dart';
 import '../dm/student_search_screen.dart';
 import '../lateness/gate_screen.dart';
 import '../teacher/sessions_screen.dart';
@@ -59,6 +60,7 @@ class HomeShell extends ConsumerWidget {
               Destination.today => const TodayScreen(),
               Destination.students => const StudentSearchView(),
               Destination.messages => const SentMessagesView(),
+              Destination.more => MoreScreen(overflow: overflowOf(all)),
               Destination.children => const ChildrenScreen(),
               Destination.inbox => const InboxScreen(),
               _ => _Placeholder(current),

@@ -1382,4 +1382,42 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get daySeeHistory => 'See history';
+
+  @override
+  String get closedAlertsTitle => 'Decided alerts';
+
+  @override
+  String get closedAlertsHint => 'Decisions already taken';
+
+  @override
+  String get dashboardTitle => 'Dashboard';
+
+  @override
+  String get dashboardHint => 'Absences and lateness of your classes over a period';
+
+  @override
+  String get settingsTitle => 'Settings';
+
+  @override
+  String get settingsHint => 'Alert thresholds, start time, SMS digests';
+
+  @override
+  String decidedOn(String date) {
+    return 'Decided on $date';
+  }
+
+  @override
+  String get decidedSummon => 'Parents summoned';
+
+  @override
+  String get decidedDismiss => 'Dismissed';
+
+  @override
+  String get decidedDisciplinary => 'Disciplinary record opened';
+
+  @override
+  String get decidedRefer => 'Referred to the counsellor';
+
+  @override
+  String get noClosedAlerts => 'No alert decided yet.';
 }
