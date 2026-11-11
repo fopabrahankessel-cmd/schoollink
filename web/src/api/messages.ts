@@ -69,4 +69,6 @@ export const MESSAGE_PATHS = {
   preview: (kind: MessageKind) => (kind === 'DM_MESSAGE' ? '/messages/preview' : '/announcements/preview'),
   sent: (kind: MessageKind) => (kind === 'DM_MESSAGE' ? '/messages' : '/announcements'),
   classes: '/messages/classes',
+  /** D41: the DM's messages to one student's parents, for the student page. */
+  ofStudent: (studentId: string) => `/messages?studentId=${encodeURIComponent(studentId)}`,
 }

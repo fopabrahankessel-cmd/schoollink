@@ -68,6 +68,7 @@ export const routes: RouteObject[] = [
       { path: '/students/:id', element: dm(<StudentHistoryPage />) },
       // UC-D5, D37: the same page on its Discipline tab
       { path: '/students/:id/discipline', element: dm(<StudentHistoryPage />) },
+      { path: '/students/:id/messages', element: dm(<StudentHistoryPage />) },
       { path: '/settings', element: dm(<SettingsPage />) },
       // UC-D4, D38: the DM's messages to parents
       { path: '/messages', element: dm(<MessagesPage />) },

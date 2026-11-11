@@ -39,6 +39,7 @@ import { ChatTextIcon, EnvelopeSimpleIcon, PlusIcon, ProhibitIcon, StudentIcon }
 import { tokens } from '../../theme'
 import { CancelRecordDialog, JustifyDialog, SummonDialog } from './dialogs'
 import { DisciplineTab } from './DisciplineTab'
+import { StudentMessages } from './StudentMessages'
 
 /** One line of the history: an absence from one lesson, or one arrival late at the gate (BR-8, BR-9). */
 interface Row {
@@ -68,6 +69,7 @@ export function StudentHistoryPage() {
   const [done, setDone] = useState<string | null>(null)
   const [recording, setRecording] = useState(false)
   const discipline = useMatch('/students/:id/discipline') !== null
+  const messagesTab = useMatch('/students/:id/messages') !== null
   const base = `/students/${encodeURIComponent(id)}`
 
   const student = history.data
@@ -158,11 +160,14 @@ export function StudentHistoryPage() {
           )
         }
       />
-      <Tabs value={discipline ? 'discipline' : 'history'} aria-label={name || t('dm.historyTitle')} sx={{ mb: 2 }}>
+      <Tabs value={messagesTab ? 'messages' : discipline ? 'discipline' : 'history'} aria-label={name || t('dm.historyTitle')} sx={{ mb: 2 }}>
         <Tab value="history" label={t('dm.tabHistory')} component={Link} to={base} />
         <Tab value="discipline" label={t('dm.tabDiscipline')} component={Link} to={`${base}/discipline`} />
+        <Tab value="messages" label={t('dm.tabMessages')} component={Link} to={`${base}/messages`} />
       </Tabs>
-      {discipline ? (
+      {messagesTab ? (
+        <StudentMessages studentId={id} />
+      ) : discipline ? (
         <DisciplineTab studentId={id} recording={recording} onRecordingDone={() => setRecording(false)} />
       ) : (
         <Stack spacing={2}>
