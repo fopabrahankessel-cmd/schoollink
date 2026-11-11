@@ -320,6 +320,36 @@ abstract class AppLocalizations {
   /// **'More'**
   String get navMore;
 
+  /// Today tab: open alerts of the DM's classes (D41, UC-D2).
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No alert to decide} =1{1 alert to decide} other{{count} alerts to decide}}'**
+  String todayAlerts(int count);
+
+  /// Today tab: timetabled periods started today with no roll call yet (D41, UC-D10).
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{Every period recorded} =1{1 period not recorded} other{{count} periods not recorded}}'**
+  String todayNotRecorded(int count);
+
+  /// Today tab: students absent today and lateness today (D41, UC-D10).
+  ///
+  /// In en, this message translates to:
+  /// **'{absent} absent · {late} late'**
+  String todayAbsences(int absent, int late);
+
+  /// Screen title: the open alerts (UC-D2).
+  ///
+  /// In en, this message translates to:
+  /// **'Alerts to decide'**
+  String get openAlertsTitle;
+
+  /// Today tab: heading above the full-day report entry (UC-D9).
+  ///
+  /// In en, this message translates to:
+  /// **'Day report'**
+  String get reportSectionTitle;
+
   /// Counsellor tab: referred students and cases (UC-C1).
   ///
   /// In en, this message translates to:

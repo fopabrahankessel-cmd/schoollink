@@ -98,10 +98,11 @@ void main() {
   bool enabled(WidgetTester tester, Finder button) => tester.widget<FilledButton>(button).onPressed != null;
 
   group('alerts (UC-D2)', () {
-    testWidgets('the home lists the open alerts with what each rule found', (tester) async {
+    testWidgets('the open alerts list what each rule found', (tester) async {
       await open(tester);
-
       expect(find.text('2 alertes à traiter'), findsOneWidget);
+      await tapAndSettle(tester, find.byKey(const ValueKey('today-alerts')));
+
       expect(find.text('Fictif Awa'), findsOneWidget);
       expect(find.text('Absent toute la journée · 6e A'), findsOneWidget);
       expect(find.text('Absent à tous les cours le 30 oct.'), findsOneWidget);
@@ -127,6 +128,7 @@ void main() {
 
     testWidgets('dismissing needs the reason, then closes the alert (BR-18, D30)', (tester) async {
       await open(tester);
+      await tapAndSettle(tester, find.byKey(const ValueKey('today-alerts'))); // D41: the alerts open from Today
       await tapAndSettle(tester, find.byKey(const ValueKey('alert-al-1')));
       expect(find.byType(AlertScreen), findsOneWidget);
       expect(find.text('Absent toute la journée'), findsOneWidget);
@@ -141,7 +143,7 @@ void main() {
       expect(sent.body, {'decision': 'DISMISS', 'note': 'Absence connue, voyage scolaire'});
       expect(find.byType(AlertScreen), findsNothing, reason: 'back to the list');
       expect(find.text('Décision enregistrée'), findsOneWidget);
-      expect(find.text('1 alerte à traiter'), findsOneWidget);
+      expect(find.byKey(const ValueKey('alert-al-2')), findsOneWidget, reason: 'the other alert stays to decide');
       expect(find.byKey(const ValueKey('alert-al-1')), findsNothing);
     });
 
@@ -149,6 +151,7 @@ void main() {
       tester,
     ) async {
       await open(tester);
+      await tapAndSettle(tester, find.byKey(const ValueKey('today-alerts'))); // D41: the alerts open from Today
       await tapAndSettle(tester, find.byKey(const ValueKey('alert-al-1')));
       await tapAndSettle(tester, find.byKey(const ValueKey('decide-summon')));
 
@@ -163,6 +166,7 @@ void main() {
 
     testWidgets('referring may go without a note; a disciplinary issue needs one', (tester) async {
       await open(tester);
+      await tapAndSettle(tester, find.byKey(const ValueKey('today-alerts'))); // D41: the alerts open from Today
       await tapAndSettle(tester, find.byKey(const ValueKey('alert-al-1')));
       await tapAndSettle(tester, find.byKey(const ValueKey('decide-disciplinary')));
       expect(enabled(tester, submit()), isFalse);
@@ -182,6 +186,7 @@ void main() {
         (_) => Reply.error(409, 'alert.already_decided', 'Cette alerte a déjà été traitée.'),
       );
       await open(tester);
+      await tapAndSettle(tester, find.byKey(const ValueKey('today-alerts'))); // D41: the alerts open from Today
       await tapAndSettle(tester, find.byKey(const ValueKey('alert-al-1')));
       await tapAndSettle(tester, find.byKey(const ValueKey('decide-refer')));
       await tapAndSettle(tester, submit());
@@ -193,6 +198,7 @@ void main() {
 
     testWidgets("the alert leads to the student's history (UC-D8)", (tester) async {
       await open(tester);
+      await tapAndSettle(tester, find.byKey(const ValueKey('today-alerts'))); // D41: the alerts open from Today
       await tapAndSettle(tester, find.byKey(const ValueKey('alert-al-1')));
       await tapAndSettle(tester, find.byKey(const ValueKey('alert-history')));
 
@@ -205,6 +211,7 @@ void main() {
   group('history (UC-D8)', () {
     Future<void> openHistory(WidgetTester tester) async {
       await open(tester);
+      await tapAndSettle(tester, find.byKey(const ValueKey('today-alerts'))); // D41: the alerts open from Today
       await tapAndSettle(tester, find.byKey(const ValueKey('alert-al-1')));
       await tapAndSettle(tester, find.byKey(const ValueKey('alert-history')));
     }
@@ -329,34 +336,6 @@ void main() {
       await tapAndSettle(tester, find.byKey(const ValueKey('student-st-1')));
       expect(find.byType(StudentHistoryScreen), findsOneWidget);
       expect(server.sent('GET /students/st-1/history'), hasLength(1));
-    });
-
-    testWidgets("today's lateness leads to the student's history", (tester) async {
-      server.on(
-        'GET /lateness',
-        (_) => const Reply.ok({
-          'date': '2026-11-02',
-          'startTime': '07:30:00',
-          'lateness': [
-            {
-              'id': 'late-9',
-              'studentId': 'st-1',
-              'firstName': 'Awa',
-              'lastName': 'Fictif',
-              'classId': 'c-1',
-              'className': '6e A',
-              'arrivalTime': '07:48:00',
-              'recordedAt': '2026-11-02T06:48:00Z',
-              'recordedBy': 'user-2',
-              'justified': false,
-            },
-          ],
-        }),
-      );
-      await open(tester);
-
-      await tapAndSettle(tester, find.byKey(const ValueKey('lateness-late-9')));
-      expect(find.byType(StudentHistoryScreen), findsOneWidget);
     });
   });
 }

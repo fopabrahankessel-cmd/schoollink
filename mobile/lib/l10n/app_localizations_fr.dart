@@ -134,6 +134,43 @@ class AppLocalizationsFr extends AppLocalizations {
   String get navMore => 'Plus';
 
   @override
+  String todayAlerts(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count alertes à traiter',
+      one: '1 alerte à traiter',
+      zero: 'Aucune alerte à traiter',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todayNotRecorded(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count périodes non saisies',
+      one: '1 période non saisie',
+      zero: 'Toutes les périodes sont saisies',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todayAbsences(int absent, int late) {
+    String _temp0 = intl.Intl.pluralLogic(absent, locale: localeName, other: '$absent absents', one: '$absent absent');
+    String _temp1 = intl.Intl.pluralLogic(late, locale: localeName, other: '$late retards', one: '$late retard');
+    return '$_temp0 · $_temp1';
+  }
+
+  @override
+  String get openAlertsTitle => 'Alertes à traiter';
+
+  @override
+  String get reportSectionTitle => 'Rapport de la journée';
+
+  @override
   String get navCases => 'Suivis';
 
   @override

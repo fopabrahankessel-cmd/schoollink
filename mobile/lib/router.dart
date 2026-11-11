@@ -8,6 +8,7 @@ import 'features/auth/change_password_screen.dart';
 import 'features/auth/login_screen.dart';
 import 'features/auth/parent_sign_in_screen.dart';
 import 'features/dm/alert_screen.dart';
+import 'features/dm/alerts_list.dart';
 import 'features/dm/message_composer_screen.dart';
 import 'features/dm/student_history_screen.dart';
 import 'features/dm/full_day/full_day_screen.dart';
@@ -77,6 +78,8 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: 'student/:studentId',
             builder: (context, state) => StudentHistoryScreen(studentId: state.pathParameters['studentId']!),
           ),
+          // D41, UC-D2: the open alerts, from the Today tab's count
+          GoRoute(path: 'alerts', builder: (context, state) => const OpenAlertsScreen()),
           GoRoute(path: 'full-day', builder: (context, state) => const FullDayScreen()),
           // UC-D10, D40: the DM's day of attendance, period by period
           GoRoute(path: 'day', builder: (context, state) => const DayScreen()),

@@ -252,26 +252,17 @@ void main() {
     expect(find.text('Record lateness'), findsOneWidget);
   });
 
-  testWidgets("the DM sees today's lateness in their classes under their alerts (UC-AD2)", (tester) async {
+  // D41: the DM reads the day's lateness of each class in "Présences du jour" (UC-D10, UC-AD2);
+  // they never record lateness at the gate.
+  testWidgets('the DM has no gate screen', (tester) async {
     final dm = userJson(roles: ['DM']);
     final server = FakeServer()
       ..on('GET /me', (_) => Reply.ok(dm))
       ..on('GET /alerts', (_) => const Reply.ok([]))
-      ..on(
-        'GET /lateness',
-        (_) => Reply.ok(
-          today([
-            {...chantalLate, 'justified': true},
-          ]),
-        ),
-      );
+      ..on('GET /attendance/day', (_) => const Reply(500, {}));
     await pumpApp(tester, server: server, store: MemoryDeviceStore(signedIn(dm)), database: db, clock: () => now);
 
-    expect(find.text('Alertes à traiter'), findsOneWidget);
-    expect(find.text('Aucune alerte à traiter'), findsWidgets);
-    expect(find.text('Retards du jour'), findsOneWidget);
-    expect(find.text('Fictif Chantal'), findsOneWidget);
-    expect(find.text('Justifié'), findsOneWidget);
+    expect(find.text('Retards'), findsNothing);
     expect(find.byKey(const ValueKey('gate-search')), findsNothing, reason: 'the DM does not record lateness');
   });
 }

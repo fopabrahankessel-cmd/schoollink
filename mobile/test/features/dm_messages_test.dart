@@ -190,6 +190,7 @@ void main() {
 
   testWidgets('a student message from the student page has SMS on by default', (tester) async {
     await open(tester);
+    await tapAndSettle(tester, find.byKey(const ValueKey('today-alerts'))); // D41: the alerts open from Today
     await tapAndSettle(tester, find.byKey(const ValueKey('alert-al-1')));
     await tapAndSettle(tester, find.byKey(const ValueKey('alert-history')));
     await tapAndSettle(tester, find.byKey(const ValueKey('history-message')));

@@ -93,6 +93,7 @@ void main() {
 
   Future<void> openDiscipline(WidgetTester tester, {Map<String, dynamic>? user, String tab = 'Discipline'}) async {
     await open(tester, user: user);
+    await tapAndSettle(tester, find.byKey(const ValueKey('today-alerts'))); // D41: the alerts open from Today
     await tapAndSettle(tester, find.byKey(const ValueKey('alert-al-1')));
     await tapAndSettle(tester, find.byKey(const ValueKey('alert-history')));
     await tapAndSettle(tester, find.widgetWithText(Tab, tab));
@@ -103,6 +104,7 @@ void main() {
 
   testWidgets('the student page has History and Discipline tabs (UC-D5)', (tester) async {
     await open(tester);
+    await tapAndSettle(tester, find.byKey(const ValueKey('today-alerts'))); // D41: the alerts open from Today
     await tapAndSettle(tester, find.byKey(const ValueKey('alert-al-1')));
     await tapAndSettle(tester, find.byKey(const ValueKey('alert-history')));
     expect(find.widgetWithText(Tab, 'Historique'), findsOneWidget);
@@ -211,6 +213,7 @@ void main() {
 
   testWidgets('the disciplinary decision on an alert asks for category and measure (D37)', (tester) async {
     await open(tester);
+    await tapAndSettle(tester, find.byKey(const ValueKey('today-alerts'))); // D41: the alerts open from Today
     await tapAndSettle(tester, find.byKey(const ValueKey('alert-al-1')));
     await tapAndSettle(tester, find.text('Ouvrir un dossier disciplinaire'));
     await tester.enterText(find.byKey(const ValueKey('decision-note')), 'Absences répétées');

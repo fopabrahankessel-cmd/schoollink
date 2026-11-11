@@ -90,13 +90,13 @@ void main() {
       ..devicePixelRatio = 2.75;
     addTearDown(tester.view.reset);
     await pumpApp(tester, server: server, store: MemoryDeviceStore(signedIn(user ?? dm)), clock: () => now);
-    await tap(tester, find.byKey(const ValueKey('dm-day-entry')));
+    await tap(tester, find.byKey(const ValueKey('today-not-recorded')));
   }
 
   Future<void> openFirstPeriod(WidgetTester tester) =>
       tap(tester, find.byKey(const ValueKey('day-period-1-6e A')));
 
-  testWidgets("the DM home leads to today's attendance", (tester) async {
+  testWidgets("the Today tab leads to today's attendance", (tester) async {
     await open(tester);
 
     expect(find.text('Présences du jour'), findsWidgets);

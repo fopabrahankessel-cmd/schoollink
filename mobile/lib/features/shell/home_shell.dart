@@ -8,7 +8,7 @@ import '../../core/theme.dart';
 import '../../core/ui/widgets.dart';
 import '../../l10n/app_localizations.dart';
 import '../auth/auth_controller.dart';
-import '../dm/dm_home_screen.dart';
+import '../dm/today_screen.dart';
 import '../dm/messages_screen.dart';
 import '../dm/student_search_screen.dart';
 import '../lateness/gate_screen.dart';
@@ -56,7 +56,7 @@ class HomeShell extends ConsumerWidget {
             child: switch (current) {
               Destination.sessions => const SessionsScreen(),
               Destination.gate => const GateScreen(),
-              Destination.today => const DmHomeScreen(),
+              Destination.today => const TodayScreen(),
               Destination.students => const StudentSearchView(),
               Destination.messages => const SentMessagesView(),
               Destination.children => const ChildrenScreen(),
