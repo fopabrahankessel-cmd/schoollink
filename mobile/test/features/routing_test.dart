@@ -76,6 +76,32 @@ void main() {
     expect(server.sent('POST /auth/logout').single.body, {'refreshToken': 'refresh-0'});
   });
 
+  testWidgets('a parent is told that coming back takes a new SMS code before signing out (D24)', (tester) async {
+    final server = await signedInAs(tester, ['PARENT']);
+    server
+      ..on('GET /me/children', (_) => const Reply.ok([]))
+      ..on('GET /me/notifications', (_) => const Reply.ok([]))
+      ..on('POST /auth/logout', (_) => const Reply(204));
+    Future<void> signOut() async {
+      await tester.tap(find.byTooltip('Compte'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Se déconnecter'));
+      await tester.pumpAndSettle();
+    }
+
+    await signOut();
+    expect(find.text('Pour revenir, il faudra un nouveau code par SMS.'), findsOneWidget);
+    await tester.tap(find.widgetWithText(TextButton, 'Annuler'));
+    await tester.pumpAndSettle();
+    expect(find.byType(LoginScreen), findsNothing);
+    expect(server.sent('POST /auth/logout'), isEmpty);
+
+    await signOut();
+    await tester.tap(find.widgetWithText(TextButton, 'Se déconnecter'));
+    await tester.pumpAndSettle();
+    expect(find.byType(LoginScreen), findsOneWidget);
+  });
+
   testWidgets('with no network at start-up, the user signed in on the phone keeps working (NFR-3)', (tester) async {
     final server = FakeServer()..offline = true;
     await pumpApp(

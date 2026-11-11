@@ -1619,4 +1619,10 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get todayNoLessons => 'Pas de cours aujourd\'hui : rien à saisir.';
+
+  @override
+  String get signOutParentTitle => 'Se déconnecter ?';
+
+  @override
+  String get signOutParentBody => 'Pour revenir, il faudra un nouveau code par SMS.';
 }

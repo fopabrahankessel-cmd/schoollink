@@ -1445,5 +1445,13 @@
   "todayNoLessons": "No lessons today: nothing to record.",
   "@todayNoLessons": {
     "description": "D41: Today tab on a day without lessons (weekend, holiday), in place of the day counts"
+  },
+  "signOutParentTitle": "Sign out?",
+  "@signOutParentTitle": {
+    "description": "D24: confirmation before a parent signs out"
+  },
+  "signOutParentBody": "To come back, you will need a new code by SMS.",
+  "@signOutParentBody": {
+    "description": "D24: a parent has no password; signing back in sends an SMS code"
   }
 }

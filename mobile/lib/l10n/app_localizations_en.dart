@@ -1587,4 +1587,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get todayNoLessons => 'No lessons today: nothing to record.';
+
+  @override
+  String get signOutParentTitle => 'Sign out?';
+
+  @override
+  String get signOutParentBody => 'To come back, you will need a new code by SMS.';
 }

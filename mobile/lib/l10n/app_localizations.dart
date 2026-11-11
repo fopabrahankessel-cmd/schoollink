@@ -2515,6 +2515,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No lessons today: nothing to record.'**
   String get todayNoLessons;
+
+  /// D24: confirmation before a parent signs out
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out?'**
+  String get signOutParentTitle;
+
+  /// D24: a parent has no password; signing back in sends an SMS code
+  ///
+  /// In en, this message translates to:
+  /// **'To come back, you will need a new code by SMS.'**
+  String get signOutParentBody;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
