@@ -113,8 +113,10 @@ class _StudentHistoryScreenState extends ConsumerState<StudentHistoryScreen> wit
     }
   }
 
-  /// D41: record an incident (UC-D5), write to the parents (UC-D4), or summon them (UC-D3).
-  Future<void> _act(StudentHistory history) async {
+  /// D41: record an incident (UC-D5), write to the parents (UC-D4), or summon them (UC-D3). The
+  /// first two need only the student's id, so they stay when the history fails to load; a summons
+  /// names the student, so it waits for the history.
+  Future<void> _act(StudentHistory? history) async {
     final l = AppLocalizations.of(context);
     final action = await showModalBottomSheet<_Action>(
       context: context,
@@ -126,7 +128,7 @@ class _StudentHistoryScreenState extends ConsumerState<StudentHistoryScreen> wit
             for (final (action, icon, label) in [
               (_Action.incident, Icons.report_outlined, l.recordIncident),
               (_Action.message, Icons.chat_outlined, l.writeToParents),
-              (_Action.summon, Icons.campaign_outlined, l.decisionSummon),
+              if (history != null) (_Action.summon, Icons.campaign_outlined, l.decisionSummon),
             ])
               ListTile(
                 key: ValueKey('action-${action.name}'),
@@ -149,11 +151,11 @@ class _StudentHistoryScreenState extends ConsumerState<StudentHistoryScreen> wit
         await recordIncident(context, ref, widget.studentId);
       case _Action.message:
         await context.push(
-          underTab(context, Uri(path: 'write', queryParameters: {'studentId': history.studentId}).toString()),
-          extra: history.fullName,
+          underTab(context, Uri(path: 'write', queryParameters: {'studentId': widget.studentId}).toString()),
+          extra: history?.fullName,
         );
       case _Action.summon:
-        await _summon(history);
+        await _summon(history!);
     }
   }
 
@@ -227,8 +229,9 @@ class _StudentHistoryScreenState extends ConsumerState<StudentHistoryScreen> wit
           _StudentMessages(studentId: widget.studentId),
         ],
       ),
-      // D41: one button for what the DM does about the student; hidden while records are ticked
-      floatingActionButton: loaded == null || _selected.isNotEmpty
+      // D41: one button for what the DM does about the student; on History, the justify bar takes
+      // its place while records are ticked
+      floatingActionButton: onHistory && _selected.isNotEmpty
           ? null
           : FloatingActionButton.extended(
               key: const ValueKey('student-actions'),

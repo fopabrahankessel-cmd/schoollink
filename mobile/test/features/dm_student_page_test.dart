@@ -143,6 +143,48 @@ void main() {
     expect(find.byKey(const ValueKey('summons-reason')), findsOneWidget);
   });
 
+  testWidgets('a history that fails to load still leaves the incident and the message', (tester) async {
+    server.on('GET /students/st-1/history', (_) => const Reply(500, {'code': 'server.error', 'message': 'Erreur'}));
+    await open(tester);
+    await tap(tester, find.byKey(const ValueKey('student-actions')));
+
+    expect(find.byKey(const ValueKey('action-incident')), findsOneWidget);
+    expect(find.byKey(const ValueKey('action-message')), findsOneWidget);
+    expect(find.byKey(const ValueKey('action-summon')), findsNothing, reason: "a summons names the student");
+  });
+
+  testWidgets('records ticked on History do not hide the button on the other tabs', (tester) async {
+    server.on(
+      'GET /students/st-1/history',
+      (_) => const Reply.ok({
+        'studentId': 'st-1',
+        'matricule': 'TW-0001',
+        'firstName': 'Awa',
+        'lastName': 'Fictif',
+        'classId': 'c-1',
+        'className': '6e A',
+        'from': '2026-08-12',
+        'to': '2026-11-10',
+        'totals': {'absentPeriods': 1, 'unjustifiedAbsentPeriods': 1, 'lateness': 0, 'unjustifiedLateness': 0},
+        'days': [
+          {
+            'date': '2026-11-09',
+            'absences': [
+              {'recordId': 'abs-1', 'periodNumber': 1, 'startTime': '07:30:00', 'justified': false},
+            ],
+            'lateness': null,
+          },
+        ],
+      }),
+    );
+    await open(tester);
+    await tap(tester, find.byKey(const ValueKey('record-abs-1')));
+    expect(find.byKey(const ValueKey('student-actions')), findsNothing, reason: 'the justify bar acts on History');
+
+    await tap(tester, find.widgetWithText(Tab, 'Discipline'));
+    expect(find.byKey(const ValueKey('student-actions')), findsOneWidget);
+  });
+
   testWidgets('record an incident from the action button', (tester) async {
     await open(tester);
     await tap(tester, find.byKey(const ValueKey('student-actions')));
