@@ -96,33 +96,46 @@ class TodayScreen extends ConsumerWidget {
                   onRetry: () => ref.invalidate(openAlertsProvider),
                 ),
                 const SizedBox(height: Gap.m),
-                _Count(
-                  key: const ValueKey('today-not-recorded'),
-                  retryKey: const ValueKey('today-retry-day'),
-                  value: day.whenData((d) => d.notRecorded),
-                  icon: Icons.edit_calendar_outlined,
-                  text: l.todayNotRecorded,
-                  urgent: (count) => count > 0,
-                  background: status.lateContainer,
-                  foreground: status.onLateContainer,
-                  onTap: () => context.push(underTab(context, 'day')),
-                  onRetry: () => ref.invalidate(dayProvider(null)),
-                ),
-                const SizedBox(height: Gap.m),
-                // the same request as the periods: one retry is enough
-                if (day is! AsyncError)
+                // a weekend or a holiday: nothing to record, so no "all recorded, 0 absent"
+                if (day case AsyncData(value: final d) when !d.schoolDay)
+                  Card(
+                    key: const ValueKey('today-no-lessons'),
+                    margin: EdgeInsets.zero,
+                    child: ListTile(
+                      minVerticalPadding: Gap.m,
+                      leading: Icon(Icons.event_busy_outlined, color: scheme.onSurfaceVariant),
+                      title: Text(l.todayNoLessons, style: theme.textTheme.titleMedium),
+                    ),
+                  )
+                else ...[
                   _Count(
-                    key: const ValueKey('today-absences'),
-                    retryKey: null,
-                    value: day.whenData((d) => d.absentStudents),
-                    icon: Icons.groups_outlined,
-                    text: (absent) => l.todayAbsences(absent, day.value?.lateness ?? 0),
-                    urgent: (_) => false,
-                    background: scheme.primaryContainer,
-                    foreground: scheme.onPrimaryContainer,
+                    key: const ValueKey('today-not-recorded'),
+                    retryKey: const ValueKey('today-retry-day'),
+                    value: day.whenData((d) => d.notRecorded),
+                    icon: Icons.edit_calendar_outlined,
+                    text: l.todayNotRecorded,
+                    urgent: (count) => count > 0,
+                    background: status.lateContainer,
+                    foreground: status.onLateContainer,
                     onTap: () => context.push(underTab(context, 'day')),
                     onRetry: () => ref.invalidate(dayProvider(null)),
                   ),
+                  const SizedBox(height: Gap.m),
+                  // the same request as the periods: one retry is enough
+                  if (day is! AsyncError)
+                    _Count(
+                      key: const ValueKey('today-absences'),
+                      retryKey: null,
+                      value: day.whenData((d) => d.absentStudents),
+                      icon: Icons.groups_outlined,
+                      text: (absent) => l.todayAbsences(absent, day.value?.lateness ?? 0),
+                      urgent: (_) => false,
+                      background: scheme.primaryContainer,
+                      foreground: scheme.onPrimaryContainer,
+                      onTap: () => context.push(underTab(context, 'day')),
+                      onRetry: () => ref.invalidate(dayProvider(null)),
+                    ),
+                ],
                 SectionHeader(title: l.reportSectionTitle),
                 Card(
                   margin: EdgeInsets.zero,

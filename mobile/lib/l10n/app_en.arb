@@ -1441,5 +1441,9 @@
   "studentNoMessagesBody": "To write to them, tap “Act”.",
   "@studentNoMessagesBody": {
     "description": "Student page Messages tab: what to do."
+  },
+  "todayNoLessons": "No lessons today: nothing to record.",
+  "@todayNoLessons": {
+    "description": "D41: Today tab on a day without lessons (weekend, holiday), in place of the day counts"
   }
 }

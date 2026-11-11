@@ -402,5 +402,6 @@
   "settingsSaved": "Réglages enregistrés.",
   "studentActions": "Agir",
   "studentNoMessages": "Aucun message envoyé à ses parents.",
-  "studentNoMessagesBody": "Pour leur écrire, touchez « Agir »."
+  "studentNoMessagesBody": "Pour leur écrire, touchez « Agir ».",
+  "todayNoLessons": "Pas de cours aujourd'hui : rien à saisir."
 }

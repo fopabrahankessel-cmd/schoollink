@@ -2509,6 +2509,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'To write to them, tap “Act”.'**
   String get studentNoMessagesBody;
+
+  /// D41: Today tab on a day without lessons (weekend, holiday), in place of the day counts
+  ///
+  /// In en, this message translates to:
+  /// **'No lessons today: nothing to record.'**
+  String get todayNoLessons;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

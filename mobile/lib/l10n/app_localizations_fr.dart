@@ -1616,4 +1616,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get studentNoMessagesBody => 'Pour leur écrire, touchez « Agir ».';
+
+  @override
+  String get todayNoLessons => 'Pas de cours aujourd\'hui : rien à saisir.';
 }

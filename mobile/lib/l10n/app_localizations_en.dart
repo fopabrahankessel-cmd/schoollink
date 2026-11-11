@@ -1584,4 +1584,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get studentNoMessagesBody => 'To write to them, tap “Act”.';
+
+  @override
+  String get todayNoLessons => 'No lessons today: nothing to record.';
 }

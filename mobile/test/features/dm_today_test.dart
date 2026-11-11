@@ -123,6 +123,34 @@ void main() {
     expect(server.sent('GET /attendance/day'), hasLength(2));
   });
 
+  testWidgets('a refresh that fails shows the retry, not the old counts', (tester) async {
+    await open(tester);
+    expect(find.text('2 périodes non saisies'), findsOneWidget);
+
+    dayReply = const Reply(500, {'code': 'server.error', 'message': 'Erreur'});
+    await tester.fling(find.byType(RefreshIndicator).first, const Offset(0, 400), 1000);
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('today-retry-day')), findsOneWidget);
+    expect(find.text('2 périodes non saisies'), findsNothing);
+    expect(find.text('14 absents · 6 retards'), findsNothing);
+  });
+
+  testWidgets('a day without lessons says so instead of counting', (tester) async {
+    dayReply = const Reply.ok({
+      'date': '2026-11-14',
+      'schoolDay': false,
+      'totals': {'notRecorded': 0, 'absentStudents': 0, 'lateness': 0},
+      'classes': [],
+    });
+    await open(tester);
+
+    expect(find.text("Pas de cours aujourd'hui : rien à saisir."), findsOneWidget);
+    expect(find.byKey(const ValueKey('today-not-recorded')), findsNothing);
+    expect(find.byKey(const ValueKey('today-absences')), findsNothing);
+    expect(find.text('3 alertes à traiter'), findsOneWidget, reason: 'alerts wait for a decision whatever the day');
+  });
+
   testWidgets('nothing left to do reads as such', (tester) async {
     server
       ..on('GET /alerts', (_) => const Reply.ok([]))
