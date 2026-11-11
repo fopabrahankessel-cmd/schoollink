@@ -1,10 +1,9 @@
 import { Alert, Box, Button, IconButton, Snackbar, Stack, TextField, ToggleButton, Tooltip, Typography } from '@mui/material'
-import { useEffect, useId, useState, type ChangeEvent, type FormEvent, type ReactNode } from 'react'
+import { useId, useState, type ChangeEvent, type FormEvent, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { ApiClient } from '../../api/client'
 import { errorMessage } from '../../api/errors'
 import {
-  fetchLogo,
   LETTERHEAD_PATH,
   LOGO_TYPES,
   MAX_LINES,
@@ -24,6 +23,7 @@ import { useResource } from '../../hooks/useResource'
 import { ArrowDownIcon, ArrowUpIcon, ImageSquareIcon, PlusIcon, StampIcon, TextBIcon, TrashIcon, UploadSimpleIcon } from '../../icons'
 import { hover, theme, tokens } from '../../theme'
 import { LetterheadPreview } from './LetterheadPreview'
+import { useLogoUrl } from '../../hooks/useLogoUrl'
 
 /**
  * UC-A7, D36: the admin sets the letterhead of the DM's reports: the lines of each language, their
@@ -191,28 +191,6 @@ function Editor({ initial }: { initial: Letterhead }) {
       </Snackbar>
     </Stack>
   )
-}
-
-/** The logo as an object URL, fetched again when its version changes; released when replaced. */
-function useLogoUrl(client: ApiClient, version: string | null) {
-  const [url, setUrl] = useState<{ version: string; url: string } | null>(null)
-  useEffect(() => {
-    if (version === null) return
-    let live = true
-    let created: string | null = null
-    fetchLogo(client)
-      .then((blob) => {
-        if (!live || blob === null) return
-        created = URL.createObjectURL(blob)
-        setUrl({ version, url: created })
-      })
-      .catch(() => undefined) // the preview then shows no logo; the page stays usable
-    return () => {
-      live = false
-      if (created !== null) URL.revokeObjectURL(created)
-    }
-  }, [client, version])
-  return version !== null && url?.version === version ? url.url : null
 }
 
 const LAYOUTS: LetterheadLayout[] = ['BILINGUAL', 'FRENCH', 'ENGLISH']

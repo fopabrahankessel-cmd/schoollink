@@ -22,6 +22,7 @@ export { DownloadSimpleIcon } from '@phosphor-icons/react/dist/csr/DownloadSimpl
 export { EnvelopeSimpleIcon } from '@phosphor-icons/react/dist/csr/EnvelopeSimple'
 export { FileArrowUpIcon } from '@phosphor-icons/react/dist/csr/FileArrowUp'
 export { FileTextIcon } from '@phosphor-icons/react/dist/csr/FileText'
+export { PrinterIcon } from '@phosphor-icons/react/dist/csr/Printer'
 export { GraduationCapIcon } from '@phosphor-icons/react/dist/csr/GraduationCap'
 export { HouseIcon } from '@phosphor-icons/react/dist/csr/House'
 export { IdentificationCardIcon } from '@phosphor-icons/react/dist/csr/IdentificationCard'

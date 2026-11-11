@@ -41,6 +41,7 @@
     "submit": "Enregistrer"
   },
   "nav": {
+    "report": "Rapport de la journée",
     "day": "Présences du jour",
     "signOut": "Se déconnecter",
     "home": "Accueil",
@@ -711,6 +712,28 @@
     "write": "Nouvelle annonce",
     "writeIntro": "À tous les parents de l'école ou d'une classe. Une annonce envoyée ne peut plus être modifiée.",
     "none": "Aucune annonce envoyée."
+  },
+  "report": {
+    "title": "Rapport de la journée",
+    "intro": "Les élèves de vos classes absents à toutes les heures de cours d'un jour, sous l'en-tête de l'école, à imprimer ou à enregistrer en PDF.",
+    "date": "Jour",
+    "print": "Imprimer ou enregistrer en PDF",
+    "sheetTitle": "Élèves absents toute la journée",
+    "by": "Surveillant Général : {{name}}",
+    "students_one": "{{count}} élève",
+    "students_other": "{{count}} élèves",
+    "classes_one": "{{count}} classe",
+    "classes_other": "{{count}} classes",
+    "summary": "{{students}} dans {{classes}}",
+    "classHeading_one": "{{className}} : {{count}} élève",
+    "classHeading_other": "{{className}} : {{count}} élèves",
+    "columnNumber": "N°",
+    "columnName": "Nom et prénom",
+    "columnMatricule": "Matricule",
+    "period": "H{{number}}",
+    "unrecorded": "Heures non saisies, les absences de toute la journée y sont donc inconnues : {{list}}",
+    "footer": "Généré par SchoolLink le {{date}} à {{time}}",
+    "nobody": "Aucun élève n'a été absent à toutes les heures de cours le {{date}}."
   },
   "day": {
     "title": "Présences du jour",
