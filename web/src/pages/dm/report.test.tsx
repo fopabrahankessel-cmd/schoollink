@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from '@testing-library/react'
+import { fireEvent, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import type { Letterhead } from '../../api/letterhead'
@@ -44,6 +44,7 @@ function signedIn(report: () => Response = json(200, REPORT), roles: ('DM' | 'AD
   const api = fakeFetch({
     'GET /reports/full-day-absences/default-date': json(200, { date: '2026-11-09' }),
     'GET /reports/full-day-absences?date=2026-11-09': report,
+    'GET /reports/full-day-absences?date=2026-11-06': json(200, { ...REPORT, date: '2026-11-06' }),
     'GET /school/letterhead': json(200, LETTERHEAD),
   })
   const client = newClient(api.fetch)
@@ -98,6 +99,34 @@ describe('the day report (UC-D9, D41)', () => {
     await userEvent.setup().click(await screen.findByRole('button', { name: 'Imprimer ou enregistrer en PDF' }))
     expect(print).toHaveBeenCalledTimes(1)
     print.mockRestore()
+  })
+
+  it('no print button before the sheet can show', async () => {
+    const { api } = signedIn()
+    // the letterhead never answers: the sheet waits for it, so printing would give a blank page
+    const fetchFn = ((input: RequestInfo | URL, init?: RequestInit) =>
+      String(input).endsWith('/school/letterhead') ? new Promise<Response>(() => {}) : api.fetch(input, init)) as typeof fetch
+    const client = newClient(fetchFn)
+    client.startSession(tokens({ roles: ['DM'] }))
+    renderApp(client, '/report?date=2026-11-09')
+
+    await waitFor(() => expect(api.calls.map((c) => c.path)).toContain('/reports/full-day-absences?date=2026-11-09'))
+    await new Promise((resolve) => setTimeout(resolve, 50))
+    expect(printButton()).not.toBeInTheDocument()
+  })
+
+  it("the footer gives when the day shown was loaded, not when the page was opened", async () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date('2026-11-10T08:00:00'))
+    const { api, client } = signedIn()
+    renderApp(client, '/report?date=2026-11-09')
+    expect(await screen.findByText(/08:00/)).toBeInTheDocument()
+
+    vi.setSystemTime(new Date('2026-11-10T09:30:00'))
+    api.calls.length = 0
+    fireEvent.change(screen.getByLabelText('Jour'), { target: { value: '2026-11-06' } })
+    expect(await screen.findByText(/09:30/)).toBeInTheDocument()
+    vi.useRealTimers()
   })
 
   it('nobody absent: no sheet, no print', async () => {

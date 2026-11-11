@@ -64,7 +64,6 @@ export function ReportPage() {
   const logoUrl = useLogoUrl(client, letterhead.data?.hasLogo ? letterhead.data.logoVersion : null)
   // read once: the page does not follow midnight
   const [today] = useState(() => isoDate(new Date()))
-  const [generatedAt] = useState(() => new Date())
 
   const defaultDate = fallback.data?.date
   useEffect(() => {
@@ -74,7 +73,11 @@ export function ReportPage() {
   const longDate = (iso: string) =>
     new Intl.DateTimeFormat(i18n.language, { dateStyle: 'full' }).format(new Date(`${iso}T12:00:00`))
   const data = report.data
+  // the footer's time: when the day shown arrived, not when the page was opened
+  const generatedAt = report.loadedAt
   const ready = data !== null && data.blocks.length > 0
+  // the sheet waits for its letterhead (or for it to fail): printing before would give a blank page
+  const sheetShown = ready && (letterhead.data !== null || letterhead.error !== null)
   const error = report.error ?? fallback.error
 
   return (
@@ -95,7 +98,7 @@ export function ReportPage() {
               onChange={(e) => e.target.value && setParams({ date: e.target.value })}
               slotProps={{ htmlInput: { max: today }, inputLabel: { shrink: true } }}
             />
-            {ready && (
+            {sheetShown && (
               <Button variant="contained" startIcon={<PrinterIcon size={18} aria-hidden />} onClick={() => window.print()}>
                 {t('report.print')}
               </Button>
@@ -117,7 +120,7 @@ export function ReportPage() {
           </Paper>
         )}
         {/* without its letterhead (not readable), the sheet still prints with the school's rows */}
-        {ready && (letterhead.data !== null || letterhead.error !== null) && (
+        {sheetShown && generatedAt && (
           <Sheet
             report={data}
             letterhead={letterhead.data}

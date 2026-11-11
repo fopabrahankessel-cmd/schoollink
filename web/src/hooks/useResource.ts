@@ -5,6 +5,8 @@ export interface ResourceState<T> {
   data: T | null
   loading: boolean
   error: unknown
+  /** When the data or error on screen arrived. */
+  loadedAt: Date | null
   /** Fetches again, keeping the current data on screen; resolves once the new data is shown. */
   reload: () => Promise<void>
 }
@@ -13,6 +15,7 @@ interface Result<T> {
   path: string
   data: T | null
   error: unknown
+  loadedAt: Date
 }
 
 /** GETs one object, as useList does a list; a null path waits. */
@@ -27,9 +30,9 @@ export function useResource<T>(path: string | null): ResourceState<T> {
       const id = ++latest.current
       let next: Result<T>
       try {
-        next = { path: target, data: await client.request<T>(target), error: null }
+        next = { path: target, data: await client.request<T>(target), error: null, loadedAt: new Date() }
       } catch (error) {
-        next = { path: target, data: null, error }
+        next = { path: target, data: null, error, loadedAt: new Date() }
       }
       if (id === latest.current) setResult(next)
     },
@@ -49,6 +52,7 @@ export function useResource<T>(path: string | null): ResourceState<T> {
     data: current?.data ?? null,
     loading: path !== null && current === null,
     error: current?.error ?? null,
+    loadedAt: current?.loadedAt ?? null,
     reload,
   }
 }
