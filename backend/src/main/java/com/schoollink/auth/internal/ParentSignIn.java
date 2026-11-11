@@ -39,7 +39,8 @@ import org.springframework.transaction.support.TransactionTemplate;
  * are registered: no SMS is sent then, and step 2 can never succeed;</li>
  * <li>the one-time code is stored as a BCrypt hash, lasts 10 minutes and allows 5 wrong tries, then
  * 429; asking again replaces it;</li>
- * <li>at most 3 one-time codes per account or guardian per hour, counted in the database;</li>
+ * <li>at most 3 one-time codes per account or guardian per hour and 5 per day, counted in the
+ * database, so nobody can flood a phone with SMS;</li>
  * <li>per IP address, 10 sign-in and 30 verification requests per 15 minutes.</li>
  * </ul>
  * NFR-9: the phone travels in the request body only and is never logged; the codes are never
@@ -56,6 +57,11 @@ class ParentSignIn {
 	static final int MAX_CODES = 3;
 
 	static final Duration CODES_WINDOW = Duration.ofHours(1);
+
+	/** One-time codes per account or guardian per {@link #DAILY_WINDOW}. */
+	static final int MAX_DAILY_CODES = 5;
+
+	static final Duration DAILY_WINDOW = Duration.ofDays(1);
 
 	static final RateLimitPolicy START_PER_IP = new RateLimitPolicy("parent-sign-in-ip", 10, Duration.ofMinutes(15));
 
@@ -143,15 +149,21 @@ class ParentSignIn {
 				.addValue("hash", otpHash)
 				.addValue("now", Timestamp.from(now))
 				.addValue("expires", Timestamp.from(expiresAt))
-				.addValue("windowStart", Timestamp.from(now.minus(CODES_WINDOW)));
+				.addValue("windowStart", Timestamp.from(now.minus(DAILY_WINDOW)));
 			// one person's requests are counted one after the other
 			jdbc.queryForList("SELECT pg_advisory_xact_lock(hashtextextended(:key, 0))", p);
 			List<Timestamp> recent = jdbc.queryForList("""
 					SELECT created_at FROM parent_sign_in
 					WHERE (user_id = :user OR guardian_id = :guardian) AND created_at > :windowStart
 					ORDER BY created_at""", p, Timestamp.class);
-			if (recent.size() >= MAX_CODES) {
-				throw new RateLimitedException(Duration.between(now, recent.getFirst().toInstant().plus(CODES_WINDOW)));
+			if (recent.size() >= MAX_DAILY_CODES) {
+				throw new RateLimitedException(Duration.between(now, recent.getFirst().toInstant().plus(DAILY_WINDOW)));
+			}
+			List<Timestamp> lastHour = recent.stream()
+				.filter(t -> t.toInstant().isAfter(now.minus(CODES_WINDOW)))
+				.toList();
+			if (lastHour.size() >= MAX_CODES) {
+				throw new RateLimitedException(Duration.between(now, lastHour.getFirst().toInstant().plus(CODES_WINDOW)));
 			}
 			jdbc.update("""
 					INSERT INTO parent_sign_in (id, school_id, user_id, guardian_id, otp_hash, created_at, expires_at)

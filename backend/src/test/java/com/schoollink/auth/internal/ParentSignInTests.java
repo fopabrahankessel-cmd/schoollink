@@ -357,6 +357,22 @@ class ParentSignInTests {
 	}
 
 	@Test
+	void atMostFiveCodesPerAccountPerDay() throws Exception { // NFR-7: no SMS flooding over a day either
+		for (int i = 0; i < 5; i++) {
+			clock.set(NOW.plus(Duration.ofHours(2L * i)));
+			limiter.clear();
+			signIn(world.schoolX, PHONE).andExpect(status().isOk());
+		}
+		clock.set(NOW.plus(Duration.ofHours(10)));
+		signIn(world.schoolX, PHONE).andExpect(status().isTooManyRequests())
+			.andExpect(header().string("Retry-After", String.valueOf(Duration.ofHours(14).toSeconds())));
+		assertThat(sms.sent).hasSize(5);
+
+		clock.set(NOW.plus(Duration.ofDays(1)).plusSeconds(1));
+		signIn(world.schoolX, PHONE).andExpect(status().isOk());
+	}
+
+	@Test
 	void anAddressIsLimitedToTenRequestsPerQuarterHour() throws Exception { // NFR-7
 		for (int i = 0; i < 10; i++) {
 			signIn(world.schoolX, "+2376900005" + "%02d".formatted(i)).andExpect(status().isOk());
