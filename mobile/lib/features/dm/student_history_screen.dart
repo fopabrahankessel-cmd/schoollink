@@ -15,6 +15,7 @@ import '../parent/parent.dart' show HistoryDay;
 import 'dm.dart';
 import 'discipline_tab.dart';
 import 'dm_sheets.dart';
+import '../shell/tab_path.dart';
 
 /// A record of the history: an absent lesson or a lateness, apart (BR-8, BR-9).
 typedef _Record = ({bool lateness, String id});
@@ -156,7 +157,7 @@ class _StudentHistoryScreenState extends ConsumerState<StudentHistoryScreen> wit
               tooltip: l.writeToParents,
               icon: const Icon(Icons.chat_outlined),
               onPressed: () => context.push(
-                Uri(path: '/home/alerts/write', queryParameters: {'studentId': loaded.studentId}).toString(),
+                underTab(context, Uri(path: 'write', queryParameters: {'studentId': loaded.studentId}).toString()),
                 extra: loaded.fullName,
               ),
             ),

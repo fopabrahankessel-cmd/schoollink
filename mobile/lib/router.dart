@@ -9,9 +9,7 @@ import 'features/auth/login_screen.dart';
 import 'features/auth/parent_sign_in_screen.dart';
 import 'features/dm/alert_screen.dart';
 import 'features/dm/message_composer_screen.dart';
-import 'features/dm/messages_screen.dart';
 import 'features/dm/student_history_screen.dart';
-import 'features/dm/student_search_screen.dart';
 import 'features/dm/full_day/full_day_screen.dart';
 import 'features/dm/day/day_screen.dart';
 import 'features/shell/destinations.dart';
@@ -79,12 +77,11 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: 'student/:studentId',
             builder: (context, state) => StudentHistoryScreen(studentId: state.pathParameters['studentId']!),
           ),
-          GoRoute(path: 'students', builder: (context, state) => const StudentSearchScreen()),
           GoRoute(path: 'full-day', builder: (context, state) => const FullDayScreen()),
           // UC-D10, D40: the DM's day of attendance, period by period
           GoRoute(path: 'day', builder: (context, state) => const DayScreen()),
-          // UC-D4, D38: the DM's messages to parents; the student's name travels as extra
-          GoRoute(path: 'messages', builder: (context, state) => const MessagesScreen()),
+          // UC-D4, D38: a message to parents; the student's name travels as extra. The sent
+          // messages and the search are the DM's Messages and Students tabs (D41).
           GoRoute(
             path: 'write',
             builder: (context, state) => MessageComposerScreen(

@@ -120,7 +120,7 @@ void main() {
 
   Future<void> openMessages(WidgetTester tester, {Map<String, dynamic>? user}) async {
     await open(tester, user: user);
-    await tapAndSettle(tester, find.byKey(const ValueKey('dm-messages-entry')));
+    await tapAndSettle(tester, find.text('Messages').last); // the DM's Messages tab (D41)
   }
 
   /// Waits the 400 ms after the last change before the preview is asked for.
@@ -141,7 +141,7 @@ void main() {
   bool enabled(WidgetTester tester) => tester.widget<FilledButton>(send()).onPressed != null;
   Map<String, dynamic> withoutId(Object? body) => Map.of(body! as Map<String, dynamic>)..remove('id');
 
-  testWidgets('the DM home leads to Messages, which lists sent messages with delivery', (tester) async {
+  testWidgets('the Messages tab lists sent messages with delivery', (tester) async {
     await openMessages(tester);
 
     expect(find.text('6e A'), findsOneWidget);

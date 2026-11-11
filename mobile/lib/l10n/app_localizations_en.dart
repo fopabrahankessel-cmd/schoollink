@@ -120,7 +120,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get navGate => 'Lateness';
 
   @override
-  String get navAlerts => 'Alerts';
+  String get navToday => 'Today';
+
+  @override
+  String get navStudents => 'Students';
+
+  @override
+  String get navMessages => 'Messages';
+
+  @override
+  String get navMore => 'More';
 
   @override
   String get navCases => 'Cases';

@@ -52,7 +52,8 @@ void main() {
   testWidgets('a DM who teaches and is a parent gets the tabs of each role (D21)', (tester) async {
     await signedInAs(tester, ['DM', 'PARENT', 'TEACHER']);
 
-    expect(tabLabels(tester), ['Appel', 'Alertes', 'Enfants', 'Notifications']);
+    // seven tabs: the bar shows four and More, which lists Enfants and Notifications (D41)
+    expect(tabLabels(tester), ['Appel', "Aujourd'hui", 'Élèves', 'Messages', 'Plus']);
   });
 
   testWidgets('the administrator and the researcher are sent to the web dashboard', (tester) async {
@@ -120,10 +121,16 @@ void main() {
 
     test("a tab of another role is not reachable", () {
       final teacher = AsyncData<UserInfo?>(user({Role.teacher}));
-      expect(redirectFor(teacher, '/home/alerts'), '/home/sessions');
+      expect(redirectFor(teacher, '/home/today'), '/home/sessions');
       expect(redirectFor(teacher, '/home/nonsense'), '/home/sessions');
       expect(redirectFor(teacher, '/home/sessions'), isNull);
       expect(redirectFor(teacher, '/login'), '/home/sessions');
+    });
+
+    test('a tab listed in More still opens by its address (D41)', () {
+      final everyone = AsyncData<UserInfo?>(user({Role.teacher, Role.dm, Role.parent}));
+      expect(redirectFor(everyone, '/home/children'), isNull);
+      expect(redirectFor(everyone, '/home/more'), isNull);
     });
 
     test('a researcher has no app screens', () {

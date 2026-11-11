@@ -296,11 +296,29 @@ abstract class AppLocalizations {
   /// **'Lateness'**
   String get navGate;
 
-  /// DM tab: risk alerts to decide (UC-D2).
+  /// DM tab: the day's counts, alerts to decide, missing roll calls, absences (D41).
   ///
   /// In en, this message translates to:
-  /// **'Alerts'**
-  String get navAlerts;
+  /// **'Today'**
+  String get navToday;
+
+  /// DM tab: find a student and open the student page (D41).
+  ///
+  /// In en, this message translates to:
+  /// **'Students'**
+  String get navStudents;
+
+  /// DM tab: messages sent to parents (D41).
+  ///
+  /// In en, this message translates to:
+  /// **'Messages'**
+  String get navMessages;
+
+  /// DM tab: decided alerts, dashboard, settings, sign out, and tabs that did not fit (D41).
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get navMore;
 
   /// Counsellor tab: referred students and cases (UC-C1).
   ///

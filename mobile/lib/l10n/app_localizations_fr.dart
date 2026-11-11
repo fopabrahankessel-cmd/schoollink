@@ -122,7 +122,16 @@ class AppLocalizationsFr extends AppLocalizations {
   String get navGate => 'Retards';
 
   @override
-  String get navAlerts => 'Alertes';
+  String get navToday => 'Aujourd\'hui';
+
+  @override
+  String get navStudents => 'Élèves';
+
+  @override
+  String get navMessages => 'Messages';
+
+  @override
+  String get navMore => 'Plus';
 
   @override
   String get navCases => 'Suivis';

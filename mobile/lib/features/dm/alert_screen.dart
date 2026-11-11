@@ -12,6 +12,7 @@ import '../auth/failure_text.dart';
 import '../lateness/lateness.dart' show latenessDayProvider;
 import 'dm.dart';
 import 'dm_sheets.dart';
+import '../shell/tab_path.dart';
 
 /// UC-D2, UC-D3: one open alert, what its rule found, and the DM's four decisions (BR-18). Nothing
 /// happens until the DM chooses: the app never decides (BR-16 to BR-19).
@@ -133,7 +134,7 @@ class _AlertBody extends ConsumerWidget {
                       const SizedBox(height: Gap.s),
                       TextButton.icon(
                         key: const ValueKey('alert-history'),
-                        onPressed: () => context.push('/home/alerts/student/${alert.studentId}'),
+                        onPressed: () => context.push(underTab(context, 'student/${alert.studentId}')),
                         icon: const Icon(Icons.history_rounded),
                         label: Text(l.seeHistory),
                         style: TextButton.styleFrom(minimumSize: const Size(0, 48)),

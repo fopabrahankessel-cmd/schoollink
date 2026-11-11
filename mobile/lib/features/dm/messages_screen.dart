@@ -8,52 +8,59 @@ import '../../core/ui/skeleton.dart';
 import '../../core/ui/widgets.dart';
 import '../../l10n/app_localizations.dart';
 import '../auth/failure_text.dart';
+import '../shell/tab_path.dart';
 import 'messages.dart';
 
 /// UC-D4, D38: the messages the DM sent to parents, newest first, with what became of them. A new
-/// one is written from the button; none can be edited or taken back.
-class MessagesScreen extends ConsumerWidget {
-  const MessagesScreen({super.key});
+/// one is written from the tab's button ([NewMessageButton]); none can be edited or taken back.
+/// It is the DM's Messages tab (D41).
+class SentMessagesView extends ConsumerWidget {
+  const SentMessagesView({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context);
-    return Scaffold(
-      appBar: AppBar(title: Text(l.messagesEntry)),
-      body: switch (ref.watch(sentMessagesProvider)) {
-        AsyncValue(value: final messages?) => RefreshIndicator(
-          onRefresh: () => ref.refresh(sentMessagesProvider.future).then((_) {}, onError: (_) {}),
-          child: messages.isEmpty
-              ? ListView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  children: [EmptyState(icon: Icons.forum_outlined, title: l.noMessages, body: l.noMessagesBody)],
-                )
-              : ListView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  // room for the floating button over the last card
-                  padding: const EdgeInsets.fromLTRB(Gap.l, Gap.l, Gap.l, 96),
-                  children: [
-                    for (final message in messages)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: Gap.m),
-                        child: SentMessageCard(message: message),
-                      ),
-                  ],
-                ),
-        ),
-        AsyncError(:final error) => FailureView(
-          message: failureText(error, l),
-          onRetry: () => ref.invalidate(sentMessagesProvider),
-        ),
-        _ => const Skeleton(child: SkeletonRows(count: 4)),
-      },
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.push('/home/alerts/write'),
-        icon: const Icon(Icons.edit_outlined),
-        label: Text(l.newMessage),
+    return switch (ref.watch(sentMessagesProvider)) {
+      AsyncValue(value: final messages?) => RefreshIndicator(
+        onRefresh: () => ref.refresh(sentMessagesProvider.future).then((_) {}, onError: (_) {}),
+        child: messages.isEmpty
+            ? ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: [EmptyState(icon: Icons.forum_outlined, title: l.noMessages, body: l.noMessagesBody)],
+              )
+            : ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                // room for the floating button over the last card
+                padding: const EdgeInsets.fromLTRB(Gap.l, Gap.l, Gap.l, 96),
+                children: [
+                  for (final message in messages)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: Gap.m),
+                      child: SentMessageCard(message: message),
+                    ),
+                ],
+              ),
       ),
-    );
+      AsyncError(:final error) => FailureView(
+        message: failureText(error, l),
+        onRetry: () => ref.invalidate(sentMessagesProvider),
+      ),
+      _ => const Skeleton(child: SkeletonRows(count: 4)),
+    };
   }
+}
+
+/// The Messages tab's button: a new message to the parents of a student or a class.
+class NewMessageButton extends StatelessWidget {
+  const NewMessageButton({super.key});
+
+  @override
+  Widget build(BuildContext context) => FloatingActionButton.extended(
+    key: const ValueKey('dm-new-message'),
+    onPressed: () => context.push(underTab(context, 'write')),
+    icon: const Icon(Icons.edit_outlined),
+    label: Text(AppLocalizations.of(context).newMessage),
+  );
 }
 
 /// Who it went to, when, the text, and the delivery counts. No phone numbers (NFR-9).

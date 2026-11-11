@@ -9,6 +9,8 @@ import '../../core/ui/widgets.dart';
 import '../../l10n/app_localizations.dart';
 import '../auth/auth_controller.dart';
 import '../dm/dm_home_screen.dart';
+import '../dm/messages_screen.dart';
+import '../dm/student_search_screen.dart';
 import '../lateness/gate_screen.dart';
 import '../teacher/sessions_screen.dart';
 import 'destinations.dart';
@@ -17,7 +19,7 @@ import '../parent/inbox_screen.dart';
 import '../parent/parent.dart';
 
 /// The role-based shell: one tab per screen the user's roles give (SPEC §8). With a single
-/// screen there is no tab bar. Records saved offline are announced above every screen, with a way
+/// screen there is no tab bar; past five, the bar shows four and More, which lists the rest (D41). Records saved offline are announced above every screen, with a way
 /// to send them now (BR-6, UC-T2).
 class HomeShell extends ConsumerWidget {
   const HomeShell({super.key, required this.current});
@@ -28,8 +30,12 @@ class HomeShell extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context);
     final user = ref.watch(authControllerProvider).value;
-    final destinations = user == null ? const <Destination>[] : destinationsFor(user.roles);
-    final index = destinations.indexOf(current);
+    final all = user == null ? const <Destination>[] : destinationsFor(user.roles);
+    final destinations = barFor(all);
+    // a tab listed in More keeps More selected
+    final index = destinations.contains(current)
+        ? destinations.indexOf(current)
+        : destinations.indexOf(Destination.more);
     final pending = ref.watch(pendingSyncProvider).value ?? 0;
     // listened from the start, so the banner knows the network state when it appears
     final offline = ref.watch(onlineProvider).value == false;
@@ -40,7 +46,7 @@ class HomeShell extends ConsumerWidget {
       appBar: AppBar(
         title: Text(current.label(l)),
         actions: [
-          _AccountMenu(roles: user?.roles ?? const {}, onSignOut: () => _signOut(context, ref, pending)),
+          _AccountMenu(roles: user?.roles ?? const {}, onSignOut: () => signOutChecked(context, ref)),
           const SizedBox(width: Gap.s),
         ],
       ),
@@ -50,7 +56,9 @@ class HomeShell extends ConsumerWidget {
             child: switch (current) {
               Destination.sessions => const SessionsScreen(),
               Destination.gate => const GateScreen(),
-              Destination.alerts => const DmHomeScreen(),
+              Destination.today => const DmHomeScreen(),
+              Destination.students => const StudentSearchView(),
+              Destination.messages => const SentMessagesView(),
               Destination.children => const ChildrenScreen(),
               Destination.inbox => const InboxScreen(),
               _ => _Placeholder(current),
@@ -60,6 +68,7 @@ class HomeShell extends ConsumerWidget {
           if (pending > 0) SyncBanner(pending: pending, offline: offline),
         ],
       ),
+      floatingActionButton: current == Destination.messages ? const NewMessageButton() : null,
       bottomNavigationBar: destinations.length < 2
           ? null
           : NavigationBar(
@@ -79,29 +88,31 @@ class HomeShell extends ConsumerWidget {
             ),
     );
   }
+}
 
-  /// D22: records not yet sent stay on the phone for this user's next sign-in; say so first.
-  Future<void> _signOut(BuildContext context, WidgetRef ref, int pending) async {
-    if (pending > 0) {
-      final l = AppLocalizations.of(context);
-      final confirmed = await showDialog<bool>(
-        context: context,
-        builder: (context) => AlertDialog(
-          icon: const Icon(Icons.cloud_upload_outlined),
-          title: Text(l.signOutPendingTitle),
-          content: Text(l.signOutPendingBody(pending)),
-          actions: [
-            TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l.cancel)),
-            TextButton(onPressed: () => Navigator.pop(context, true), child: Text(l.signOut)),
-          ],
-        ),
-      );
-      if (confirmed != true) {
-        return;
-      }
+/// D22: records not yet sent stay on the phone for this user's next sign-in; say so first. From
+/// the account menu and from the DM's More tab (D41).
+Future<void> signOutChecked(BuildContext context, WidgetRef ref) async {
+  final pending = ref.read(pendingSyncProvider).value ?? 0;
+  if (pending > 0) {
+    final l = AppLocalizations.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        icon: const Icon(Icons.cloud_upload_outlined),
+        title: Text(l.signOutPendingTitle),
+        content: Text(l.signOutPendingBody(pending)),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(l.cancel)),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: Text(l.signOut)),
+        ],
+      ),
+    );
+    if (confirmed != true) {
+      return;
     }
-    await ref.read(authControllerProvider.notifier).signOut();
   }
+  await ref.read(authControllerProvider.notifier).signOut();
 }
 
 enum _AccountAction { signOut }

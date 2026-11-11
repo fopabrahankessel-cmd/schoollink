@@ -13,6 +13,7 @@ import '../lateness/gate_screen.dart';
 import '../lateness/lateness.dart';
 import 'alert_screen.dart' show evidenceText, ruleTitle;
 import 'dm.dart';
+import '../shell/tab_path.dart';
 
 /// The DM's home: the open risk alerts of their classes, to decide one by one (UC-D2), a way to
 /// find any student of those classes (D35), and today's lateness in them (UC-AD2). Each leads to
@@ -69,7 +70,7 @@ class DmHomeScreen extends ConsumerWidget {
                 child: InkWell(
                   key: const ValueKey('open-search'),
                   borderRadius: BorderRadius.circular(Radii.m),
-                  onTap: () => context.push('/home/alerts/students'),
+                  onTap: () => context.go('/home/students'),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: Gap.m, vertical: Gap.m + 2),
                     child: Row(
@@ -96,7 +97,7 @@ class DmHomeScreen extends ConsumerWidget {
                 child: InkWell(
                   key: const ValueKey('dm-day-entry'),
                   borderRadius: BorderRadius.circular(Radii.m),
-                  onTap: () => context.push('/home/alerts/day'),
+                  onTap: () => context.push(underTab(context, 'day')),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: Gap.m, vertical: Gap.m),
                     child: Row(
@@ -129,7 +130,7 @@ class DmHomeScreen extends ConsumerWidget {
                 child: InkWell(
                   key: const ValueKey('open-full-day'),
                   borderRadius: BorderRadius.circular(Radii.m),
-                  onTap: () => context.push('/home/alerts/full-day'),
+                  onTap: () => context.push(underTab(context, 'full-day')),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: Gap.m, vertical: Gap.m),
                     child: Row(
@@ -162,7 +163,7 @@ class DmHomeScreen extends ConsumerWidget {
                 child: InkWell(
                   key: const ValueKey('dm-messages-entry'),
                   borderRadius: BorderRadius.circular(Radii.m),
-                  onTap: () => context.push('/home/alerts/messages'),
+                  onTap: () => context.go('/home/messages'),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: Gap.m, vertical: Gap.m),
                     child: Row(
@@ -232,7 +233,10 @@ class DmHomeScreen extends ConsumerWidget {
                   _ when rows.isEmpty => Card(
                     child: EmptyState(icon: Icons.door_front_door_outlined, title: l.noLatenessToday),
                   ),
-                  _ => LatenessList(rows: rows, onTap: (row) => context.push('/home/alerts/student/${row.studentId}')),
+                  _ => LatenessList(
+                    rows: rows,
+                    onTap: (row) => context.push(underTab(context, 'student/${row.studentId}')),
+                  ),
                 },
               ],
             ),
@@ -264,7 +268,7 @@ class _AlertList extends StatelessWidget {
             if (i > 0) const Divider(indent: 68),
             InkWell(
               key: ValueKey('alert-${alert.id}'),
-              onTap: () => context.push('/home/alerts/alert/${alert.id}'),
+              onTap: () => context.push(underTab(context, 'alert/${alert.id}')),
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(Gap.l, Gap.m, Gap.s, Gap.m),
                 child: Row(

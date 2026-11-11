@@ -48,9 +48,21 @@
   "@navGate": {
     "description": "Assistant DM tab: lateness at the gate (UC-AD1, UC-AD2)."
   },
-  "navAlerts": "Alerts",
-  "@navAlerts": {
-    "description": "DM tab: risk alerts to decide (UC-D2)."
+  "navToday": "Today",
+  "@navToday": {
+    "description": "DM tab: the day's counts, alerts to decide, missing roll calls, absences (D41)."
+  },
+  "navStudents": "Students",
+  "@navStudents": {
+    "description": "DM tab: find a student and open the student page (D41)."
+  },
+  "navMessages": "Messages",
+  "@navMessages": {
+    "description": "DM tab: messages sent to parents (D41)."
+  },
+  "navMore": "More",
+  "@navMore": {
+    "description": "DM tab: decided alerts, dashboard, settings, sign out, and tabs that did not fit (D41)."
   },
   "navCases": "Cases",
   "@navCases": {

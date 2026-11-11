@@ -12,6 +12,7 @@ import '../../auth/failure_text.dart';
 import '../dm.dart';
 import '../dm_sheets.dart';
 import 'day_models.dart';
+import '../../shell/tab_path.dart';
 
 /// UC-D10, D40: "Présences du jour". One day of the DM's classes, period by period, with the day's
 /// lateness under each class (BR-8, BR-9: side by side, never merged). A period not recorded is
@@ -344,7 +345,7 @@ class _ClassCard extends ConsumerWidget {
                     onCancelled(late.recordId);
                   }
                 },
-                onHistory: () => context.push('/home/alerts/student/${late.studentId}'),
+                onHistory: () => context.push(underTab(context, 'student/${late.studentId}')),
               ),
             const SizedBox(height: Gap.xs),
           ],
@@ -517,7 +518,7 @@ class _AbsenteesSheetState extends ConsumerState<_AbsenteesSheet> {
                     },
                     onHistory: () {
                       Navigator.of(context).pop();
-                      context.push('/home/alerts/student/${absence.studentId}');
+                      context.push(underTab(context, 'student/${absence.studentId}'));
                     },
                   ),
               ],
