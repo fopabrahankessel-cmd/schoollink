@@ -64,9 +64,7 @@ void main() {
     expect(server.sent('POST /auth/parent/sign-in').single.body, {'schoolId': 'school-2', 'phone': '+237699000001'});
     // NFR-7: the server does not say whether it knows the number
     expect(
-      find.text(
-        "Si l'établissement connaît le +237 699 00 00 01, un code à 6 chiffres lui a été envoyé par SMS.",
-      ),
+      find.text("Si l'établissement connaît le +237 699 00 00 01, un code à 6 chiffres lui a été envoyé par SMS."),
       findsOneWidget,
     );
 
@@ -137,7 +135,8 @@ void main() {
     });
 
     testWidgets('an SMS that could not be sent shows the server message and stays on step 1', (tester) async {
-      const message = "Le SMS contenant votre code de vérification n'a pas pu être envoyé. Réessayez dans quelques minutes.";
+      const message =
+          "Le SMS contenant votre code de vérification n'a pas pu être envoyé. Réessayez dans quelques minutes.";
       server.on('POST /auth/parent/sign-in', (_) => Reply.error(503, 'auth.otp_not_sent', message));
       await openSignIn(tester);
 
@@ -170,6 +169,25 @@ void main() {
       await enterOtp(tester, '654321');
       expect((server.sent('POST /auth/parent/sign-in/verify').last.body! as Map)['activationId'], 'sign-2');
       expect(find.widgetWithText(AppBar, 'Enfants'), findsOneWidget);
+    });
+
+    testWidgets('a new code refused for too many requests says so (NFR-7)', (tester) async {
+      const message = 'Trop de tentatives. Réessayez dans 51 minutes.';
+      await openSignIn(tester);
+      await enterPhone(tester);
+
+      await tester.tap(find.text('Renvoyer un code'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Un nouveau code a été envoyé.'), findsOneWidget);
+
+      server.on('POST /auth/parent/sign-in', (_) => Reply.error(429, 'rate_limited', message));
+      await tester.tap(find.text('Renvoyer un code'));
+      await tester.pumpAndSettle();
+
+      expect(find.text(message), findsOneWidget);
+      // no new code: the last one sent still works, and the screen must not say otherwise
+      expect(find.textContaining('Un nouveau code a été envoyé.'), findsNothing);
+      expect(find.textContaining("Le code est valable jusqu'à"), findsOneWidget);
     });
 
     testWidgets('the code must have 6 digits', (tester) async {

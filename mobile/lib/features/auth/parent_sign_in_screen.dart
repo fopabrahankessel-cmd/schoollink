@@ -82,6 +82,8 @@ class _ParentSignInScreenState extends ConsumerState<ParentSignInScreen> {
       return;
     }
     final digits = cameroonDigits(_phone.text)!;
+    // until the server answers, no new code has been sent: a refusal leaves the last one valid
+    setState(() => _resent = false);
     await _run(() async {
       final started = await ref.read(authApiProvider).parentSignIn(schoolId: _school()!, phone: '+237$digits');
       setState(() {
@@ -103,9 +105,7 @@ class _ParentSignInScreenState extends ConsumerState<ParentSignInScreen> {
     }
     // signed in: the router takes the parent to their children
     await _run(
-      () => ref
-          .read(authControllerProvider.notifier)
-          .verifyParent(signInId: _started!.signInId, otp: _otp.text),
+      () => ref.read(authControllerProvider.notifier).verifyParent(signInId: _started!.signInId, otp: _otp.text),
     );
   }
 
