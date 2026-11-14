@@ -480,6 +480,14 @@
       }
     }
   },
+  "childLeftOn": "Left the school on {date}",
+  "@childLeftOn": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "historyTitle": "History",
   "periodFromTo": "From {from} to {to}",
   "@periodFromTo": {

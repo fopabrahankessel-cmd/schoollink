@@ -1076,6 +1076,12 @@ abstract class AppLocalizations {
   /// **'Class: {name}'**
   String classLabel(String name);
 
+  /// No description provided for @childLeftOn.
+  ///
+  /// In en, this message translates to:
+  /// **'Left the school on {date}'**
+  String childLeftOn(String date);
+
   /// No description provided for @historyTitle.
   ///
   /// In en, this message translates to:

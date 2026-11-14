@@ -7,6 +7,7 @@ import com.schoollink.school.SchoolClasses;
 import com.schoollink.shared.error.ApiException;
 import com.schoollink.shared.security.CurrentUser;
 import com.schoollink.shared.security.Role;
+import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +26,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 class ChildrenController {
 
-	record Child(UUID id, String firstName, String lastName, UUID classId, String className) {
+	/** {@code leftOn}: the day the child left the school, null while enrolled (D43); the history stays. */
+	record Child(UUID id, String firstName, String lastName, UUID classId, String className, LocalDate leftOn) {
 	}
 
 	private final Students students;
@@ -47,9 +49,11 @@ class ChildrenController {
 		Map<UUID, Card> cards = students.cards(user.schoolId(), user.children());
 		Map<UUID, String> names = classes.names(user.schoolId(),
 				Set.copyOf(cards.values().stream().map(Card::classId).toList()));
+		Map<UUID, LocalDate> left = students.leftOn(user.schoolId(), user.children());
 		return cards.values()
 			.stream()
-			.map(c -> new Child(c.id(), c.firstName(), c.lastName(), c.classId(), names.get(c.classId())))
+			.map(c -> new Child(c.id(), c.firstName(), c.lastName(), c.classId(), names.get(c.classId()),
+					left.get(c.id())))
 			.sorted(Comparator.comparing(Child::firstName).thenComparing(Child::lastName))
 			.toList();
 	}

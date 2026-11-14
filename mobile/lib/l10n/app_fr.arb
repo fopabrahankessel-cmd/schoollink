@@ -164,6 +164,7 @@
   "noChildren": "Aucun enfant n'est lié à votre compte",
   "noChildrenHint": "Contactez l'établissement pour vérifier le numéro qu'il a pour vous.",
   "classLabel": "Classe : {name}",
+  "childLeftOn": "A quitté l'école le {date}",
   "historyTitle": "Historique",
   "periodFromTo": "Du {from} au {to}",
   "absentPeriodsLabel": "{count, plural, one{heure d'absence} other{heures d'absence}}",

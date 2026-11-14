@@ -152,6 +152,17 @@ class ParentApiTests {
 			.andExpect(jsonPath("$[1].birthYear").doesNotExist());
 	}
 
+	@Test
+	void aParentSeesThatAChildLeftTheSchool() throws Exception { // D43: the history stays, with the day they left
+		jdbc.update("UPDATE student SET left_on = DATE '2026-10-30' WHERE id = ?", awa);
+
+		perform(get("/api/v1/me/children")).andExpect(status().isOk())
+			.andExpect(jsonPath("$.length()").value(2))
+			.andExpect(jsonPath("$[0].id").value(awa.toString()))
+			.andExpect(jsonPath("$[0].leftOn").value("2026-10-30"))
+			.andExpect(jsonPath("$[1].leftOn").isEmpty());
+	}
+
 	// History (UC-P3)
 
 	@Test

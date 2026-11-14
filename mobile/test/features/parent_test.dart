@@ -223,6 +223,22 @@ void main() {
     expect(find.text('dont 0 non justifiée'), findsNothing);
   });
 
+  testWidgets('a child who left the school stays, with the day they left (D43)', (tester) async {
+    server.on(
+      'GET /me/children',
+      (_) => const Reply.ok([
+        {'id': 'st-1', 'firstName': 'Awa', 'lastName': 'Fictif', 'classId': 'c-1', 'className': '6e A', 'leftOn': null},
+        {'id': 'st-2', 'firstName': 'Paul', 'lastName': 'Fictif', 'classId': 'c-2', 'className': '3e B', 'leftOn': '2026-10-30'},
+      ]),
+    );
+    await open(tester);
+
+    expect(find.text('Classe : 6e A'), findsOneWidget);
+    expect(find.text('A quitté l\'école le 30 octobre 2026'), findsOneWidget);
+    expect(find.text('Classe : 3e B'), findsNothing);
+    expect(find.byKey(const ValueKey('child-st-2')), findsOneWidget); // the history is still there
+  });
+
   testWidgets('older messages load at the end of the list, from the last one shown', (tester) async {
     final page = [
       for (var i = 0; i < 30; i++)

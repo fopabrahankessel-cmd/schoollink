@@ -650,6 +650,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String childLeftOn(String date) {
+    return 'Left the school on $date';
+  }
+
+  @override
   String get historyTitle => 'History';
 
   @override

@@ -103,6 +103,19 @@ class JdbcStudents implements Students {
 		return cards;
 	}
 
+	@Override
+	public Map<UUID, LocalDate> leftOn(UUID schoolId, Collection<UUID> studentIds) {
+		Map<UUID, LocalDate> left = new HashMap<>();
+		if (!studentIds.isEmpty()) {
+			jdbc.query("SELECT id, left_on FROM student WHERE school_id = :school AND id IN (:ids) AND left_on IS NOT NULL",
+					new MapSqlParameterSource("school", schoolId).addValue("ids", studentIds),
+					rs -> {
+						left.put(rs.getObject("id", UUID.class), rs.getObject("left_on", LocalDate.class));
+					});
+		}
+		return left;
+	}
+
 	private static Card card(ResultSet rs, int row) throws SQLException {
 		return new Card(rs.getObject("id", UUID.class), rs.getString("matricule"), rs.getString("first_name"),
 				rs.getString("last_name"), rs.getObject("class_id", UUID.class));

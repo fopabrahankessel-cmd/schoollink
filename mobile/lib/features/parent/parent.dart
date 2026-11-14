@@ -16,6 +16,7 @@ class Child {
     required this.lastName,
     required this.classId,
     required this.className,
+    this.leftOn,
   });
 
   factory Child.fromJson(Map<String, dynamic> json) => Child(
@@ -24,6 +25,7 @@ class Child {
     lastName: json['lastName'] as String,
     classId: json['classId'] as String,
     className: json['className'] as String?,
+    leftOn: json['leftOn'] == null ? null : DateTime.parse(json['leftOn'] as String),
   );
 
   final String id;
@@ -31,6 +33,9 @@ class Child {
   final String lastName;
   final String classId;
   final String? className;
+
+  /// D43: the day the child left the school, null while enrolled. The history stays.
+  final DateTime? leftOn;
 }
 
 /// What a notification is about; it sets the icon and colour of the message.

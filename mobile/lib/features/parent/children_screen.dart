@@ -116,7 +116,13 @@ class _ChildCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text('${child.firstName} ${child.lastName}', style: theme.textTheme.titleMedium),
-                    if (child.className case final className?) ...[
+                    if (child.leftOn case final leftOn?) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        l.childLeftOn(DateFormat.yMMMMd(Localizations.localeOf(context).toLanguageTag()).format(leftOn)),
+                        style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                      ),
+                    ] else if (child.className case final className?) ...[
                       const SizedBox(height: 2),
                       Text(
                         l.classLabel(className),

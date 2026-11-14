@@ -45,6 +45,9 @@ public interface Students {
 	/** The given students of the school: id -> card; ids of other schools are left out. */
 	Map<UUID, Card> cards(UUID schoolId, Collection<UUID> studentIds);
 
+	/** D43: among the given students of the school, those who left it: id -> the day they left. */
+	Map<UUID, LocalDate> leftOn(UUID schoolId, Collection<UUID> studentIds);
+
 	/** What staff need to recognise a student (NFR-9: no birth year, no guardian). */
 	record Card(UUID id, String matricule, String firstName, String lastName, UUID classId) {
 	}
