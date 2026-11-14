@@ -1,5 +1,6 @@
 package com.schoollink.notification.internal;
 
+import com.schoollink.people.GuardianPhoneChanged;
 import com.schoollink.people.StaffCredentialsReset;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
@@ -21,6 +22,14 @@ class DeviceTokenRevoker {
 	@EventListener
 	void on(StaffCredentialsReset event) {
 		devices.forgetUser(event.userId());
+	}
+
+	/** D43: a guardian whose phone changed signs in again with the new number (D24). */
+	@EventListener
+	void on(GuardianPhoneChanged event) {
+		if (event.userId() != null) {
+			devices.forgetUser(event.userId());
+		}
 	}
 
 }
