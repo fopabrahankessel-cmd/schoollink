@@ -27,6 +27,8 @@ import { PeriodsPage } from './pages/structure/PeriodsPage'
 import { TimetablePage } from './pages/structure/TimetablePage'
 import { StaffDetailPage } from './pages/staff/StaffDetailPage'
 import { StaffListPage } from './pages/staff/StaffListPage'
+import { StudentAdminPage } from './pages/students/StudentAdminPage'
+import { ADMIN_STUDENTS, StudentsAdminPage } from './pages/students/StudentsAdminPage'
 
 const admin = (page: ReactNode) => <RequireRole role="ADMIN">{page}</RequireRole>
 const dm = (page: ReactNode) => <RequireRole role="DM">{page}</RequireRole>
@@ -54,6 +56,9 @@ export const routes: RouteObject[] = [
       // UC-A2: staff accounts and assignments, admin only
       { path: '/staff', element: admin(<StaffListPage />) },
       { path: '/staff/:id', element: admin(<StaffDetailPage />) },
+      // D43: the students and their guardians kept up to date after the import, admin only
+      { path: ADMIN_STUDENTS, element: admin(<StudentsAdminPage />) },
+      { path: `${ADMIN_STUDENTS}/:id`, element: admin(<StudentAdminPage />) },
       // UC-A3: student and guardian import, admin only
       { path: '/students/import', element: admin(<ImportUploadPage />) },
       { path: '/students/import/:id', element: admin(<ImportPreviewPage />) },

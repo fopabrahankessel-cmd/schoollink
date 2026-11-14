@@ -62,6 +62,7 @@ const ADMIN_NAV: { group?: string; items: NavItem[] }[] = [
     group: 'nav.people',
     items: [
       { to: '/staff', label: 'nav.staff', icon: UsersThreeIcon },
+      { to: '/school/students', label: 'nav.students', icon: StudentIcon },
       { to: '/students/import', label: 'nav.import', icon: FileArrowUpIcon },
       { to: '/guardians', label: 'nav.guardians', icon: UsersFourIcon },
     ],
