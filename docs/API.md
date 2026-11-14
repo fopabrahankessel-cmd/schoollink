@@ -144,6 +144,7 @@ In development there is no SMS gateway: the code is written to the server log (`
 4. **Server, one transaction:**
    - checks the teacher teaches that class (403 otherwise);
    - stores the session, locked from the start (BR-4), with one record per student of the class: present unless listed absent (BR-2, BR-5);
+   - never refuses a roll because the phone's clock or class list is wrong (D42): a `confirmedAt` ahead of the server by more than 5 minutes, or before the session's date, is replaced by the server's time; an absentee who is not in the class any more is left out;
    - refuses a second session for the same class, date and period under another id (409, BR-1);
    - writes the parents' notifications to the outbox and the audit row.
 5. **After the commit:** the detection rules run for the absent students (section 2.7), and the dispatcher sends the notifications (section 2.5).
@@ -155,7 +156,7 @@ A locked session is never edited. A mistake is corrected by the DM (section 2.6)
 1. **Prepare:** `GET /lateness/students` with no `q` returns every student of the assistant DM's scope, for the offline copy. With `q` it searches by name or matricule.
 2. **Record, offline:** the assistant DM picks a student; the app stores a lateness with a new UUID and the arrival time.
 3. **Sync:** `PUT /lateness/{id}` with `{studentId, date, arrivalTime, recordedAt}`.
-4. **Server:** checks the student is in scope, stores the record, refuses a second live lateness for the same student and day under another id (409), writes the outbox and audit rows.
+4. **Server:** checks the student is in scope, stores the record, refuses a second live lateness for the same student and day under another id (409), writes the outbox and audit rows. A wrong clock on the phone does not lose the record (D42): an arrival more than 5 minutes ahead of the server becomes the time the server received it, and a `recordedAt` ahead of the server or before the arrival becomes the server's time.
 5. `GET /lateness?date=` lists the day's lateness with the school's start time.
 
 Lateness and attendance are separate records. Neither reads or changes the other (BR-8, BR-9).
@@ -318,7 +319,7 @@ Bodies:
 | `POST /records/{id}/cancel` | DM, scope | Cancel an absence recorded by mistake |
 
 - `GET /me/sessions` returns `{date, schoolDay, sessions}`. Each session: `{classId, className, periodId, periodNumber, startTime, endTime, subject, current, recorded, sessionId, confirmedAt, absentCount}`. `date` defaults to today in the school's time zone.
-- `PUT /sessions/{id}` takes `{classId, date, periodId, confirmedAt, absentStudentIds}` (at most 300 ids) and returns `{id, classId, date, periodId, confirmedAt, syncedAt, studentCount, absentStudentIds}`.
+- `PUT /sessions/{id}` takes `{classId, date, periodId, confirmedAt, absentStudentIds}` (at most 300 ids) and returns `{id, classId, date, periodId, confirmedAt, syncedAt, studentCount, absentStudentIds}`. The answer holds what was stored: `confirmedAt` and `absentStudentIds` can differ from the request (D42). The phone's own time is kept in `device_confirmed_at`, and the audit row lists the ids left out. A replay of the original request still returns 200.
 - Cancel takes `{reason}` and returns `{id, cancelledAt, cancelledBy, reason}`.
 
 ### 3.3 Lateness (`lateness`)
@@ -332,7 +333,7 @@ Bodies:
 
 - Students: `[{id, matricule, firstName, lastName, classId, className}]`.
 - Day: `{date, startTime, lateness}`. Each item: `{id, studentId, firstName, lastName, classId, className, arrivalTime, recordedAt, recordedBy, justified}`.
-- `PUT` takes `{studentId, date, arrivalTime, recordedAt}` and returns `{id, studentId, date, arrivalTime, recordedAt, syncedAt}`.
+- `PUT` takes `{studentId, date, arrivalTime, recordedAt}` and returns `{id, studentId, date, arrivalTime, recordedAt, syncedAt}`. The answer holds what was stored: the two times can differ from the request (D42). The phone's own times are kept in `device_arrival_time` and `device_recorded_at`. A replay of the original request still returns 200. An arrival at or before the school's start time is still refused (`lateness.not_late`, BR-7).
 - Cancel takes `{reason}`.
 
 ### 3.4 Justification (`justification`)

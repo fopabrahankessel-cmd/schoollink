@@ -247,11 +247,6 @@ class SessionRecordTests {
 
 	@Test
 	void invalidSessionsAreRejectedWithTheField() throws Exception {
-		expectInvalid(Map.of("absentStudentIds", List.of(UUID.randomUUID())), "attendance.student_not_in_class",
-				"absentStudentIds");
-		UUID studentOfB = student(world.classB, "TW-0201");
-		expectInvalid(Map.of("absentStudentIds", List.of(studentOfB)), "attendance.student_not_in_class",
-				"absentStudentIds");
 		expectInvalid(Map.of("periodId", UUID.randomUUID()), "reference.unknown", "periodId");
 		// D3, D10: Saturday, before the term, a holiday
 		expectInvalid(Map.of("date", "2026-10-31", "confirmedAt", "2026-11-02T07:00:00Z"), "attendance.not_a_school_day",
@@ -264,11 +259,79 @@ class SessionRecordTests {
 		expectInvalid(Map.of("date", "2026-10-26", "confirmedAt", "2026-11-02T07:00:00Z"), "attendance.not_a_school_day",
 				"date");
 		expectInvalid(Map.of("date", "2026-11-03"), "attendance.date_in_future", "date");
-		// confirmed ahead of the server clock, or before the day of the session
-		expectInvalid(Map.of("confirmedAt", "2026-11-02T08:00:00Z"), "attendance.confirmed_at_invalid", "confirmedAt");
-		expectInvalid(Map.of("date", "2026-10-23", "confirmedAt", "2026-10-22T15:00:00Z"),
-				"attendance.confirmed_at_invalid", "confirmedAt");
 		assertThat(jdbc.queryForObject("SELECT count(*) FROM attendance_session", Integer.class)).isZero();
+	}
+
+	@Test
+	void aRollFromAPhoneWithAWrongClockIsKeptWithTheServersTime() throws Exception { // BR-6, NFR-3
+		UUID id = UUID.randomUUID();
+		// the phone is more than an hour ahead: the roll is not lost, the lock time is the server's
+		Map<String, Object> ahead = Map.of("confirmedAt", "2026-11-02T09:00:00Z", "absentStudentIds",
+				List.of(world.studentA));
+		save(id, ahead).andExpect(status().isCreated())
+			.andExpect(jsonPath("$.confirmedAt").value("2026-11-02T07:40:00Z"));
+
+		var row = jdbc.queryForMap("SELECT confirmed_at, device_confirmed_at FROM attendance_session WHERE id = ?", id);
+		assertThat(((Timestamp) row.get("confirmed_at")).toInstant()).isEqualTo(NOW);
+		assertThat(((Timestamp) row.get("device_confirmed_at")).toInstant())
+			.isEqualTo(Instant.parse("2026-11-02T09:00:00Z"));
+		assertThat(events.stream(AttendanceConfirmed.class)).singleElement()
+			.satisfies(event -> assertThat(event.confirmedAt()).isEqualTo(NOW));
+		assertThat(jdbc.queryForObject(
+				"SELECT after::text FROM audit_log WHERE entity = 'attendance_session' AND entity_id = ?", String.class,
+				id.toString()))
+			.contains("deviceConfirmedAt", "2026-11-02T09:00:00Z");
+
+		// the phone retries with what it sent: the same session, not a change to a locked one
+		clock.set(NOW.plusSeconds(600));
+		save(id, ahead).andExpect(status().isOk()).andExpect(jsonPath("$.confirmedAt").value("2026-11-02T07:40:00Z"));
+		save(id, Map.of("confirmedAt", "2026-11-02T09:01:00Z", "absentStudentIds", List.of(world.studentA)))
+			.andExpect(status().isConflict());
+
+		// a phone behind: confirmed the day before the session it records
+		save(UUID.randomUUID(), Map.of("date", "2026-10-23", "confirmedAt", "2026-10-22T15:00:00Z"))
+			.andExpect(status().isCreated());
+	}
+
+	@Test
+	void aRollWithAnAccurateClockKeepsNoDeviceTime() throws Exception { // BR-6
+		UUID id = UUID.randomUUID();
+		save(id, Map.of()).andExpect(status().isCreated());
+
+		assertThat(jdbc.queryForMap("SELECT device_confirmed_at FROM attendance_session WHERE id = ?", id))
+			.containsEntry("device_confirmed_at", null);
+	}
+
+	@Test
+	void anAbsenteeWhoIsNoLongerInTheClassIsDroppedAndTheRollIsKept() throws Exception { // BR-2, BR-6, NFR-3
+		UUID id = UUID.randomUUID();
+		UUID unknown = UUID.randomUUID();
+		UUID studentOfB = student(world.classB, "TW-0201");
+		// the phone's class list is stale: one student left, another moved to class B
+		Map<String, Object> stale = Map.of("absentStudentIds", List.of(world.studentA, unknown, studentOfB));
+
+		save(id, stale).andExpect(status().isCreated())
+			.andExpect(jsonPath("$.studentCount").value(3))
+			.andExpect(jsonPath("$.absentStudentIds.length()").value(1))
+			.andExpect(jsonPath("$.absentStudentIds[0]").value(world.studentA.toString()));
+
+		assertThat(jdbc.queryForList("SELECT student_id FROM attendance_record WHERE session_id = ? AND status = 'ABSENT'",
+				UUID.class, id))
+			.containsExactly(world.studentA);
+		assertThat(jdbc.queryForObject("SELECT count(*) FROM attendance_record WHERE session_id = ?", Integer.class, id))
+			.isEqualTo(3);
+		assertThat(events.stream(AttendanceConfirmed.class)).singleElement()
+			.satisfies(event -> assertThat(event.absentStudentIds()).containsExactly(world.studentA));
+		// NFR-11: what was dropped is on record
+		assertThat(jdbc.queryForObject(
+				"SELECT after::text FROM audit_log WHERE entity = 'attendance_session' AND entity_id = ?", String.class,
+				id.toString()))
+			.contains("droppedStudentIds", unknown.toString(), studentOfB.toString());
+
+		save(id, stale).andExpect(status().isOk());
+		// BR-4: still locked
+		save(id, Map.of("absentStudentIds", List.of(unknown))).andExpect(status().isConflict())
+			.andExpect(jsonPath("$.code").value("attendance.session_locked"));
 	}
 
 	@Test

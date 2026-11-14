@@ -294,17 +294,73 @@ class LatenessTests {
 				"date");
 		expectInvalid(Map.of("date", "2026-09-04", "recordedAt", "2026-09-04T08:00:00Z"), "lateness.not_a_school_day",
 				"date");
-		// it is 08:40: an arrival at 09:00 has not happened yet
-		expectInvalid(Map.of("arrivalTime", "09:00", "recordedAt", "2026-11-02T07:39:00Z"), "lateness.arrival_in_future",
-				"arrivalTime");
-		// saved before the student arrived, or in the future
-		expectInvalid(Map.of("recordedAt", "2026-11-02T06:50:00Z"), "lateness.recorded_at_invalid", "recordedAt");
-		expectInvalid(Map.of("recordedAt", "2026-11-02T08:00:00Z"), "lateness.recorded_at_invalid", "recordedAt");
 		perform(ASSISTANT_DM_1, put("/api/v1/lateness/{id}", UUID.randomUUID()).contentType(MediaType.APPLICATION_JSON)
 			.content("{\"studentId\":\"" + world.studentA + "\",\"date\":\"" + MONDAY + "\",\"recordedAt\":\"" + RECORDED_AT
 					+ "\"}"))
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath("$.field").value("arrivalTime"));
+		assertThat(jdbc.queryForObject("SELECT count(*) FROM lateness_record", Integer.class)).isZero();
+	}
+
+	@Test
+	void aLatenessFromAPhoneWithAClockAheadIsKeptWithTheServersTime() throws Exception { // NFR-3, BR-7
+		UUID id = UUID.randomUUID();
+		// it is 08:40 and the phone says 09:13: the record is not lost
+		Map<String, Object> ahead = Map.of("arrivalTime", "09:12", "recordedAt", "2026-11-02T08:13:00Z");
+
+		save(id, ahead).andExpect(status().isCreated())
+			.andExpect(jsonPath("$.arrivalTime").value("08:40:00"))
+			.andExpect(jsonPath("$.recordedAt").value("2026-11-02T07:40:00Z"));
+
+		Map<String, Object> row = jdbc.queryForMap("SELECT * FROM lateness_record WHERE id = ?", id);
+		assertThat(row).containsEntry("recorded_at", Timestamp.from(NOW))
+			.containsEntry("device_recorded_at", Timestamp.from(Instant.parse("2026-11-02T08:13:00Z")));
+		assertThat(row.get("arrival_time").toString()).isEqualTo("08:40:00");
+		assertThat(row.get("device_arrival_time").toString()).isEqualTo("09:12:00");
+		assertThat(events.stream(LatenessRecorded.class)).singleElement().satisfies(event -> {
+			assertThat(event.arrivalTime()).isEqualTo(LocalTime.of(8, 40));
+			assertThat(event.recordedAt()).isEqualTo(NOW);
+		});
+		assertThat(jdbc.queryForObject(
+				"SELECT after::text FROM audit_log WHERE entity = 'lateness_record' AND entity_id = ?", String.class,
+				id.toString()))
+			.contains("deviceArrivalTime", "09:12", "deviceRecordedAt");
+
+		// the phone retries with what it sent: the same record
+		clock.set(NOW.plusSeconds(600));
+		save(id, ahead).andExpect(status().isOk()).andExpect(jsonPath("$.arrivalTime").value("08:40:00"));
+		save(id, Map.of("arrivalTime", "09:15", "recordedAt", "2026-11-02T08:13:00Z")).andExpect(status().isConflict());
+	}
+
+	@Test
+	void aSavingTimeThatCannotBeRightIsReplacedByTheServers() throws Exception { // NFR-3
+		UUID id = UUID.randomUUID();
+		// saved 22 minutes before the student arrived: the arrival stands, the saving time does not
+		save(id, Map.of("recordedAt", "2026-11-02T06:50:00Z")).andExpect(status().isCreated())
+			.andExpect(jsonPath("$.arrivalTime").value("08:12:00"))
+			.andExpect(jsonPath("$.recordedAt").value("2026-11-02T07:40:00Z"));
+
+		Map<String, Object> row = jdbc.queryForMap("SELECT * FROM lateness_record WHERE id = ?", id);
+		assertThat(row).containsEntry("device_arrival_time", null)
+			.containsEntry("device_recorded_at", Timestamp.from(Instant.parse("2026-11-02T06:50:00Z")));
+	}
+
+	@Test
+	void aLatenessWithAnAccurateClockKeepsNoDeviceTime() throws Exception { // NFR-3
+		UUID id = UUID.randomUUID();
+		save(id, Map.of()).andExpect(status().isCreated());
+
+		assertThat(jdbc.queryForMap("SELECT * FROM lateness_record WHERE id = ?", id))
+			.containsEntry("device_arrival_time", null)
+			.containsEntry("device_recorded_at", null);
+	}
+
+	@Test
+	void anArrivalAheadOfTheServerBeforeClassesStartIsNotLate() throws Exception { // BR-7
+		// it is 07:20, classes start at 07:30: whatever the phone says, nobody is late yet
+		clock.set(Instant.parse("2026-11-02T06:20:00Z"));
+
+		expectInvalid(Map.of("arrivalTime", "08:12"), "lateness.not_late", "arrivalTime");
 		assertThat(jdbc.queryForObject("SELECT count(*) FROM lateness_record", Integer.class)).isZero();
 	}
 

@@ -11,6 +11,7 @@ import com.schoollink.shared.security.CurrentUser;
 import com.schoollink.shared.security.Role;
 import jakarta.validation.constraints.NotNull;
 import java.sql.Timestamp;
+import java.sql.Types;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -19,6 +20,7 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -34,11 +36,16 @@ import org.springframework.transaction.annotation.Transactional;
  * nothing; the same id with different content is refused, since a record never changes (D20).
  * One live record per student per day: a second one, under another id, is a conflict. Attendance
  * is never read or changed here (BR-8, BR-9).
+ * <p>
+ * A phone is never refused for good because its clock is wrong (NFR-3): the queue on the device
+ * does not retry a refusal, so the record would be lost. An arrival that has not happened yet
+ * becomes the time the server received it, a saving time that cannot be right becomes the
+ * server's, and what the phone sent is kept beside them.
  */
 @Service
 class LatenessRecorder {
 
-	/** How far ahead of the server clock a device's time may be. */
+	/** How far ahead of the server clock a device's time may be before it is replaced. */
 	static final Duration CLOCK_SKEW = Duration.ofMinutes(5);
 
 	/**
@@ -57,7 +64,13 @@ class LatenessRecorder {
 	record Saved(LatenessView lateness, boolean created) {
 	}
 
-	private record Stored(UUID schoolId, UUID recordedBy, LatenessView view) {
+	/** The device values: what the phone sent, when the server replaced it; else null. */
+	private record Stored(UUID schoolId, UUID recordedBy, LatenessView view, LocalTime deviceArrivalTime,
+			Instant deviceRecordedAt) {
+	}
+
+	/** What is stored for a request: the student's class and the times, replaced where they had to be. */
+	private record Accepted(UUID classId, LocalTime arrivalTime, Instant recordedAt) {
 	}
 
 	private final NamedParameterJdbcTemplate jdbc;
@@ -95,44 +108,60 @@ class LatenessRecorder {
 		if (existing.isPresent()) {
 			return replay(user, existing.get(), normalized);
 		}
-		UUID classId = validate(user, normalized);
-
 		Instant now = clock.instant();
+		Accepted accepted = validate(user, normalized, now);
+		UUID classId = accepted.classId();
+		LocalTime arrivalTime = accepted.arrivalTime();
+		Instant recordedAt = accepted.recordedAt();
+		LocalTime deviceArrivalTime = arrivalTime.equals(normalized.arrivalTime()) ? null : normalized.arrivalTime();
+		Instant deviceRecordedAt = recordedAt.equals(normalized.recordedAt()) ? null : normalized.recordedAt();
+
 		int inserted = jdbc.update("""
-				INSERT INTO lateness_record (id, school_id, student_id, date, arrival_time, recorded_by, recorded_at, synced_at)
-				VALUES (:id, :school, :student, :date, :arrival, :by, :recordedAt, :now)
+				INSERT INTO lateness_record (id, school_id, student_id, date, arrival_time, recorded_by, recorded_at, synced_at,
+				                             device_arrival_time, device_recorded_at)
+				VALUES (:id, :school, :student, :date, :arrival, :by, :recordedAt, :now, :deviceArrival, :deviceRecordedAt)
 				ON CONFLICT DO NOTHING""",
 				new MapSqlParameterSource("id", id).addValue("school", school)
 					.addValue("student", normalized.studentId())
 					.addValue("date", normalized.date())
-					.addValue("arrival", normalized.arrivalTime())
+					.addValue("arrival", arrivalTime)
 					.addValue("by", user.userId())
-					.addValue("recordedAt", Timestamp.from(normalized.recordedAt()))
-					.addValue("now", Timestamp.from(now)));
+					.addValue("recordedAt", Timestamp.from(recordedAt))
+					.addValue("now", Timestamp.from(now))
+					.addValue("deviceArrival", deviceArrivalTime, Types.TIME)
+					.addValue("deviceRecordedAt", deviceRecordedAt == null ? null : Timestamp.from(deviceRecordedAt),
+							Types.TIMESTAMP));
 		if (inserted == 0) {
 			// a concurrent upload of the same id won the race, or the student is already recorded today
 			return find(id).map(stored -> replay(user, stored, normalized))
 				.orElseThrow(() -> ApiException.conflict("lateness.already_recorded"));
 		}
 		events.publishEvent(new LatenessRecorded(id, school, normalized.studentId(), classId, normalized.date(),
-				normalized.arrivalTime(), user.userId(), normalized.recordedAt()));
-		// NFR-11: ids only, no names
+				arrivalTime, user.userId(), recordedAt));
+		// NFR-11: ids only, no names; what the server replaced is on record
+		Map<String, Object> after = new LinkedHashMap<>(Map.of("studentId", normalized.studentId(), "date",
+				normalized.date().toString(), "arrivalTime", arrivalTime.toString(), "recordedAt", recordedAt.toString()));
+		if (deviceArrivalTime != null) {
+			after.put("deviceArrivalTime", deviceArrivalTime.toString());
+		}
+		if (deviceRecordedAt != null) {
+			after.put("deviceRecordedAt", deviceRecordedAt.toString());
+		}
 		audit.record(new AuditEntry(school, user.userId(), AuditAction.CREATE, "lateness_record", id.toString(), null,
-				Map.of("studentId", normalized.studentId(), "date", normalized.date().toString(), "arrivalTime",
-						normalized.arrivalTime().toString(), "recordedAt", normalized.recordedAt().toString())));
-		return new Saved(new LatenessView(id, normalized.studentId(), normalized.date(), normalized.arrivalTime(),
-				normalized.recordedAt(), now), true);
+				after));
+		return new Saved(new LatenessView(id, normalized.studentId(), normalized.date(), arrivalTime, recordedAt, now),
+				true);
 	}
 
-	/** Returns the student's class. */
-	private UUID validate(CurrentUser user, LatenessRequest request) {
+	/** Checks the request and returns what to store: a time the phone cannot have right is replaced. */
+	private Accepted validate(CurrentUser user, LatenessRequest request, Instant receivedAt) {
 		UUID school = user.schoolId();
 		// NFR-8, D17: a student of another school or outside the scope is not found
 		UUID classId = students.classOf(school, request.studentId())
 			.filter(user.classesAs(Role.ASSISTANT_DM)::contains)
 			.orElseThrow(() -> ApiException.notFound("not_found"));
 		ZoneId zone = calendar.zone(school);
-		ZonedDateTime now = clock.instant().atZone(zone);
+		ZonedDateTime now = receivedAt.atZone(zone);
 		if (request.date().isAfter(now.toLocalDate())) {
 			throw ApiException.invalid("lateness.date_in_future", "date");
 		}
@@ -140,27 +169,31 @@ class LatenessRecorder {
 		if (!calendar.isSchoolDay(school, request.date())) {
 			throw ApiException.invalid("lateness.not_a_school_day", "date");
 		}
+		// NFR-3: an arrival that has not happened yet comes from a phone whose clock is ahead; the
+		// student is at the gate now. The date is today then, since it is not in the future.
+		LocalTime arrivalTime = request.arrivalTime();
+		if (request.date().atTime(arrivalTime).atZone(zone).isAfter(now.plus(CLOCK_SKEW))) {
+			arrivalTime = now.toLocalTime().truncatedTo(ChronoUnit.MINUTES);
+		}
 		// BR-7: late means through the gate after the school's start time
 		LocalTime start = calendar.startTime(school);
-		if (!request.arrivalTime().isAfter(start)) {
+		if (!arrivalTime.isAfter(start)) {
 			throw ApiException.invalid("lateness.not_late", "arrivalTime", start.toString());
 		}
-		ZonedDateTime arrival = request.date().atTime(request.arrivalTime()).atZone(zone);
-		if (arrival.isAfter(now.plus(CLOCK_SKEW))) {
-			throw ApiException.invalid("lateness.arrival_in_future", "arrivalTime");
-		}
+		// saved ahead of the server clock, or before the student arrived: the server's time instead
+		Instant arrival = request.date().atTime(arrivalTime).atZone(zone).toInstant();
 		Instant recordedAt = request.recordedAt();
-		if (recordedAt.isAfter(now.toInstant().plus(CLOCK_SKEW))
-				|| recordedAt.isBefore(arrival.toInstant().minus(CLOCK_SKEW))) {
-			throw ApiException.invalid("lateness.recorded_at_invalid", "recordedAt");
+		if (recordedAt.isAfter(receivedAt.plus(CLOCK_SKEW)) || recordedAt.isBefore(arrival.minus(CLOCK_SKEW))) {
+			recordedAt = receivedAt.truncatedTo(ChronoUnit.MICROS);
 		}
-		return classId;
+		return new Accepted(classId, arrivalTime, recordedAt);
 	}
 
 	/**
 	 * The same upload again (a retry after a lost answer, NFR-3): the stored record, unchanged.
 	 * Anything different is an attempt to change it (D20). A record of another school or another
-	 * assistant DM is not the caller's: 404, so its existence does not leak (NFR-8).
+	 * assistant DM is not the caller's: 404, so its existence does not leak (NFR-8). The phone
+	 * resends what it sent the first time, so its own times match too when the server replaced them.
 	 */
 	private Saved replay(CurrentUser user, Stored stored, LatenessRequest request) {
 		if (!stored.schoolId().equals(user.schoolId()) || !stored.recordedBy().equals(user.userId())) {
@@ -168,7 +201,10 @@ class LatenessRecorder {
 		}
 		LatenessView view = stored.view();
 		boolean same = view.studentId().equals(request.studentId()) && view.date().equals(request.date())
-				&& view.arrivalTime().equals(request.arrivalTime()) && view.recordedAt().equals(request.recordedAt());
+				&& (view.arrivalTime().equals(request.arrivalTime())
+						|| request.arrivalTime().equals(stored.deviceArrivalTime()))
+				&& (view.recordedAt().equals(request.recordedAt())
+						|| request.recordedAt().equals(stored.deviceRecordedAt()));
 		if (!same) {
 			throw ApiException.conflict("lateness.record_locked");
 		}
@@ -177,14 +213,17 @@ class LatenessRecorder {
 
 	private Optional<Stored> find(UUID id) {
 		return jdbc.query("""
-				SELECT school_id, recorded_by, student_id, date, arrival_time, recorded_at, synced_at
-				FROM lateness_record WHERE id = :id""", new MapSqlParameterSource("id", id),
-				(rs, n) -> new Stored(rs.getObject("school_id", UUID.class), rs.getObject("recorded_by", UUID.class),
-						new LatenessView(id, rs.getObject("student_id", UUID.class), rs.getObject("date", LocalDate.class),
-								rs.getObject("arrival_time", LocalTime.class), rs.getTimestamp("recorded_at").toInstant(),
-								rs.getTimestamp("synced_at").toInstant())))
-			.stream()
-			.findFirst();
+				SELECT school_id, recorded_by, student_id, date, arrival_time, recorded_at, synced_at,
+				       device_arrival_time, device_recorded_at
+				FROM lateness_record WHERE id = :id""", new MapSqlParameterSource("id", id), (rs, n) -> {
+			Timestamp deviceRecordedAt = rs.getTimestamp("device_recorded_at");
+			return new Stored(rs.getObject("school_id", UUID.class), rs.getObject("recorded_by", UUID.class),
+					new LatenessView(id, rs.getObject("student_id", UUID.class), rs.getObject("date", LocalDate.class),
+							rs.getObject("arrival_time", LocalTime.class), rs.getTimestamp("recorded_at").toInstant(),
+							rs.getTimestamp("synced_at").toInstant()),
+					rs.getObject("device_arrival_time", LocalTime.class),
+					deviceRecordedAt == null ? null : deviceRecordedAt.toInstant());
+		}).stream().findFirst();
 	}
 
 }
