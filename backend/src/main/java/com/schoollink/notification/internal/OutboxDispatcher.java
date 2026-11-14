@@ -198,11 +198,11 @@ class OutboxDispatcher {
 			}
 			case Retry retry -> {
 				p.addValue("status", "FAILED").addValue("next", null).addValue("error", truncate(retry.error()));
-				yield "payload = payload";
+				yield "failed_at = :now";
 			}
 			case Rejected rejected -> {
 				p.addValue("status", "FAILED").addValue("next", null).addValue("error", truncate(rejected.error()));
-				yield "payload = payload";
+				yield "failed_at = :now";
 			}
 		};
 		int updated = transactions.execute(tx -> jdbc.update("""

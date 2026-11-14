@@ -1,19 +1,21 @@
 import { Alert, Box, LinearProgress, Paper, Stack, Typography } from '@mui/material'
 import { useTranslation } from 'react-i18next'
-import { schoolDashboardPath, type Channel, type SchoolDashboard, type SmsUsage } from '../../api/dashboard'
+import { schoolDashboardPath, type Channel, type SchoolDashboard, type Sending, type SmsUsage } from '../../api/dashboard'
 import { errorMessage } from '../../api/errors'
 import { absenceRate, usePercent, useRange } from '../../components/dashboard/figures'
 import { ClassTable, Figure, Figures, RangeFields, RuleTable, Section } from '../../components/dashboard/parts'
 import { LazyTrendCharts } from '../../components/dashboard/LazyTrendCharts'
 import { PageHeader } from '../../components/PageHeader'
 import { useResource } from '../../hooks/useResource'
-import { ChartLineIcon, WarningIcon } from '../../icons'
+import { formatInstantTime } from '../../format'
+import { ChartLineIcon, CheckCircleIcon, WarningIcon } from '../../icons'
 import { tokens } from '../../theme'
 
 /**
  * UC-A6: the whole school over a range (the last 30 days by default): attendance and lateness day
  * by day (BR-8, BR-9 kept apart), alerts per rule, how many notifications reached the parents
- * (BR-24), and this month's SMS against the school's cap (BR-25, NFR-14).
+ * (BR-24), and this month's SMS against the school's cap (BR-25, NFR-14). Above the delivery
+ * figures, whether sending works right now (NFR-6).
  */
 export function SchoolDashboardPage() {
   const { t } = useTranslation()
@@ -46,6 +48,7 @@ export function SchoolDashboardPage() {
             </Section>
 
             <Section title={t('dashboard.notifications')} intro={t('dashboard.notificationsIntro')}>
+              <SendingHealth sending={data.sending} />
               <Box sx={{ display: 'grid', gap: 1.5, gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' } }}>
                 <DeliveryCard name={t('dashboard.push')} channel={data.delivery.push} opens />
                 <DeliveryCard name={t('dashboard.sms')} channel={data.delivery.sms} />
@@ -62,6 +65,42 @@ export function SchoolDashboardPage() {
           </>
         )}
       </Stack>
+    </Stack>
+  )
+}
+
+/**
+ * NFR-6: is anything wrong with sending right now? A warning when sends failed in the last hour
+ * or have been due for more than 10 minutes (the server may have stopped sending); one quiet line
+ * otherwise. Then when the SMS digest last ran (BR-22), so a digest that stopped is noticed.
+ */
+function SendingHealth({ sending }: { sending: Sending }) {
+  const { t, i18n } = useTranslation()
+  const healthy = sending.failedLastHour === 0 && sending.overdue === 0
+  return (
+    <Stack component="section" aria-label={t('dashboard.sendingState')} spacing={0.75} sx={{ mb: 1.5 }}>
+      {healthy ? (
+        <Stack direction="row" spacing={0.75} sx={{ alignItems: 'flex-start', color: tokens.positive }}>
+          <CheckCircleIcon size={18} aria-hidden style={{ flex: 'none', marginTop: 1 }} />
+          <Typography variant="body2" sx={{ color: 'text.primary' }}>
+            {t('dashboard.sendingFine')}
+          </Typography>
+        </Stack>
+      ) : (
+        <Alert severity="warning">
+          {sending.overdue > 0 && (
+            <Typography variant="body2">
+              {t('dashboard.sendingOverdue', { count: sending.overdue })} {t('dashboard.sendingStopped')}
+            </Typography>
+          )}
+          {sending.failedLastHour > 0 && <Typography variant="body2">{t('dashboard.sendingFailed', { count: sending.failedLastHour })}</Typography>}
+        </Alert>
+      )}
+      <Typography variant="body2" sx={{ color: tokens.muted }}>
+        {sending.lastDigestAt === null
+          ? t('dashboard.noDigestYet')
+          : t('dashboard.lastDigest', { when: formatInstantTime(sending.lastDigestAt, i18n.language) })}
+      </Typography>
     </Stack>
   )
 }

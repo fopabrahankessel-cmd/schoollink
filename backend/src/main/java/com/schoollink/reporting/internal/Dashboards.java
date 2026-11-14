@@ -17,6 +17,7 @@ import com.schoollink.shared.error.ApiException;
 import com.schoollink.shared.security.CurrentUser;
 import com.schoollink.shared.security.Role;
 import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Comparator;
@@ -77,8 +78,12 @@ class Dashboards {
 			List<RuleCount> alerts) {
 	}
 
+	/** NFR-6: now, whatever the range. See {@link NotificationStats.Sending}. */
+	record Sending(int failedLastHour, int overdue, Instant lastDigestAt) {
+	}
+
 	record SchoolDashboard(LocalDate from, LocalDate to, Counts totals, List<Day> days, List<ClassCounts> classes,
-			List<RuleCount> alerts, Delivery delivery, Sms sms) {
+			List<RuleCount> alerts, Delivery delivery, Sms sms, Sending sending) {
 	}
 
 	private final AttendanceCounts attendance;
@@ -122,9 +127,11 @@ class Dashboards {
 		ScopeDashboard core = scope(school, zone, schoolClasses.ids(school), range);
 		NotificationStats.Delivery delivery = notifications.delivery(school, range.start(zone), range.end(zone));
 		SmsCounter counter = notifications.smsCounter(school);
+		NotificationStats.Sending sending = notifications.sending(school);
 		return new SchoolDashboard(core.from(), core.to(), core.totals(), core.days(), core.classes(), core.alerts(),
 				new Delivery(channel(delivery.push()), channel(delivery.sms())),
-				new Sms(counter.sentThisMonth(), counter.monthlyCap(), counter.sentThisMonth() >= counter.monthlyCap()));
+				new Sms(counter.sentThisMonth(), counter.monthlyCap(), counter.sentThisMonth() >= counter.monthlyCap()),
+				new Sending(sending.failedLastHour(), sending.overdue(), sending.lastDigestAt()));
 	}
 
 	/** UC-D8: the DM's classes only (D5). */

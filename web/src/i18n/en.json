@@ -589,7 +589,16 @@
     "smsUsed": "{{sent}} of {{cap}} SMS used this month",
     "capLeft_one": "{{left}} SMS left before the cap.",
     "capLeft_other": "{{left}} SMS left before the cap.",
-    "capReached": "Cap reached: until the end of the month, only summons go out by SMS. Parents with the app still get notifications."
+    "capReached": "Cap reached: until the end of the month, only summons go out by SMS. Parents with the app still get notifications.",
+    "sendingState": "Sending status",
+    "sendingFine": "Sending works: nothing failed in the last hour, nothing is late.",
+    "sendingOverdue_one": "{{count}} notification has been waiting to be sent for more than 10 minutes.",
+    "sendingOverdue_other": "{{count}} notifications have been waiting to be sent for more than 10 minutes.",
+    "sendingStopped": "The server may have stopped sending: tell the person who looks after SchoolLink.",
+    "sendingFailed_one": "{{count}} send failed in the last hour.",
+    "sendingFailed_other": "{{count}} sends failed in the last hour.",
+    "lastDigest": "Last SMS digest: {{when}}",
+    "noDigestYet": "The SMS digest has never been sent yet."
   },
   "letterhead": {
     "title": "Document letterhead",

@@ -149,6 +149,8 @@ class OutboxDispatcherTests {
 
 		assertThat(state(row)).containsEntry("status", "FAILED").containsEntry("attempts", 4)
 			.containsEntry("last_error", "still down");
+		// NFR-6: when it failed, for the health figures of the dashboard
+		assertThat(failedAt(row)).isEqualTo(Timestamp.from(now));
 		clock.set(now.plus(Duration.ofHours(1)));
 		assertThat(dispatcher.dispatchDue()).isZero();
 	}
@@ -174,6 +176,17 @@ class OutboxDispatcherTests {
 
 		assertThat(state(row)).containsEntry("status", "FAILED").containsEntry("attempts", 1)
 			.containsEntry("last_error", "no device registered");
+		assertThat(failedAt(row)).isEqualTo(Timestamp.from(clock.instant()));
+	}
+
+	@Test
+	void aSentRowHasNoFailureTime() { // NFR-6
+		UUID row = absencePush(withApp);
+
+		dispatcher.dispatchDue();
+
+		assertThat(state(row)).containsEntry("status", "SENT");
+		assertThat(failedAt(row)).isNull();
 	}
 
 	@Test
@@ -258,6 +271,10 @@ class OutboxDispatcherTests {
 
 		assertThat(sms.sent).isEmpty();
 		assertThat(state(row)).containsEntry("status", "FAILED").containsEntry("last_error", "monthly SMS cap reached");
+	}
+
+	private Timestamp failedAt(UUID row) {
+		return jdbc.queryForObject("SELECT failed_at FROM notification_outbox WHERE id = ?", Timestamp.class, row);
 	}
 
 	private Map<String, Object> state(UUID row) {

@@ -589,7 +589,16 @@
     "smsUsed": "{{sent}} SMS utilisés sur {{cap}} ce mois-ci",
     "capLeft_one": "Encore {{left}} SMS avant le plafond.",
     "capLeft_other": "Encore {{left}} SMS avant le plafond.",
-    "capReached": "Plafond atteint : jusqu'à la fin du mois, seules les convocations partent par SMS. Les parents qui ont l'application reçoivent toujours les notifications."
+    "capReached": "Plafond atteint : jusqu'à la fin du mois, seules les convocations partent par SMS. Les parents qui ont l'application reçoivent toujours les notifications.",
+    "sendingState": "État des envois",
+    "sendingFine": "Les envois fonctionnent : aucun échec depuis une heure, rien en retard.",
+    "sendingOverdue_one": "{{count}} notification attend son envoi depuis plus de 10 minutes.",
+    "sendingOverdue_other": "{{count}} notifications attendent leur envoi depuis plus de 10 minutes.",
+    "sendingStopped": "Le serveur n'envoie peut-être plus : prévenez la personne qui s'occupe de SchoolLink.",
+    "sendingFailed_one": "{{count}} envoi a échoué depuis une heure.",
+    "sendingFailed_other": "{{count}} envois ont échoué depuis une heure.",
+    "lastDigest": "Dernier SMS récapitulatif : {{when}}",
+    "noDigestYet": "Le SMS récapitulatif n'a encore jamais été envoyé."
   },
   "letterhead": {
     "title": "En-tête des documents",

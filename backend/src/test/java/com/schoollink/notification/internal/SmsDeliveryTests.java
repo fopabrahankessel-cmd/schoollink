@@ -112,6 +112,10 @@ class SmsDeliveryTests {
 
 		assertThat(state()).containsEntry("status", "FAILED").containsEntry("delivered_at", null)
 			.containsEntry("last_error", "twilio undelivered error 30003");
+		// NFR-6: when it failed, for the health figures of the dashboard
+		assertThat(jdbc.queryForObject("SELECT failed_at FROM notification_outbox WHERE status = 'FAILED'",
+				Timestamp.class))
+			.isEqualTo(Timestamp.from(T1));
 	}
 
 	@Test

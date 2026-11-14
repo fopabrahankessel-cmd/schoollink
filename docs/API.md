@@ -454,7 +454,8 @@ Request: `{reason, note?, absenceIds?, latenessIds?}`. Response: `{id, reason, n
 - History: `{studentId, firstName, from, to, totals, days}`; the staff version adds `matricule, lastName, classId, className`. `totals`: `{absentPeriods, unjustifiedAbsentPeriods, lateness, unjustifiedLateness}`. Default range: the last 90 days.
 - Day: `{date, schoolDay, totals: {notRecorded, absentStudents, lateness}, classes}`. Each class has its `periods` (`{periodId, number, startTime, endTime, subject, teacherName, status, absentCount, absences}`) and its `lateness`. A period is recorded, not recorded (once it has started) or upcoming. Cancelled rows are listed and never counted.
 - Full-day report: `{date, generatedBy, studentCount, classCount, blocks: [{blockId, blockName, classes: [{classId, className, students}]}], unrecorded: [{classId, className, periods}]}`.
-- Dashboards: `{from, to, totals, days, classes, alerts}`; the school dashboard adds `delivery` and `sms: {sentThisMonth, monthlyCap, capReached}`. Default range: the last 30 days (D34).
+- Dashboards: `{from, to, totals, days, classes, alerts}`; the school dashboard adds `delivery`, `sms: {sentThisMonth, monthlyCap, capReached}` and `sending: {failedLastHour, overdue, lastDigestAt}`. Default range: the last 30 days (D34).
+- `sending` is about now, whatever the range (NFR-6): the sends that failed for good in the last hour, the sends due for more than 10 minutes and still not sent (a send waiting for its next try is not counted), and the last run of the SMS digest (null when it never ran).
 
 ### 3.10 School structure and letterhead (`school`)
 

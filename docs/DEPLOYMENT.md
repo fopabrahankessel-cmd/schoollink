@@ -558,6 +558,7 @@ NFR-13 asks for 99 % availability during school hours (Mon–Fri, 07:00–18:00)
 - **UptimeRobot (free):** add an HTTP(S) monitor on `https://YOUR_DOMAIN/actuator/health`, checked every 5 minutes, with alerts by email and by the mobile app. Its monthly report gives you the availability figure for the evaluation.
 - **Twilio:** the spending triggers from part 9.
 - **SMS counter:** each school's dashboard shows SMS sent this month against the limit (BR-25).
+- **Sending status:** `/actuator/health` only says the server answers. Whether notifications actually leave is on each school's dashboard, under "Parent notifications": a warning appears when sends failed in the last hour or have been waiting more than 10 minutes, and the line below gives the time of the last SMS digest. Look at it once a day during the pilot. Waiting sends usually mean the server stopped sending (restart it and read its log); failed sends usually mean the SMS gateway or Firebase refuses them (check the credentials and the Twilio balance).
 - **Disk space:** once a week, run `df -h /` on the server. Above 80 % used, delete old backups or move to a bigger server.
 
 ---

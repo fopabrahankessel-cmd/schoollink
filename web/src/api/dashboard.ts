@@ -23,9 +23,21 @@ export interface SmsUsage {
   capReached: boolean
 }
 
+/**
+ * NFR-6: whether sending works right now, whatever the range. `overdue`: sends due for more than
+ * 10 minutes and still not sent (a send waiting for its next try is not overdue). `lastDigestAt`:
+ * the last run of the SMS digest (BR-22), null when it never ran.
+ */
+export interface Sending {
+  failedLastHour: number
+  overdue: number
+  lastDigestAt: string | null
+}
+
 export interface SchoolDashboard extends ScopeDashboard {
   delivery: { push: Channel; sms: Channel }
   sms: SmsUsage
+  sending: Sending
 }
 
 const q = encodeURIComponent

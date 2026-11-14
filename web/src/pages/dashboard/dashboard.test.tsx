@@ -43,6 +43,7 @@ const FIXTURE: SchoolDashboard = {
     sms: { pending: 0, sent: 5, delivered: 30, opened: 0, failed: 5, deliveryRate: 0.875 },
   },
   sms: { sentThisMonth: 120, monthlyCap: 500, capReached: false },
+  sending: { failedLastHour: 0, overdue: 0, lastDigestAt: '2026-10-30T12:00:04Z' },
 }
 
 function signedIn(script: Parameters<typeof fakeFetch>[0], roles: ('ADMIN' | 'DM')[] = ['ADMIN']) {
@@ -87,6 +88,12 @@ describe('school dashboard (UC-A6, BR-24, BR-25)', () => {
     expect(within(usage).getByRole('progressbar', { name: '120 SMS utilisés sur 500 ce mois-ci' })).toHaveAttribute('aria-valuenow', '24')
     expect(usage).toHaveTextContent('Encore 380 SMS avant le plafond.')
 
+    // NFR-6: nothing wrong with sending right now
+    const sending = screen.getByRole('region', { name: 'État des envois' })
+    expect(sending).toHaveTextContent('Les envois fonctionnent : aucun échec depuis une heure, rien en retard.')
+    expect(sending).toHaveTextContent(/Dernier SMS récapitulatif : 30 oct\. 2026/)
+    expect(within(sending).queryByRole('alert')).not.toBeInTheDocument()
+
     const byClass = screen.getByRole('table', { name: 'Par classe' })
     expect(within(byClass).getAllByRole('row')[1]).toHaveTextContent(/6e A\s*7,5 %\s*15\s*6\s*5/)
     const byRule = screen.getByRole('table', { name: 'Alertes par règle' })
@@ -100,6 +107,28 @@ describe('school dashboard (UC-A6, BR-24, BR-25)', () => {
     const usage = await screen.findByRole('region', { name: 'SMS ce mois-ci' })
     expect(within(usage).getByRole('progressbar')).toHaveAttribute('aria-valuenow', '100')
     expect(usage).toHaveTextContent(/Plafond atteint : jusqu'à la fin du mois, seules les convocations partent par SMS/)
+  })
+
+  it('warns when sends fail or wait too long, and when the SMS digest never ran (NFR-6, BR-22, BR-24)', async () => {
+    const { client } = signedIn({ [PATH]: json(200, { ...FIXTURE, sending: { failedLastHour: 3, overdue: 12, lastDigestAt: null } }) })
+    renderApp(client, '/dashboard')
+
+    const sending = await screen.findByRole('region', { name: 'État des envois' })
+    const warning = within(sending).getByRole('alert')
+    expect(warning).toHaveTextContent('12 notifications attendent leur envoi depuis plus de 10 minutes.')
+    expect(warning).toHaveTextContent("Le serveur n'envoie peut-être plus : prévenez la personne qui s'occupe de SchoolLink.")
+    expect(warning).toHaveTextContent('3 envois ont échoué depuis une heure.')
+    expect(sending).not.toHaveTextContent('Les envois fonctionnent')
+    expect(sending).toHaveTextContent("Le SMS récapitulatif n'a encore jamais été envoyé.")
+  })
+
+  it('warns about failures alone, in one sentence', async () => {
+    const { client } = signedIn({ [PATH]: json(200, { ...FIXTURE, sending: { ...FIXTURE.sending, failedLastHour: 1 } }) })
+    renderApp(client, '/dashboard')
+
+    const warning = within(await screen.findByRole('region', { name: 'État des envois' })).getByRole('alert')
+    expect(warning).toHaveTextContent('1 envoi a échoué depuis une heure.')
+    expect(warning).not.toHaveTextContent('attend')
   })
 
   it('shows the server refusal when the range is too long', async () => {

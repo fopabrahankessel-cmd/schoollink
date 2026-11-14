@@ -6,6 +6,7 @@ import com.schoollink.testsupport.PermissionMatrix;
 import com.schoollink.testsupport.TestClock;
 import com.schoollink.testsupport.TestWorld;
 import java.sql.Timestamp;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -200,6 +201,38 @@ class DashboardTests {
 			.andExpect(jsonPath("$.sms.sentThisMonth").value(1))
 			.andExpect(jsonPath("$.sms.monthlyCap").value(2000))
 			.andExpect(jsonPath("$.sms.capReached").value(false));
+	}
+
+	@Test
+	void theSchoolDashboardShowsWhetherSendingWorks() throws Exception { // NFR-6, BR-22, BR-24
+		UUID guardian = jdbc.queryForObject("SELECT id FROM guardian WHERE user_id = ?", UUID.class,
+				world.user(PARENT_A));
+		Instant earlier = NOW.minus(Duration.ofHours(3));
+		// failed 30 minutes ago: counted. Failed 2 hours ago: not in the last hour.
+		outbox(guardian, "PUSH", "FAILED", earlier, NOW.minus(Duration.ofMinutes(30)), earlier);
+		outbox(guardian, "SMS", "FAILED", earlier, NOW.minus(Duration.ofMinutes(59)), earlier);
+		outbox(guardian, "SMS", "FAILED", earlier, NOW.minus(Duration.ofHours(2)), earlier);
+		// due 20 minutes ago and still not sent: the dispatcher is not doing its work
+		outbox(guardian, "PUSH", "QUEUED", earlier, null, NOW.minus(Duration.ofMinutes(20)));
+		// due 2 minutes ago, or waiting for its next try: normal
+		outbox(guardian, "PUSH", "QUEUED", earlier, null, NOW.minus(Duration.ofMinutes(2)));
+		outbox(guardian, "SMS", "QUEUED", earlier, null, NOW.plus(Duration.ofMinutes(8)));
+		// held for the digest: not waiting for the dispatcher
+		outbox(guardian, "SMS", "HELD", earlier, null, earlier);
+		jdbc.update("INSERT INTO sms_digest_run (school_id, run_date, slot, ran_at) VALUES (?, '2026-10-30', '17:00', ?)",
+				world.schoolX, Timestamp.from(Instant.parse("2026-10-30T16:00:04Z")));
+		jdbc.update("INSERT INTO sms_digest_run (school_id, run_date, slot, ran_at) VALUES (?, '2026-10-30', '12:00', ?)",
+				world.schoolX, Timestamp.from(Instant.parse("2026-10-30T11:00:02Z")));
+
+		perform(ADMIN_X, get("/api/v1/dashboard/school")).andExpect(status().isOk())
+			.andExpect(jsonPath("$.sending.failedLastHour").value(2))
+			.andExpect(jsonPath("$.sending.overdue").value(1))
+			.andExpect(jsonPath("$.sending.lastDigestAt").value("2026-10-30T16:00:04Z"));
+		// NFR-8: another school's admin sees its own school only
+		perform(ADMIN_Y, get("/api/v1/dashboard/school")).andExpect(status().isOk())
+			.andExpect(jsonPath("$.sending.failedLastHour").value(0))
+			.andExpect(jsonPath("$.sending.overdue").value(0))
+			.andExpect(jsonPath("$.sending.lastDigestAt").isEmpty());
 	}
 
 	@Test
@@ -416,6 +449,16 @@ class DashboardTests {
 				LocalDate.ofInstant(raisedAt, java.time.ZoneOffset.UTC), closedAt == null ? "OPEN" : "CLOSED",
 				Timestamp.from(raisedAt), closedAt == null ? null : Timestamp.from(closedAt),
 				closedAt == null ? null : world.user(DM_1), closedAt == null ? null : "SUMMON");
+	}
+
+	private void outbox(UUID guardian, String channel, String status, Instant createdAt, Instant failedAt,
+			Instant nextAttemptAt) {
+		jdbc.update("""
+				INSERT INTO notification_outbox (school_id, guardian_id, student_id, event_type, event_id, channel, language,
+				                                 payload, status, created_at, failed_at, next_attempt_at)
+				VALUES (?, ?, ?, 'ABSENCE', ?, ?, 'FR', '{}'::jsonb, ?, ?, ?, ?)""", world.schoolX, guardian, world.studentA,
+				UUID.randomUUID(), channel, status, Timestamp.from(createdAt),
+				failedAt == null ? null : Timestamp.from(failedAt), Timestamp.from(nextAttemptAt));
 	}
 
 	private void outbox(UUID school, UUID guardian, String channel, String status, Instant createdAt, Instant sentAt) {

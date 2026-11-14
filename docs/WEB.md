@@ -184,7 +184,8 @@ The whole school over a range, the last 30 days by default:
 - the classes with their counts;
 - alerts per rule;
 - how many notifications reached the parents (BR-24);
-- this month's SMS against the school's cap (BR-25). At the cap, only summons still go by SMS.
+- this month's SMS against the school's cap (BR-25). At the cap, only summons still go by SMS;
+- whether sending works right now (NFR-6): a warning when sends failed in the last hour or have waited more than 10 minutes, and the time of the last SMS digest.
 
 API: `GET /dashboard/school?from=&to=`. The charts (`TrendCharts`) are loaded lazily, so Recharts is not in the first download.
 

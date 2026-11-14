@@ -62,7 +62,7 @@ class SmsDeliveryController {
 			case "undelivered", "failed" -> {
 				String code = param(params, "ErrorCode");
 				yield jdbc.update("""
-						UPDATE notification_outbox SET status = 'FAILED', last_error = :error
+						UPDATE notification_outbox SET status = 'FAILED', last_error = :error, failed_at = :now
 						WHERE channel = 'SMS' AND provider_ref = :ref AND status = 'SENT'""",
 						p.addValue("error", "twilio " + status + (code == null ? "" : " error " + code)));
 			}
