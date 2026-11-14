@@ -165,7 +165,8 @@ class Dashboards {
 			}
 		}
 		// lateness belongs to the student's current class, as on the gate list (UC-AD2)
-		Map<UUID, UUID> classOf = students.inClasses(school, classIds, null, 0)
+		// D43: what was recorded for a student who left since still counts
+		Map<UUID, UUID> classOf = students.everInClasses(school, classIds)
 			.stream()
 			.collect(Collectors.toMap(Card::id, Card::classId));
 		for (StudentLateness late : lateness.latenessOf(school, classOf.keySet(), range.from(), range.to())) {

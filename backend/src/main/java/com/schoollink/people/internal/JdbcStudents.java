@@ -3,6 +3,7 @@ package com.schoollink.people.internal;
 import com.schoollink.people.Students;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -27,8 +28,40 @@ class JdbcStudents implements Students {
 
 	@Override
 	public Set<UUID> idsInClass(UUID schoolId, UUID classId) {
-		return Set.copyOf(jdbc.queryForList("SELECT id FROM student WHERE school_id = :school AND class_id = :class",
+		return Set.copyOf(jdbc.queryForList(
+				"SELECT id FROM student WHERE school_id = :school AND class_id = :class AND left_on IS NULL",
 				Map.of("school", schoolId, "class", classId), UUID.class));
+	}
+
+	@Override
+	public Set<UUID> idsInClassOn(UUID schoolId, UUID classId, LocalDate date) {
+		return Set.copyOf(jdbc.queryForList("""
+				SELECT id FROM student
+				WHERE school_id = :school AND class_id = :class AND (left_on IS NULL OR left_on > :date)""",
+				Map.of("school", schoolId, "class", classId, "date", date), UUID.class));
+	}
+
+	@Override
+	public Optional<UUID> enrolledClassOf(UUID schoolId, UUID studentId) {
+		return jdbc.queryForList("SELECT class_id FROM student WHERE id = :id AND school_id = :school AND left_on IS NULL",
+				Map.of("school", schoolId, "id", studentId), UUID.class).stream().findFirst();
+	}
+
+	@Override
+	public Optional<UUID> enrolledClassOn(UUID schoolId, UUID studentId, LocalDate date) {
+		return jdbc.queryForList("""
+				SELECT class_id FROM student
+				WHERE id = :id AND school_id = :school AND (left_on IS NULL OR left_on > :date)""",
+				Map.of("school", schoolId, "id", studentId, "date", date), UUID.class).stream().findFirst();
+	}
+
+	@Override
+	public List<Card> everInClasses(UUID schoolId, Set<UUID> classIds) {
+		if (classIds.isEmpty()) {
+			return List.of();
+		}
+		return jdbc.query(CARD + " WHERE school_id = :school AND class_id IN (:classes)",
+				new MapSqlParameterSource("school", schoolId).addValue("classes", classIds), JdbcStudents::card);
 	}
 
 	@Override
@@ -45,13 +78,13 @@ class JdbcStudents implements Students {
 		MapSqlParameterSource p = new MapSqlParameterSource("school", schoolId).addValue("classes", classIds);
 		if (query == null) {
 			return jdbc.query(CARD + """
-					 WHERE school_id = :school AND class_id IN (:classes)
+					 WHERE school_id = :school AND class_id IN (:classes) AND left_on IS NULL
 					ORDER BY lower(last_name), lower(first_name), matricule""", p, JdbcStudents::card);
 		}
 		String like = query.trim().replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
 		p.addValue("contains", "%" + like + "%").addValue("prefix", like + "%").addValue("limit", limit);
 		return jdbc.query(CARD + """
-				 WHERE school_id = :school AND class_id IN (:classes)
+				 WHERE school_id = :school AND class_id IN (:classes) AND left_on IS NULL
 				  AND (first_name || ' ' || last_name ILIKE :contains OR last_name || ' ' || first_name ILIKE :contains
 				       OR matricule ILIKE :prefix)
 				ORDER BY lower(last_name), lower(first_name), matricule LIMIT :limit""", p, JdbcStudents::card);

@@ -156,8 +156,9 @@ class LatenessRecorder {
 	/** Checks the request and returns what to store: a time the phone cannot have right is replaced. */
 	private Accepted validate(CurrentUser user, LatenessRequest request, Instant receivedAt) {
 		UUID school = user.schoolId();
-		// NFR-8, D17: a student of another school or outside the scope is not found
-		UUID classId = students.classOf(school, request.studentId())
+		// NFR-8, D17: a student of another school or outside the scope is not found; D43: nor is one
+		// who had left the school by that day
+		UUID classId = students.enrolledClassOn(school, request.studentId(), request.date())
 			.filter(user.classesAs(Role.ASSISTANT_DM)::contains)
 			.orElseThrow(() -> ApiException.notFound("not_found"));
 		ZoneId zone = calendar.zone(school);

@@ -50,7 +50,8 @@ class SummonsService {
 		}
 		UUID school = user.schoolId();
 		// BR-18, D17: the DM in charge of the student's class; another school's or out of scope is not found
-		boolean inScope = students.classOf(school, request.studentId())
+		// D43: a student who left the school is not summoned
+		boolean inScope = students.enrolledClassOf(school, request.studentId())
 			.filter(user.classesAs(Role.DM)::contains)
 			.isPresent();
 		if (!inScope) {

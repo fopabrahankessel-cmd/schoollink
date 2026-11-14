@@ -335,6 +335,21 @@ class SessionRecordTests {
 	}
 
 	@Test
+	void aStudentWhoLeftTheSchoolIsNotInTheRollFromThatDay() throws Exception { // D43, BR-2
+		jdbc.update("UPDATE student SET left_on = '2026-10-30' WHERE id = ?", studentB);
+
+		save(UUID.randomUUID(), Map.of()).andExpect(status().isCreated()).andExpect(jsonPath("$.studentCount").value(2));
+		// BR-6: a roll of a day when the student was still there, synced later, has them
+		save(UUID.randomUUID(), Map.of("date", "2026-10-29", "confirmedAt", "2026-10-29T07:20:00Z"))
+			.andExpect(status().isCreated())
+			.andExpect(jsonPath("$.studentCount").value(3));
+		// the day they left: gone
+		save(UUID.randomUUID(), Map.of("date", "2026-10-30", "confirmedAt", "2026-10-30T07:20:00Z"))
+			.andExpect(status().isCreated())
+			.andExpect(jsonPath("$.studentCount").value(2));
+	}
+
+	@Test
 	void aSessionSyncedDaysLaterIsAccepted() throws Exception { // BR-6: offline, synced afterwards
 		save(UUID.randomUUID(), Map.of("date", "2026-10-26", "confirmedAt", "2026-10-26T07:20:00Z"))
 			.andExpect(status().isCreated());

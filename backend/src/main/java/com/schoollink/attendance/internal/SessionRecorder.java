@@ -209,7 +209,7 @@ class SessionRecorder {
 		if (!calendar.isSchoolDay(school, request.date())) {
 			throw ApiException.invalid("attendance.not_a_school_day", "date");
 		}
-		return students.idsInClass(school, request.classId());
+		return students.idsInClassOn(school, request.classId(), request.date());
 	}
 
 	/**

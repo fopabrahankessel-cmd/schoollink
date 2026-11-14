@@ -133,7 +133,8 @@ class DayAttendance {
 
 		Map<UUID, UUID> classOf = new HashMap<>(); // student -> current class
 		for (UUID classId : slots.keySet()) {
-			students.idsInClass(school, classId).forEach(s -> classOf.put(s, classId));
+			// D43: a student who left since keeps what was recorded that day
+			students.everInClasses(school, Set.of(classId)).forEach(card -> classOf.put(card.id(), classId));
 		}
 		List<LatenessOnDay> late = lateness.onDay(school, classOf.keySet(), day);
 		Set<UUID> named = new HashSet<>(classOf.keySet());

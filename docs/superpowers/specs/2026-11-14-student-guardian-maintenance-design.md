@@ -1,6 +1,6 @@
 # Student and guardian maintenance (D43): design
 
-Status: **draft, waiting for approval**. Nothing here is built yet.
+Status: **approved by the user on 2026-11-14, being built**. Answers: parents keep the history of a child who left; a phone change signs the parent out; the last guardian cannot be removed; end-of-year promotion is in scope.
 
 ## Why
 
@@ -22,11 +22,11 @@ The administrator can, from the web dashboard, without help:
 3. move a student to another class;
 4. mark a student as having left the school, and bring them back;
 5. change a guardian's phone, name and language;
-6. add a guardian to a student, and remove a guardian from a student.
+6. add a guardian to a student, and remove a guardian from a student;
+7. move a whole class to its class of the next year in one step (promotion), leaving out those who repeat or leave.
 
 ## Not in this design
 
-- Moving a whole class up at the end of the year (promotion). It is a different job, done once a year, and it needs the next academic year's classes.
 - Updating existing students by importing a file again.
 - Deleting a student or a guardian. Records are never deleted (BR-15, NFR-11).
 - Merging two guardians that are the same person.
@@ -55,6 +55,14 @@ The admin gives: matricule, last name, first name, sex, birth year, class, and a
 - Sessions already recorded stay as they are (BR-4). The student's history shows them with the class they were recorded in.
 - Open alerts stay open. The DM of the new class's block sees them, since scope follows the student's class.
 - A phone that still holds the old list is covered by D42: an absentee who is not in the class any more is left out and audited.
+
+### Moving a whole class (promotion)
+
+- The admin first creates the next academic year and its classes (UC-A1, already built).
+- On a class, "Move the students" lists its students, all ticked, and asks for the destination class, of any academic year.
+- The admin unticks the students who repeat the year or leave. Those stay where they are; the admin then moves them one by one or marks them as left.
+- The ticked students move in one step: all of them or none. Each move is audited like a single move.
+- Nothing else changes: records, alerts and guardians follow the student.
 
 ### A student who left
 
@@ -101,6 +109,7 @@ All text in French and English (NFR-12).
 | `POST /students` | Add a student with guardians |
 | `PUT /students/{id}` | Correct the details |
 | `PUT /students/{id}/class` | Move to another class |
+| `POST /students/move` | Move several students to one class (promotion): `{studentIds, classId}` |
 | `POST /students/{id}/leave`, `POST /students/{id}/return` | Left, came back |
 | `POST /students/{id}/guardians` | Add a guardian (new, or existing by phone) |
 | `PUT /students/{id}/guardians/{guardianId}` | Relation, primary |
@@ -117,10 +126,3 @@ Each write is one transaction and writes to `audit_log` with ids and field names
 ## Left to the builder
 
 Layout details of the pages, the exact wording of the messages, and how the confirmation dialogs look, following the existing admin pages (staff, guardians).
-
-## Questions for you
-
-1. **A student who left:** do the parents keep the child's history in the app (my proposal), or should the child disappear from it?
-2. **A guardian's phone changes:** is it right that the parent is signed out and must sign in again with the new number?
-3. **The last guardian cannot be removed:** agreed, or should a student be allowed to have none?
-4. Is leaving out the end-of-year promotion acceptable for the pilot?

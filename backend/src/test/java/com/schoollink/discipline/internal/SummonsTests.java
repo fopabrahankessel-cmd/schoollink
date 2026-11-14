@@ -125,6 +125,13 @@ class SummonsTests {
 	}
 
 	@Test
+	void aStudentWhoLeftTheSchoolIsNotSummoned() throws Exception { // D43
+		jdbc.update("UPDATE student SET left_on = '2026-10-30' WHERE id = ?", world.studentA);
+
+		summon(body(Map.of())).andExpect(status().isNotFound());
+	}
+
+	@Test
 	void aStudentOfAnotherSchoolOrUnknownIsNotFound() throws Exception { // NFR-8, D17
 		UUID studentY = jdbc.queryForObject("""
 				INSERT INTO student (school_id, class_id, matricule, first_name, last_name, sex, birth_year)

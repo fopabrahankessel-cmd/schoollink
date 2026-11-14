@@ -365,6 +365,21 @@ class LatenessTests {
 	}
 
 	@Test
+	void aStudentWhoLeftTheSchoolIsNotRecordedLateFromThatDay() throws Exception { // D43
+		jdbc.update("UPDATE student SET left_on = '2026-11-02' WHERE id = ?", world.studentA);
+
+		save(UUID.randomUUID(), Map.of()).andExpect(status().isNotFound());
+		// NFR-3: recorded offline on Friday, when the student was still there
+		save(UUID.randomUUID(), Map.of("date", "2026-10-30", "arrivalTime", "07:52", "recordedAt", "2026-10-30T06:53:00Z"))
+			.andExpect(status().isCreated());
+		// not on the gate list any more
+		perform(ASSISTANT_DM_1, get("/api/v1/lateness/students")).andExpect(status().isOk())
+			.andExpect(jsonPath("$.length()").value(0));
+		perform(ASSISTANT_DM_1, get("/api/v1/lateness/students").param("q", "TW")).andExpect(status().isOk())
+			.andExpect(jsonPath("$.length()").value(0));
+	}
+
+	@Test
 	void anEarlierSchoolDayCanBeSyncedLater() throws Exception { // NFR-3: recorded offline on Friday
 		save(UUID.randomUUID(), Map.of("date", "2026-10-30", "arrivalTime", "07:52", "recordedAt", "2026-10-30T06:53:00Z"))
 			.andExpect(status().isCreated());

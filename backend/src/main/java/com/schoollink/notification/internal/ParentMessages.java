@@ -350,7 +350,8 @@ class ParentMessages {
 			}
 			Set<UUID> scope = user.classesAs(Role.DM);
 			if (draft.studentId() != null) {
-				students.classOf(school, draft.studentId())
+				// D43: no new message about a student who left the school
+				students.enrolledClassOf(school, draft.studentId())
 					.filter(scope::contains)
 					.orElseThrow(() -> ApiException.notFound("not_found"));
 				return new Resolved(Audience.STUDENT, draft.studentId(), null, Set.of(draft.studentId()));

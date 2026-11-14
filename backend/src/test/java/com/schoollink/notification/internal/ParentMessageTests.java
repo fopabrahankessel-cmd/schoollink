@@ -162,6 +162,14 @@ class ParentMessageTests {
 	}
 
 	@Test
+	void theParentsOfAStudentWhoLeftGetNoNewMessage() throws Exception { // D43
+		jdbc.update("UPDATE student SET left_on = '2026-10-30' WHERE id = ?", world.studentA);
+
+		perform(DM_1, dmSend(Map.of("studentId", world.studentA))).andExpect(status().isNotFound());
+		perform(DM_1, dmPreview(Map.of("studentId", world.studentA))).andExpect(status().isNotFound());
+	}
+
+	@Test
 	void outOfScopeTargetsAreNotFound() throws Exception {
 		perform(DM_1, dmPreview(Map.of("classId", world.classB))).andExpect(status().isNotFound());
 		perform(DM_1, dmPreview(Map.of("studentId", studentB))).andExpect(status().isNotFound());
