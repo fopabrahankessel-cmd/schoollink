@@ -279,6 +279,20 @@ The admin does this on the web, in this order, because each step needs the one b
 
 After that, `GET /guardians?classId=` shows the guardians of a class and whether each has an app account.
 
+### 2.12 Keeping students and guardians up to date (UC-A8, D43)
+
+The import fills the school once; after it the admin keeps the lists right, one student at a time:
+
+- **A student arrives:** `POST /students` with the details, the class and one or two guardians, one of them primary. A guardian whose phone the school already knows is linked, not created twice.
+- **A correction:** `PUT /students/{id}` (matricule, names, sex, birth year).
+- **A change of class:** `PUT /students/{id}/class`. From then on the student is in the roll calls of the new class; the history stays.
+- **The end of the year:** `POST /students/move` moves up to 300 students to one class in a single step. The admin leaves out those who repeat the year.
+- **A student leaves:** `POST /students/{id}/leave` with the date (today when left out, never in the future). From that date the student is in no roll call, cannot be recorded late or summoned, and the guardians get nothing new. Nothing is deleted: the history stays, for the school and for the parents, whose `GET /me/children` gives `leftOn`. `POST /students/{id}/return` brings the student back, into the given class or the last one.
+- **Guardians:** `PUT /guardians/{id}` changes the name, language or phone for all the guardian's children. `POST /students/{id}/guardians` adds one, `PUT /students/{id}/guardians/{guardianId}` changes the relation or hands over the primary, `DELETE` removes the link. A student always keeps one guardian, and exactly one primary: removing the primary names the next one (`?primary=`) unless a single guardian is left.
+- **A new phone** signs the parent out everywhere: refresh tokens, push tokens and SMS codes not yet used are dropped in the same transaction, and the parent signs in again with the new number (D24). A phone already used by another guardian of the school (`guardians.phone_taken`) or by a staff account (`guardians.phone_staff`) is refused.
+
+Phones are in bodies only (NFR-9). Every write is audited, without names or phones (NFR-11).
+
 ---
 
 ## 3. Endpoint reference
@@ -427,6 +441,18 @@ Request: `{reason, note?, absenceIds?, latenessIds?}`. Response: `{id, reason, n
 | `POST /students/import` | Admin | Upload and check a file (201) |
 | `GET /students/import/{id}` | Admin | The preview of an import |
 | `POST /students/import/{id}/commit` | Admin | Create the students and guardians, all or nothing |
+| `GET /students?classId=&q=&left=` | Admin | Students of a class, or found by name or matricule; those who left only with `left=true` (D43) |
+| `GET /students/{id}` | Admin | One student with the guardians, the primary first |
+| `POST /students` | Admin | Add a student with one or two guardians (201) |
+| `PUT /students/{id}` | Admin | Correct the details |
+| `PUT /students/{id}/class` | Admin | Change the class |
+| `POST /students/move` | Admin | Move up to 300 students to one class (year end) |
+| `POST /students/{id}/leave` | Admin | Mark as having left on a date |
+| `POST /students/{id}/return` | Admin | Bring back, into a class |
+| `POST /students/{id}/guardians` | Admin | Add a guardian to the student (201) |
+| `PUT /students/{id}/guardians/{guardianId}` | Admin | Change the relation, or make primary |
+| `DELETE /students/{id}/guardians/{guardianId}?primary=` | Admin | Remove the guardian from the student |
+| `PUT /guardians/{id}` | Admin | Change a guardian's name, language or phone |
 | `GET /guardians?classId=` | Admin | Guardians of a class and their app status |
 | `GET /me/classes` | Teacher | Own classes with their students |
 | `GET /me/children` | Parent | Own children |
@@ -436,7 +462,13 @@ Request: `{reason, note?, absenceIds?, latenessIds?}`. Response: `{id, reason, n
 - Commit view: `{id, status, studentsCreated, guardiansCreated, guardiansLinked}`.
 - Guardian: `{id, name, phone, language, status, children: [{id, firstName, lastName, classId, relation, primary}]}`.
 - Teacher's class: `{classId, className, students: [{id, matricule, firstName, lastName}]}`. No birth year and no guardian (NFR-9).
-- Child: `{id, firstName, lastName, classId, className}`.
+- Child: `{id, firstName, lastName, classId, className, leftOn}`. `leftOn` is the day the child left the school, null while enrolled (D43).
+- Student row: `{id, matricule, firstName, lastName, classId, className, leftOn, guardians}` (`guardians` is a count).
+- Student: `{id, matricule, firstName, lastName, sex, birthYear, classId, className, leftOn, guardians: [{id, name, phone, language, relation, primary, hasAccount, children}]}`. `children` counts the guardian's children in the school.
+- New student: `{matricule, firstName, lastName, sex: "M"|"F", birthYear, classId, guardians: [{phone, name, relation, language?, primary}]}`. Details: the same without `classId` and `guardians`.
+- Class change and return: `{classId}`. Move: `{studentIds, classId}` answers `{moved}`. Leave: `{date?}`.
+- Guardian update: `{name, language, phone}`. Link update: `{relation, primary}`. `relation` is `MOTHER`, `FATHER`, `GUARDIAN` or `OTHER`.
+- Refusals (409 unless noted): `students.matricule_exists`, `students.primary_required` (400), `students.guardian_duplicate` (400), `students.guardian_linked`, `students.last_guardian`, `students.already_left`, `students.not_left`, `students.leave_date_future` (400), `guardians.phone_taken`, `guardians.phone_staff`.
 - Contacts: `{className, teachers: [{name, subjects, phone}], discipline: [{name, role, phone}]}`.
 
 ### 3.9 Reporting (`reporting`)

@@ -160,6 +160,7 @@ The use cases are numbered by actor; the MVP column says which ones the first pi
 | UC-A5 | Administrator | Send a school-wide or class announcement, by push and optionally SMS, seeing the count and cost first (D38) | Pilot |
 | UC-A6 | Administrator | Consult the school dashboard: attendance trends, alerts, delivery rate, SMS usage | Yes |
 | UC-A7 | Administrator | Set the school letterhead (French and English lines, layout, logo) used on generated documents (D36) | Yes |
+| UC-A8 | Administrator | Keep students and guardians up to date after the import: add, correct, change class, move a class up at year end, mark as left or bring back, and add, change or remove guardians (D43) | Pilot |
 | UC-T1 | Teacher | Open today's session for a class and period, mark absentees, confirm twice, save | Yes |
 | UC-T2 | Teacher | Record attendance offline and sync later | Yes |
 | UC-T3 | Teacher | See which of today's sessions are not yet recorded | Yes |
@@ -322,6 +323,8 @@ One REST API under `/api/v1`, secured by JWT; the server derives the school and 
 | Discipline | `POST /disciplinary-records/{id}/close` | DM | Close an open record once, with an optional note (D37) |
 | Discipline | `POST /disciplinary-records/{id}/cancel` | DM | Cancel a record made by mistake, with a reason; it is hidden from then on (D37) |
 | Counselling | `GET /cases`, `POST /cases`, `POST /cases/{id}/notes` | Counsellor | Case management |
+| People | `GET/POST /students`, `GET/PUT /students/{id}`, `PUT /students/{id}/class`, `POST /students/move`, `POST /students/{id}/leave`, `POST /students/{id}/return` | Admin | Students kept up to date after the import (UC-A8, D43) |
+| People | `PUT /guardians/{id}`, `POST /students/{id}/guardians`, `PUT/DELETE /students/{id}/guardians/{guardianId}` | Admin | Guardians and their links; a new phone signs the parent out (UC-A8, D43, D24) |
 | Parent | `GET /me/children`, `GET /children/{id}/history` | Parent | Children and history |
 | Parent | `GET /me/children/{id}/contacts` | Parent | The child's class, teachers and the block's DMs, with names, subjects, roles and phones (UC-P5, D39) |
 | Parent | `GET /me/notifications`, `POST /notifications/{id}/opened` | Parent | Inbox + open receipt for the research metrics |
@@ -408,6 +411,8 @@ The MVP is the loop from attendance to parent notification to DM decision; couns
 **MVP (must work for the pilot)**: UC-A1 to A4, A6; UC-T1 to T3; UC-AD1, AD2; UC-D1 to D3, D6 to D8; UC-P1 to P3.
 
 **Brought into the pilot (2026-11-09)**: UC-A5, UC-D4, UC-D5, UC-P4 (D37, D38).
+
+**Brought into the pilot (2026-11-14)**: UC-A8 (D43).
 
 **Wave 2**: UC-C1 to C3; UC-R1 to R3.
 

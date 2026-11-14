@@ -1,6 +1,6 @@
 # Student and guardian maintenance (D43): design
 
-Status: **approved by the user on 2026-11-14, being built**. Answers: parents keep the history of a child who left; a phone change signs the parent out; the last guardian cannot be removed; end-of-year promotion is in scope.
+Status: **approved by the user on 2026-11-14, built the same day (D43 in PLAN.md)**. Answers: parents keep the history of a child who left; a phone change signs the parent out; the last guardian cannot be removed; end-of-year promotion is in scope.
 
 ## Why
 

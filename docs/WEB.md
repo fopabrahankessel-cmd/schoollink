@@ -92,6 +92,7 @@ While the password is temporary, the server answers only `/me` and `/me/password
 | `/structure/timetable` | `TimetablePage` | Admin |
 | `/structure/letterhead` | `LetterheadPage` | Admin |
 | `/staff`, `/staff/:id` | `StaffListPage`, `StaffDetailPage` | Admin |
+| `/school/students`, `/school/students/:id` | `StudentsAdminPage`, `StudentAdminPage` | Admin |
 | `/students/import`, `/students/import/:id` | `ImportUploadPage`, `ImportPreviewPage` | Admin |
 | `/guardians` | `GuardiansPage` | Admin |
 | `/announcements`, `/announcements/new` | `AnnouncementsPage`, `ComposeAnnouncementPage` | Admin |
@@ -115,7 +116,7 @@ Any other path goes to `/`.
 
 The sidebar depends on the roles:
 
-- **Admin:** Home, School dashboard, Announcements; then the structure (Calendar, Periods, Classes, Timetable, Letterhead); then people (Staff, Import, Guardians).
+- **Admin:** Home, School dashboard, Announcements; then the structure (Calendar, Periods, Classes, Timetable, Letterhead); then people (Staff, Students, Import, Guardians).
 - **DM:** Dashboard; then Day, Alerts, Students, Messages, Day report, Settings.
 - **Admin who is also a DM:** the admin menu followed by the DM's group.
 
@@ -166,6 +167,15 @@ Three steps, shown by `ImportSteps`:
 1. **Upload** (`ImportUploadPage`): choose the academic year and a CSV or Excel file. A template can be downloaded (`public/import-template.csv`, documented in [IMPORT.md](IMPORT.md)). `POST /students/import`.
 2. **Preview** (`ImportPreviewPage`): the checked file with its errors, grouped by row. `GET /students/import/{id}`.
 3. **Commit:** only a file without errors commits, all or nothing and once. `POST /students/import/{id}/commit`. With errors, the admin corrects the file and uploads again.
+
+### 4.5b Students and their guardians (UC-A8, D43)
+
+After the import the admin keeps the lists right here. The DM's own student pages stay at `/students`; these are at `/school/students`.
+
+- **List** (`StudentsAdminPage`): a year and a class, or a search by name or matricule across the school (two characters, after a short pause). Students who left show only with the switch, greyed, with the day they left. **Add a student** opens a form with the details and one or two guardians, then the new student's page. **Move the class up** is the end of the year: all the students of the class are ticked, the admin unticks those who repeat, chooses the class of any year, and they move in one step.
+- **Student** (`StudentAdminPage`): the details, the class, and the guardians with the primary first, their phone, language and whether they use the app. Actions: edit the record, change class, mark as left (with the date) or re-enrol. Per guardian: edit (name, phone, language, relation, primary) and remove; the only guardian cannot be removed, and removing the primary asks who takes over when several stay.
+- **Saying what changes first:** a class change, a departure and a removal each state their effect in the dialog. Editing the phone of a guardian who uses the app warns that they are signed out (D24); a guardian with several children shows that the change touches them all.
+- The forms are in `pages/students/dialogs.tsx`; a refusal is shown on its field when the server names one, else at the top of the dialog.
 
 ### 4.6 Guardians (`GuardiansPage`, UC-A4)
 
@@ -272,6 +282,7 @@ In development Vite proxies `/api` to `http://localhost:8080` (or `API_PROXY`).
 | `structure.ts` | Years, terms, holidays, periods, blocks, classes, timetable |
 | `staff.ts` | Staff accounts, roles, teaching |
 | `imports.ts` | Student import: upload, preview, commit |
+| `students.ts` | Students and guardians kept up to date: list, add, correct, move, leave, return, guardian links |
 | `guardians.ts` | Guardians of a class |
 | `letterhead.ts` | Letterhead and logo |
 | `dashboard.ts` | School dashboard |
