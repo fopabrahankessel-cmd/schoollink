@@ -7,6 +7,7 @@ Related documents:
 - [SPEC.md](SPEC.md): the rules (BR-x), use cases (UC-x) and requirements (NFR-x) this API implements.
 - [PLAN.md](PLAN.md): the decisions (D-x) cited below.
 - [ARCHITECTURE.md](ARCHITECTURE.md): the patterns behind the code (modular monolith, outbox, offline sync).
+- [MOBILE.md](MOBILE.md) and [WEB.md](WEB.md): the two clients, screen by screen, with the calls each one makes.
 - [DEPLOYMENT.md](DEPLOYMENT.md): how to run it in production.
 
 ## Contents

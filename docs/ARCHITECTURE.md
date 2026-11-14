@@ -1,6 +1,6 @@
 # SchoolLink architecture
 
-This document explains how SchoolLink is built and why. The rules themselves (BR-x, UC-x, NFR-x) are in [SPEC.md](SPEC.md), and the decisions (D-x) in [PLAN.md](PLAN.md). This is the map that connects them to the code. Every endpoint and each workflow, call by call, is in [API.md](API.md).
+This document explains how SchoolLink is built and why. The rules themselves (BR-x, UC-x, NFR-x) are in [SPEC.md](SPEC.md), and the decisions (D-x) in [PLAN.md](PLAN.md). This is the map that connects them to the code. Every endpoint and each workflow, call by call, is in [API.md](API.md). The Android app is described screen by screen in [MOBILE.md](MOBILE.md), and the web dashboard page by page in [WEB.md](WEB.md).
 
 There is no single "design pattern" behind SchoolLink. The overall architecture is a **modular monolith**. Inside it, a small set of well-known patterns each solve one concrete problem from the SPEC. The three that carry the most weight are the **modular monolith**, the **transactional outbox**, and **offline-first sync with idempotent UUIDs**. Together they make SchoolLink reliable on unreliable networks.
 
