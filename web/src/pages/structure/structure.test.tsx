@@ -121,6 +121,42 @@ describe('school structure screens (UC-A1)', () => {
     })
   })
 
+  it('shows the sequences of the selected term and adds one (D44)', async () => {
+    const SEQ = { id: 'q1', termId: 't1', number: 1, label: 'Séquence 1', startDate: '2026-09-07', endDate: '2026-10-23' }
+    const { api, client } = signedIn({
+      'GET /academic-years': json(200, [YEAR]),
+      'GET /terms?academicYearId=y1': json(200, [TERM]),
+      'GET /sequences?termId=t1': [json(200, []), json(200, [SEQ])],
+      'GET /holidays?termId=t1': json(200, []),
+      'POST /sequences': json(201, SEQ),
+    })
+    renderApp(client, '/structure/calendar')
+
+    expect(screen.getByText('Sélectionnez un trimestre pour voir ses deux séquences.')).toBeInTheDocument()
+    const user = userEvent.setup()
+    await user.click(await screen.findByRole('cell', { name: '2026-2027' }))
+    await user.click(await screen.findByRole('cell', { name: 'Trimestre 1' }))
+    const sequences = await screen.findByRole('region', { name: /Séquences · Trimestre 1/ })
+    expect(await within(sequences).findByText('Aucune séquence dans ce trimestre.')).toBeInTheDocument()
+
+    await user.click(within(sequences).getByRole('button', { name: 'Ajouter' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Ajouter : Séquence' })
+    expect(within(dialog).getByLabelText(/Numéro/)).toHaveValue(1)
+    expect(within(dialog).getByLabelText(/Libellé/)).toHaveValue('Séquence 1') // counted across the year
+    await user.type(within(dialog).getByLabelText(/Début/), '2026-09-07')
+    await user.type(within(dialog).getByLabelText(/Fin/), '2026-10-23')
+    await user.click(within(dialog).getByRole('button', { name: 'Enregistrer' }))
+
+    expect(await within(sequences).findByRole('cell', { name: 'Séquence 1' })).toBeInTheDocument()
+    expect(api.calls.find((c) => c.method === 'POST')?.body).toEqual({
+      termId: 't1',
+      number: 1,
+      label: 'Séquence 1',
+      startDate: '2026-09-07',
+      endDate: '2026-10-23',
+    })
+  })
+
   it("fills a timetable cell with one of the class's assigned teachers", async () => {
     const { api, client } = signedIn({
       'GET /academic-years': json(200, [YEAR]),
@@ -206,6 +242,6 @@ describe('school structure screens (UC-A1)', () => {
     renderApp(client, '/')
 
     const nav = await screen.findByRole('navigation', { name: 'Navigation principale' })
-    expect(within(nav).getByRole('link', { name: 'Emploi du temps' })).toHaveAttribute('href', '/structure/timetable')
+    expect(within(nav).getByRole('link', { name: "Réglages de l'école" })).toHaveAttribute('href', '/setup')
   })
 })

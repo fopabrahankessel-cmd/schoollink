@@ -73,7 +73,7 @@ describe('letterhead editor (UC-A7, D36)', () => {
       ],
     })
     const nav = screen.getByRole('navigation', { name: 'Navigation principale' })
-    expect(within(nav).getByRole('link', { name: 'En-tête des documents' })).toHaveAttribute('href', '/structure/letterhead')
+    expect(within(nav).getByRole('link', { name: "Réglages de l'école" })).toHaveAttribute('aria-current', 'page')
   })
 
   it('does not save an empty line, and stops adding at 12 lines', async () => {
@@ -169,6 +169,6 @@ describe('letterhead editor (UC-A7, D36)', () => {
 
     await waitFor(() => expect(screen.queryByRole('heading', { name: 'En-tête des documents' })).not.toBeInTheDocument())
     const nav = screen.getByRole('navigation', { name: 'Navigation principale' })
-    expect(within(nav).queryByRole('link', { name: 'En-tête des documents' })).not.toBeInTheDocument()
+    expect(within(nav).queryByRole('link', { name: "Réglages de l'école" })).not.toBeInTheDocument()
   })
 })

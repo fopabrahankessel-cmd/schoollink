@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { PATHS, query, type AcademicYear, type Block, type SchoolClass } from '../../api/structure'
 import { CrudSection } from '../../components/CrudSection'
 import { PageHeader } from '../../components/PageHeader'
+import { SETTINGS_PATH } from '../setup/paths'
 import { BuildingsIcon, ChalkboardTeacherIcon, StudentIcon } from '../../icons'
 import { YearPicker } from '../../components/YearPicker'
 import { useList } from '../../hooks/useList'
@@ -18,7 +19,7 @@ export function ClassesPage() {
 
   return (
     <Stack sx={{ maxWidth: 880 }}>
-      <PageHeader icon={ChalkboardTeacherIcon} title={t('structure.classes')} description={t('structure.classesIntro')} />
+      <PageHeader icon={ChalkboardTeacherIcon} title={t('structure.classes')} description={t('structure.classesIntro')} back={{ to: SETTINGS_PATH, label: t('nav.schoolSettings') }} />
       <Stack spacing={3}>
       <CrudSection<Block>
         icon={BuildingsIcon}

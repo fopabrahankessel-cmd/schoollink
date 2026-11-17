@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { PATHS, shortTime, type Period } from '../../api/structure'
 import { CrudSection } from '../../components/CrudSection'
 import { PageHeader } from '../../components/PageHeader'
+import { SETTINGS_PATH } from '../setup/paths'
 import { ClockIcon } from '../../icons'
 
 /** UC-A1, D1: the school's lesson periods; the server refuses overlapping times. */
@@ -10,7 +11,7 @@ export function PeriodsPage() {
   const { t } = useTranslation()
   return (
     <Stack sx={{ maxWidth: 880 }}>
-      <PageHeader icon={ClockIcon} title={t('structure.periods')} description={t('structure.periodsIntro')} />
+      <PageHeader icon={ClockIcon} title={t('structure.periods')} description={t('structure.periodsIntro')} back={{ to: SETTINGS_PATH, label: t('nav.schoolSettings') }} />
       <CrudSection<Period>
         icon={ClockIcon}
         hint={t('structure.periodsHint')}

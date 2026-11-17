@@ -266,7 +266,7 @@ Another family's child answers 404.
 
 The admin does this on the web, in this order, because each step needs the one before:
 
-1. **Calendar:** academic year, then its terms, then the holidays of each term.
+1. **Calendar:** academic year, then its terms, then the two sequences and the holidays of each term.
 2. **Day:** the periods (number, start and end time).
 3. **Structure:** the blocks, then the classes (each in a year and a block).
 4. **Staff:** create each account (`POST /staff` returns a temporary password to hand over), give roles (`DM` and `ASSISTANT_DM` with a block), and give teachers their classes and subjects.
@@ -498,12 +498,15 @@ Reading: admin and counsellor see the whole school; teachers, assistant DMs and 
 | Academic years | `GET`, `POST /academic-years`; `PUT`, `DELETE /academic-years/{id}` | `label, startDate, endDate` |
 | Terms | `GET /terms?academicYearId=`, `POST /terms`; `PUT`, `DELETE /terms/{id}` | `academicYearId, label, startDate, endDate` |
 | Holidays (D10) | `GET /holidays?termId=`, `POST /holidays`; `PUT`, `DELETE /holidays/{id}` | `termId, label, startDate, endDate` |
+| Sequences (D44) | `GET /sequences?termId=`, `POST /sequences`; `PUT`, `DELETE /sequences/{id}` | `termId, number (1 or 2), label, startDate, endDate` |
 | Periods | `GET`, `POST /periods`; `PUT`, `DELETE /periods/{id}` | `number (1–12), startTime, endTime` |
 | Blocks (D5) | `GET`, `POST /blocks`; `GET`, `PUT`, `DELETE /blocks/{id}` | `name` |
 | Classes | `GET /classes?academicYearId=&blockId=`, `POST /classes`; `GET`, `PUT`, `DELETE /classes/{id}` | `academicYearId, blockId, name, level` |
 | Timetable (D1) | `GET /timetable-slots?classId=`, `POST /timetable-slots`; `PUT`, `DELETE /timetable-slots/{id}` | `classId, weekday (1–5), periodId, teacherId, subject` |
 
 Creating answers 201, deleting 204.
+
+A term has at most two sequences, inside its dates, and sequence 1 ends before sequence 2 starts. Refusals: `sequence.outside_term` (400), `sequence.duplicate` (409, the number is taken), `sequence.overlap` (409). A term cannot shrink past its sequences (`term.sequences_outside`, 409) or be deleted while it has them (`in_use`). Nothing else reads sequences yet; the admin's home names the current one.
 
 **Letterhead (UC-A7, D36)**
 

@@ -1,6 +1,6 @@
 # School settings in one place, and sequences (D44)
 
-Status: **scope agreed with the user on 2026-11-17, being built**. The first draft of this note
+Status: **scope agreed with the user on 2026-11-17, built the same day (D44 in PLAN.md)**. The first draft of this note also designed a reset of the school's data; that part was dropped, see the end.
 also designed a reset of the school's data; that part was dropped, see the end.
 
 ## Why
@@ -15,7 +15,7 @@ place"; a term "is a combination of two sequences".
 
 ## 1. School settings
 
-A new page, **School settings** (`/school`), admin only. The menu group "School" (Calendar,
+A new page, **School settings** (`/setup`), admin only. The menu group "School" (Calendar,
 Periods, Classes, Timetable, Letterhead) becomes this single entry.
 
 - One line per thing to define, in the order they depend on each other: school year, terms and

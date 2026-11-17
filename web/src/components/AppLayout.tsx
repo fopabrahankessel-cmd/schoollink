@@ -6,13 +6,11 @@ import { Link, Outlet, useLocation } from 'react-router'
 import * as authApi from '../api/auth'
 import { useAuth } from '../auth/useAuth'
 import {
-  CalendarBlankIcon,
   CalendarCheckIcon,
-  ChalkboardTeacherIcon,
   ChartLineIcon,
   ChatTextIcon,
-  ClockIcon,
   FileArrowUpIcon,
+  GearSixIcon,
   FileTextIcon,
   HouseIcon,
   IdentificationCardIcon,
@@ -20,16 +18,15 @@ import {
   MegaphoneIcon,
   SlidersIcon,
   SquaresFourIcon,
-  StampIcon,
   StudentIcon,
   SignOutIcon,
-  TableIcon,
   UsersFourIcon,
   UsersThreeIcon,
   WarningIcon,
   type Icon,
 } from '../icons'
 import { hover, theme, tokens } from '../theme'
+import { SETTINGS_PATH } from '../pages/setup/paths'
 import { LanguageSwitch } from './LanguageSwitch'
 import { Mark } from './Mark'
 
@@ -37,6 +34,8 @@ interface NavItem {
   to: string
   label: string
   icon: Icon
+  /** Other paths the entry stands for, e.g. the screens it leads to. */
+  also?: string[]
 }
 
 /** The admin's screens (UC-A1 to UC-A7), grouped as the school office thinks of them. */
@@ -46,16 +45,8 @@ const ADMIN_NAV: { group?: string; items: NavItem[] }[] = [
       { to: '/', label: 'nav.home', icon: HouseIcon },
       { to: '/dashboard', label: 'nav.schoolDashboard', icon: ChartLineIcon },
       { to: '/announcements', label: 'nav.announcements', icon: MegaphoneIcon },
-    ],
-  },
-  {
-    group: 'nav.school',
-    items: [
-      { to: '/structure/calendar', label: 'nav.calendar', icon: CalendarBlankIcon },
-      { to: '/structure/periods', label: 'nav.periods', icon: ClockIcon },
-      { to: '/structure/classes', label: 'nav.classes', icon: ChalkboardTeacherIcon },
-      { to: '/structure/timetable', label: 'nav.timetable', icon: TableIcon },
-      { to: '/structure/letterhead', label: 'nav.letterhead', icon: StampIcon },
+      // D44: what is defined once (calendar, periods, classes, timetable, letterhead) is behind one entry
+      { to: SETTINGS_PATH, label: 'nav.schoolSettings', icon: GearSixIcon, also: ['/structure'] },
     ],
   },
   {
@@ -166,7 +157,8 @@ function Sidebar() {
   const { pathname } = useLocation()
   const schoolName = useSchoolName(user?.schoolId ?? undefined)
   const nav = user && !user.passwordChangeRequired ? navFor(user.roles) : []
-  const isCurrent = (to: string) => to === pathname || (to !== '/' && pathname.startsWith(`${to}/`))
+  const under = (to: string) => to === pathname || (to !== '/' && pathname.startsWith(`${to}/`))
+  const isCurrent = (item: NavItem) => under(item.to) || (item.also ?? []).some(under)
   const roles = user?.roles.map((r) => t(`roles.${r}`)).join(', ')
 
   return (
@@ -197,7 +189,7 @@ function Sidebar() {
               <Stack component="ul" sx={{ listStyle: 'none', m: 0, p: 0, gap: 0.25 }}>
                 {section.items.map((item) => (
                   <li key={item.to}>
-                    <NavLink item={item} current={isCurrent(item.to)} />
+                    <NavLink item={item} current={isCurrent(item)} />
                   </li>
                 ))}
               </Stack>

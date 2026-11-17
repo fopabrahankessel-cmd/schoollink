@@ -86,6 +86,7 @@ While the password is temporary, the server answers only `/me` and `/me/password
 | `/` | `HomePage` | Any signed-in user |
 | change-password path | `ChangePasswordPage` | Any signed-in user |
 | `/dashboard` | `SchoolDashboardPage` | Admin |
+| `/setup` | `SchoolSettingsPage` | Admin |
 | `/structure/calendar` | `CalendarPage` | Admin |
 | `/structure/periods` | `PeriodsPage` | Admin |
 | `/structure/classes` | `ClassesPage` | Admin |
@@ -116,7 +117,7 @@ Any other path goes to `/`.
 
 The sidebar depends on the roles:
 
-- **Admin:** Home, School dashboard, Announcements; then the structure (Calendar, Periods, Classes, Timetable, Letterhead); then people (Staff, Students, Import, Guardians).
+- **Admin:** Home, School dashboard, Announcements, School settings; then people (Staff, Students, Import, Guardians). The calendar, periods, classes, timetable and letterhead are reached from School settings, whose entry stays highlighted on each of them (D44).
 - **DM:** Dashboard; then Day, Alerts, Students, Messages, Day report, Settings.
 - **Admin who is also a DM:** the admin menu followed by the DM's group.
 
@@ -128,7 +129,11 @@ On a narrow screen the sidebar becomes a drawer opened from the top bar. The foo
 
 ### 4.1 Home: set-up overview (`SetupOverview`, UC-A1, UC-A2)
 
-Answers one question: can teachers take attendance this year? It lists the set-up steps in the order they depend on each other (calendar, periods, classes, staff, timetable, students), what each still lacks, and a ring showing how many are ready. It also names the current term and week.
+Answers one question: can teachers take attendance this year? It lists the set-up steps in the order they depend on each other (calendar, periods, classes, staff, timetable, students), what each still lacks, and a ring showing how many are ready. It also names the current term, week and sequence. Missing sequences are noted on the calendar step but do not hold attendance back. The steps come from `pages/setup/useSetup.tsx`, shared with School settings.
+
+### 4.1b School settings (`SchoolSettingsPage`, D44)
+
+Everything that defines the school, in one place. First what is defined once, in the order to fill it in: calendar (year, terms, sequences, holidays), periods, classes, timetable, letterhead (optional). Then the people, kept up to date all year and still in the menu: staff and students. Each line says what is in place and what is missing, and opens its screen; each of those screens has a link back. Here the calendar is complete only when every term of the current year has its two sequences.
 
 ### 4.2 School structure (UC-A1)
 
@@ -136,7 +141,7 @@ All four pages are built on `CrudSection` (section 7.2): a list with create, edi
 
 | Page | What it manages | API |
 | --- | --- | --- |
-| `CalendarPage` | Academic years, their terms, the holidays of each term (D10) | `/academic-years`, `/terms`, `/holidays` |
+| `CalendarPage` | Academic years, their terms, the two sequences (D44) and the holidays (D10) of each term. A new sequence is proposed with the next number and a label counted across the year (Séquence 1 to 6) | `/academic-years`, `/terms`, `/sequences`, `/holidays` |
 | `PeriodsPage` | The lesson periods of the day | `/periods` |
 | `ClassesPage` | Blocks (D5) and classes, per academic year | `/blocks`, `/classes` |
 | `TimetablePage` | One class's week, Monday to Friday by period (D1) | `/timetable-slots`, `/classes`, `/periods`, `/staff` |

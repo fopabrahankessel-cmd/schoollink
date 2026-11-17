@@ -298,6 +298,7 @@ One REST API under `/api/v1`, secured by JWT; the server derives the school and 
 | Auth | `POST /auth/parent/sign-in/verify` | Parent | One-time code, creates the account at the first sign-in, returns tokens (D24) |
 | Auth | `POST /auth/refresh` | All | New access token |
 | School | `GET/POST /classes`, `/periods`, `/terms` | Admin | School structure |
+| School | `GET/POST /sequences`, `PUT/DELETE /sequences/{id}` | Admin (write), staff (read) | The two sequences of each term (D44) |
 | People | `POST /students/import` (preview), `POST /students/import/{id}/commit` | Admin | CSV/Excel import in two steps |
 | People | `GET /guardians?classId=` | Admin | A class's guardians, their children and whether they have an account |
 | Attendance | `GET /me/sessions?date=` | Teacher | Today's sessions to record |

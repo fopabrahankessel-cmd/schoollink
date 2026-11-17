@@ -19,6 +19,7 @@ import {
 } from '@mui/material'
 import { useMemo, useState, type FormEvent } from 'react'
 import { PageHeader } from '../../components/PageHeader'
+import { SETTINGS_PATH } from '../setup/paths'
 import { TableIcon } from '../../icons'
 import { hover, tintFor, tokens } from '../../theme'
 import { useTranslation } from 'react-i18next'
@@ -131,7 +132,7 @@ export function TimetablePage() {
 
   return (
     <Stack>
-      <PageHeader icon={TableIcon} title={t('timetable.title')} description={t('timetable.intro')} />
+      <PageHeader icon={TableIcon} title={t('timetable.title')} description={t('timetable.intro')} back={{ to: SETTINGS_PATH, label: t('nav.schoolSettings') }} />
       <Stack spacing={3}>
       {loadError !== null && <Alert severity="error">{errorMessage(loadError, t)}</Alert>}
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>

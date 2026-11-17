@@ -9,6 +9,8 @@ import { ImportPreviewPage } from './pages/import/ImportPreviewPage'
 import { ImportUploadPage } from './pages/import/ImportUploadPage'
 import { HomePage } from './pages/HomePage'
 import { SchoolDashboardPage } from './pages/dashboard/SchoolDashboardPage'
+import { SETTINGS_PATH } from './pages/setup/paths'
+import { SchoolSettingsPage } from './pages/setup/SchoolSettingsPage'
 import { LoginPage } from './pages/LoginPage'
 import { AlertsPage } from './pages/dm/AlertsPage'
 import { DayPage } from './pages/dm/DayPage'
@@ -46,6 +48,8 @@ export const routes: RouteObject[] = [
       { path: CHANGE_PASSWORD_PATH, element: <ChangePasswordPage /> },
       // UC-A6: the school dashboard, admin only
       { path: '/dashboard', element: admin(<SchoolDashboardPage />) },
+      // D44: School settings, the one place for what is defined once, admin only
+      { path: SETTINGS_PATH, element: admin(<SchoolSettingsPage />) },
       // UC-A1: school structure, admin only
       { path: '/structure/calendar', element: admin(<CalendarPage />) },
       { path: '/structure/periods', element: admin(<PeriodsPage />) },

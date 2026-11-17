@@ -19,6 +19,7 @@ import {
 } from '../../api/letterhead'
 import { useAuth } from '../../auth/useAuth'
 import { PageHeader } from '../../components/PageHeader'
+import { SETTINGS_PATH } from '../setup/paths'
 import { useResource } from '../../hooks/useResource'
 import { ArrowDownIcon, ArrowUpIcon, ImageSquareIcon, PlusIcon, StampIcon, TextBIcon, TrashIcon, UploadSimpleIcon } from '../../icons'
 import { hover, theme, tokens } from '../../theme'
@@ -35,7 +36,7 @@ export function LetterheadPage() {
   const letterhead = useResource<Letterhead>(LETTERHEAD_PATH)
   return (
     <Stack>
-      <PageHeader icon={StampIcon} title={t('letterhead.title')} description={t('letterhead.intro')} />
+      <PageHeader icon={StampIcon} title={t('letterhead.title')} description={t('letterhead.intro')} back={{ to: SETTINGS_PATH, label: t('nav.schoolSettings') }} />
       {letterhead.error !== null && !letterhead.data && <Alert severity="error">{errorMessage(letterhead.error, t)}</Alert>}
       {letterhead.data && <Editor initial={letterhead.data} />}
     </Stack>

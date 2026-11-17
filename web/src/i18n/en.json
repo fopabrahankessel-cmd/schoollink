@@ -65,7 +65,8 @@
     "schoolDashboard": "School dashboard",
     "letterhead": "Document letterhead",
     "messages": "Messages to parents",
-    "announcements": "Announcements"
+    "announcements": "Announcements",
+    "schoolSettings": "School settings"
   },
   "home": {
     "welcome": "Welcome to SchoolLink",
@@ -125,13 +126,19 @@
     "holiday": "Holiday",
     "period": "Lesson period",
     "schoolClass": "Class",
-    "calendarIntro": "The school year, its terms and the holidays in each term.",
+    "calendarIntro": "The school year, its terms, and the two sequences and holidays of each term.",
     "yearsHint": "Pick a year to see its terms.",
-    "termsHint": "Pick a term to see its holidays.",
+    "termsHint": "Choose a term to see its sequences and holidays.",
     "periodsIntro": "The lesson time slots, from the first to the last of the day.",
     "periodsHint": "Two periods cannot overlap.",
     "classesIntro": "Blocks, each followed by a Discipline Master, and the classes of each year.",
-    "blocksHint": "Every class belongs to a block."
+    "blocksHint": "Every class belongs to a block.",
+    "sequences": "Sequences",
+    "sequence": "Sequence",
+    "sequenceLabel": "Sequence {{n}}",
+    "noSequences": "No sequences in this term.",
+    "pickTermForSequences": "Select a term to see its two sequences.",
+    "sequencesHint": "Two sequences per term, the first ending before the second starts."
   },
   "timetable": {
     "title": "Timetable",
@@ -261,7 +268,15 @@
     "statLessonsOf_other": "of {{count}} weekly slots",
     "statPeriods": "Periods a day",
     "stepsTitle": "Setup",
-    "progress": "{{ready}} of {{total}} steps ready"
+    "progress": "{{ready}} of {{total}} steps ready",
+    "calendarDetail": "Year {{year}}, {{terms}}, {{sequences}}",
+    "termCount_one": "{{count}} term",
+    "termCount_other": "{{count}} terms",
+    "sequenceCount_one": "{{count}} sequence",
+    "sequenceCount_other": "{{count}} sequences",
+    "termsWithoutSequences_one": "{{count}} term does not have its two sequences.",
+    "termsWithoutSequences_other": "{{count}} terms do not have their two sequences.",
+    "currentSequence": "Current sequence: {{label}}"
   },
   "import": {
     "title": "Import students",
@@ -873,5 +888,18 @@
     "lateState_CANCELLED": "Cancelled",
     "noLessons": "No lessons that day.",
     "noClasses": "No class in your blocks."
+  },
+  "settings": {
+    "title": "School settings",
+    "intro": "Everything that defines the school for the year, in the order to fill it in. Each line says what is in place and what is missing.",
+    "defined": "What defines the school",
+    "definedHint": "Filled in once before the year starts, corrected when needed.",
+    "people": "People, kept up to date all year",
+    "peopleHint": "They also stay in the menu.",
+    "letterheadDetail": "Optional: the lines and logo at the top of generated documents.",
+    "studentsDetail": "Import the students at the start of the year, then add, correct and move them between classes.",
+    "allReady": "Everything is defined.",
+    "remaining_one": "{{count}} setting left to complete.",
+    "remaining_other": "{{count}} settings left to complete."
   }
 }

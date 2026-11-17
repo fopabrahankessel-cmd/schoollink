@@ -65,7 +65,8 @@
     "schoolDashboard": "Tableau de bord",
     "letterhead": "En-tête des documents",
     "messages": "Messages aux parents",
-    "announcements": "Annonces"
+    "announcements": "Annonces",
+    "schoolSettings": "Réglages de l'école"
   },
   "home": {
     "welcome": "Bienvenue sur SchoolLink",
@@ -125,13 +126,19 @@
     "holiday": "Congé",
     "period": "Période de cours",
     "schoolClass": "Classe",
-    "calendarIntro": "L'année scolaire, ses trimestres et les congés de chaque trimestre.",
+    "calendarIntro": "L'année scolaire, ses trimestres, les deux séquences et les congés de chaque trimestre.",
     "yearsHint": "Choisissez une année pour voir ses trimestres.",
-    "termsHint": "Choisissez un trimestre pour voir ses congés.",
+    "termsHint": "Choisissez un trimestre pour voir ses séquences et ses congés.",
     "periodsIntro": "Les créneaux horaires des cours, du premier au dernier de la journée.",
     "periodsHint": "Deux périodes ne peuvent pas se chevaucher.",
     "classesIntro": "Les blocs, chacun suivi par un Surveillant Général, et les classes de chaque année.",
-    "blocksHint": "Chaque classe appartient à un bloc."
+    "blocksHint": "Chaque classe appartient à un bloc.",
+    "sequences": "Séquences",
+    "sequence": "Séquence",
+    "sequenceLabel": "Séquence {{n}}",
+    "noSequences": "Aucune séquence dans ce trimestre.",
+    "pickTermForSequences": "Sélectionnez un trimestre pour voir ses deux séquences.",
+    "sequencesHint": "Deux séquences par trimestre, la première terminée avant le début de la seconde."
   },
   "timetable": {
     "title": "Emploi du temps",
@@ -261,7 +268,15 @@
     "statLessonsOf_other": "sur {{count}} créneaux de la semaine",
     "statPeriods": "Périodes par jour",
     "stepsTitle": "Mise en place",
-    "progress": "{{ready}} étapes prêtes sur {{total}}"
+    "progress": "{{ready}} étapes prêtes sur {{total}}",
+    "calendarDetail": "Année {{year}}, {{terms}}, {{sequences}}",
+    "termCount_one": "{{count}} trimestre",
+    "termCount_other": "{{count}} trimestres",
+    "sequenceCount_one": "{{count}} séquence",
+    "sequenceCount_other": "{{count}} séquences",
+    "termsWithoutSequences_one": "{{count}} trimestre n'a pas ses deux séquences.",
+    "termsWithoutSequences_other": "{{count}} trimestres n'ont pas leurs deux séquences.",
+    "currentSequence": "Séquence en cours : {{label}}"
   },
   "import": {
     "title": "Importer des élèves",
@@ -873,5 +888,18 @@
     "lateState_CANCELLED": "Annulé",
     "noLessons": "Pas de cours ce jour-là.",
     "noClasses": "Aucune classe dans vos blocs."
+  },
+  "settings": {
+    "title": "Réglages de l'école",
+    "intro": "Tout ce qui définit l'école pour l'année, dans l'ordre où le remplir. Chaque ligne dit ce qui est en place et ce qui manque.",
+    "defined": "Ce qui définit l'école",
+    "definedHint": "À remplir une fois avant le début de l'année, à corriger si besoin.",
+    "people": "Les personnes, tenues à jour toute l'année",
+    "peopleHint": "Elles restent aussi dans le menu.",
+    "letterheadDetail": "Facultatif : les lignes et le logo en tête des documents produits.",
+    "studentsDetail": "Importez les élèves en début d'année, puis ajoutez, corrigez et changez-les de classe.",
+    "allReady": "Tout est défini.",
+    "remaining_one": "Encore {{count}} réglage à compléter.",
+    "remaining_other": "Encore {{count}} réglages à compléter."
   }
 }

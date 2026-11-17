@@ -5,6 +5,8 @@ import { fakeFetch, json, newClient, renderApp, tokens } from '../test/fakeApi'
 // Generated data only. The year spans every test run date: 2000-2100.
 const YEAR = { id: 'y1', label: '2026-2027', startDate: '2000-01-01', endDate: '2100-12-31' }
 const TERM = { id: 't1', academicYearId: 'y1', label: 'Trimestre 1', startDate: '2000-01-01', endDate: '2100-12-31' }
+const SEQ1 = { id: 'q1', termId: 't1', number: 1, label: 'Séquence 1', startDate: '2000-01-01', endDate: '2100-06-30' }
+const SEQ2 = { id: 'q2', termId: 't1', number: 2, label: 'Séquence 2', startDate: '2100-07-01', endDate: '2100-12-31' }
 const P1 = { id: 'p1', number: 1, startTime: '07:30:00', endTime: '08:25:00' }
 const P2 = { id: 'p2', number: 2, startTime: '08:25:00', endTime: '09:20:00' }
 const CLASS_A = { id: 'c1', academicYearId: 'y1', blockId: 'b1', name: '6e A', level: '6e' }
@@ -29,6 +31,7 @@ describe('year setup overview (UC-A1, UC-A2)', () => {
       'GET /auth/schools': json(200, [{ id: tokens().user.schoolId, name: 'Lycée Démo A (fictif)' }]),
       'GET /academic-years': json(200, [YEAR]),
       'GET /terms?academicYearId=y1': json(200, [TERM]),
+      'GET /sequences': json(200, [SEQ1, SEQ2]),
       'GET /periods': json(200, [P1, P2]),
       'GET /blocks': json(200, [{ id: 'b1', name: 'Bloc A' }]),
       'GET /classes?academicYearId=y1': json(200, [CLASS_A, CLASS_B]),
@@ -41,7 +44,8 @@ describe('year setup overview (UC-A1, UC-A2)', () => {
 
     expect(await screen.findByRole('heading', { name: "Préparation de l'année" })).toBeInTheDocument()
     const steps = screen.getByRole('region', { name: 'Étapes de la mise en place' })
-    expect(await within(steps).findByText('Année 2026-2027, 1 trimestre')).toBeInTheDocument()
+    expect(await within(steps).findByText('Année 2026-2027, 1 trimestre, 2 séquences')).toBeInTheDocument()
+    expect(await screen.findByText('Séquence en cours : Séquence 1')).toBeInTheDocument() // D44
     expect(within(steps).getByText('2 périodes de cours, de 07:30 à 09:20')).toBeInTheDocument()
     expect(within(steps).getByText('2 classes cette année dans 1 bloc')).toBeInTheDocument()
     // only this year's classes count: 1 of 2 classes x 2 periods x 5 days
@@ -54,10 +58,32 @@ describe('year setup overview (UC-A1, UC-A2)', () => {
     expect(await screen.findByText('Lycée Démo A (fictif)')).toBeInTheDocument() // the scope, in the sidebar
   })
 
+  it('does not hold attendance back for missing sequences, only notes them (D44)', async () => {
+    const api = fakeFetch({
+      'GET /auth/schools': json(200, []),
+      'GET /academic-years': json(200, [YEAR]),
+      'GET /terms?academicYearId=y1': json(200, [TERM]),
+      'GET /sequences': json(200, []),
+      'GET /periods': json(200, [P1]),
+      'GET /blocks': json(200, [{ id: 'b1', name: 'Bloc A' }]),
+      'GET /classes?academicYearId=y1': json(200, [CLASS_A]),
+      'GET /timetable-slots': json(200, [SLOT, { ...SLOT, id: 's2', weekday: 2 }, { ...SLOT, id: 's3', weekday: 3 }, { ...SLOT, id: 's4', weekday: 4 }, { ...SLOT, id: 's5', weekday: 5 }]),
+      'GET /staff': json(200, [teacher('u1', [{ id: 'a1', classId: 'c1', subject: 'Mathématiques' }])]),
+    })
+    const client = newClient(api.fetch)
+    client.startSession(tokens())
+    renderApp(client, '/')
+
+    const steps = await screen.findByRole('region', { name: 'Étapes de la mise en place' })
+    expect(await within(steps).findByText("1 trimestre n'a pas ses deux séquences.")).toBeInTheDocument()
+    expect(screen.getByText("Tout est en place : les enseignants peuvent faire l'appel.")).toBeInTheDocument()
+  })
+
   it('starts a new school with the calendar', async () => {
     const api = fakeFetch({
       'GET /auth/schools': json(200, []),
       'GET /academic-years': json(200, []),
+      'GET /sequences': json(200, []),
       'GET /periods': json(200, []),
       'GET /blocks': json(200, []),
       'GET /timetable-slots': json(200, []),

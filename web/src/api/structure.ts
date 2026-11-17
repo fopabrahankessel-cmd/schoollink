@@ -24,6 +24,16 @@ export interface Holiday {
   endDate: string
 }
 
+/** D44: one of the two sequences of a term. */
+export interface Sequence {
+  id: string
+  termId: string
+  number: number
+  label: string
+  startDate: string
+  endDate: string
+}
+
 export interface Period {
   id: string
   number: number
@@ -67,6 +77,7 @@ export const PATHS = {
   years: '/academic-years',
   terms: '/terms',
   holidays: '/holidays',
+  sequences: '/sequences',
   periods: '/periods',
   blocks: '/blocks',
   classes: '/classes',

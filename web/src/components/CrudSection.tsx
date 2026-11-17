@@ -65,7 +65,9 @@ interface Props<T extends { id: string }> {
   /** Values sent but not edited here, e.g. the selected parent. */
   fixed?: Record<string, string>
   selectedId?: string | null
-  onSelect?: (item: T) => void
+  onSelect?: (item: T, items: T[]) => void
+  /** Values of a new item, from the items already listed; else each field's `initial`. */
+  newValues?: (items: T[]) => Values
   /** After any change, e.g. to reload what depends on this list. */
   onChanged?: () => void
 }
@@ -86,7 +88,7 @@ export function CrudSection<T extends { id: string }>(props: Props<T>) {
 
   function open(item: T | null) {
     const initial = Object.fromEntries(props.fields.map((f) => [f.name, f.initial ?? '']))
-    setEditing({ item, values: item ? props.toValues(item) : initial })
+    setEditing({ item, values: item ? props.toValues(item) : { ...initial, ...props.newValues?.(list.items) } })
     setFormError(null)
   }
 
@@ -201,7 +203,7 @@ export function CrudSection<T extends { id: string }>(props: Props<T>) {
                   hover={Boolean(props.onSelect)}
                   selected={props.selectedId === item.id}
                   aria-selected={props.onSelect ? props.selectedId === item.id : undefined}
-                  onClick={props.onSelect ? () => props.onSelect?.(item) : undefined}
+                  onClick={props.onSelect ? () => props.onSelect?.(item, list.items) : undefined}
                   sx={
                     props.onSelect
                       ? {
