@@ -72,7 +72,8 @@ class SchoolStructureApiTests {
 
 	@TestFactory
 	Stream<DynamicTest> everyStaffMemberReadsTheCalendar() {
-		return Stream.of("/api/v1/academic-years", "/api/v1/terms", "/api/v1/holidays", "/api/v1/periods")
+		return Stream.of("/api/v1/academic-years", "/api/v1/terms", "/api/v1/holidays", "/api/v1/sequences",
+				"/api/v1/periods")
 			.flatMap(path -> PermissionMatrix.row("GET " + path, w -> get(path))
 				.expect(200, ADMIN_X, TEACHER_A, ASSISTANT_DM_1, DM_1, DM_2, COUNSELLOR_X, ADMIN_Y)
 				.expect(403, PARENT_A, RESEARCHER)
@@ -89,6 +90,8 @@ class SchoolStructureApiTests {
 						"2027-01-04", "endDate", "2027-03-26"), 400),
 				create("/api/v1/holidays", w -> Map.of("termId", w.termX, "label", "Toussaint", "startDate",
 						"2026-11-02", "endDate", "2026-11-03"), 400),
+				create("/api/v1/sequences", w -> Map.of("termId", w.termX, "number", 1, "label", "Séquence 1",
+						"startDate", "2026-09-07", "endDate", "2026-10-23"), 400),
 				create("/api/v1/periods", w -> Map.of("number", 2, "startTime", "08:25", "endTime", "09:20"), 201),
 				create("/api/v1/blocks", w -> Map.of("name", "Bloc 3"), 201),
 				create("/api/v1/classes", w -> Map.of("academicYearId", w.yearX, "blockId", w.block1, "name", "6e C",
@@ -194,6 +197,57 @@ class SchoolStructureApiTests {
 				"label", "Trimestre 1", "startDate", "2026-09-07", "endDate", "2026-10-30")))
 			.andExpect(status().isConflict())
 			.andExpect(jsonPath("$.code").value("term.holidays_outside"));
+	}
+
+	@Test
+	void aTermHasTwoSequencesWithinItsDatesOneAfterTheOther() throws Exception { // D44
+		perform(ADMIN_X, sequence(1, "2026-09-01", "2026-10-23")).andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.code").value("sequence.outside_term"));
+		perform(ADMIN_X, sequence(3, "2026-09-07", "2026-10-23")).andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.field").value("number"));
+		perform(ADMIN_X, sequence(2, "2026-10-26", "2026-12-18")).andExpect(status().isCreated())
+			.andExpect(jsonPath("$.number").value(2))
+			.andExpect(jsonPath("$.termId").value(world.termX.toString()));
+		perform(ADMIN_X, sequence(2, "2026-11-02", "2026-12-18")).andExpect(status().isConflict())
+			.andExpect(jsonPath("$.code").value("sequence.duplicate"));
+		// sequence 1 ends before sequence 2 starts
+		perform(ADMIN_X, sequence(1, "2026-09-07", "2026-10-26")).andExpect(status().isConflict())
+			.andExpect(jsonPath("$.code").value("sequence.overlap"));
+		String first = perform(ADMIN_X, sequence(1, "2026-09-07", "2026-10-23")).andExpect(status().isCreated())
+			.andReturn()
+			.getResponse()
+			.getContentAsString();
+		String firstId = com.jayway.jsonpath.JsonPath.read(first, "$.id");
+
+		perform(ADMIN_X, get("/api/v1/sequences").param("termId", world.termX.toString()))
+			.andExpect(jsonPath("$.length()").value(2))
+			.andExpect(jsonPath("$[0].number").value(1))
+			.andExpect(jsonPath("$[1].label").value("Séquence 2"));
+		perform(ADMIN_Y, get("/api/v1/sequences")).andExpect(jsonPath("$.length()").value(0)); // NFR-8
+
+		// a sequence may keep its own dates when edited, and still may not run into the other
+		perform(ADMIN_X, jsonBody(put("/api/v1/sequences/{id}", firstId), sequenceBody(1, "2026-09-07", "2026-10-20")))
+			.andExpect(status().isOk());
+		perform(ADMIN_X, jsonBody(put("/api/v1/sequences/{id}", firstId), sequenceBody(1, "2026-09-07", "2026-11-06")))
+			.andExpect(status().isConflict())
+			.andExpect(jsonPath("$.code").value("sequence.overlap"));
+		perform(ADMIN_Y, jsonBody(put("/api/v1/sequences/{id}", firstId), sequenceBody(1, "2026-09-07", "2026-10-20")))
+			.andExpect(status().isNotFound());
+
+		// the term cannot shrink past its sequences, nor go while it has them
+		perform(ADMIN_X, jsonBody(put("/api/v1/terms/{id}", world.termX), Map.of("academicYearId", world.yearX,
+				"label", "Trimestre 1", "startDate", "2026-09-07", "endDate", "2026-12-11")))
+			.andExpect(status().isConflict())
+			.andExpect(jsonPath("$.code").value("term.sequences_outside"));
+		perform(ADMIN_X, delete("/api/v1/terms/{id}", world.termX)).andExpect(status().isConflict())
+			.andExpect(jsonPath("$.code").value("in_use"));
+
+		perform(TEACHER_A, delete("/api/v1/sequences/{id}", firstId)).andExpect(status().isForbidden());
+		perform(ADMIN_X, delete("/api/v1/sequences/{id}", firstId)).andExpect(status().isNoContent());
+		assertThat(jdbc.queryForObject(
+				"SELECT count(*) FROM audit_log WHERE school_id = ? AND entity = 'term_sequence'", Integer.class,
+				world.schoolX))
+			.isEqualTo(4); // two creates, one update, one delete (NFR-11)
 	}
 
 	@Test
@@ -342,6 +396,15 @@ class SchoolStructureApiTests {
 	private MockHttpServletRequestBuilder holiday(String start, String end) {
 		return jsonBody(post("/api/v1/holidays"),
 				Map.of("termId", world.termX, "label", "Congé", "startDate", start, "endDate", end));
+	}
+
+	private MockHttpServletRequestBuilder sequence(int number, String start, String end) {
+		return jsonBody(post("/api/v1/sequences"), sequenceBody(number, start, end));
+	}
+
+	private Map<String, Object> sequenceBody(int number, String start, String end) {
+		return Map.of("termId", world.termX, "number", number, "label", "Séquence " + number, "startDate", start,
+				"endDate", end);
 	}
 
 	private MockHttpServletRequestBuilder slot(UUID schoolClass, int weekday, UUID teacher, String subject) {

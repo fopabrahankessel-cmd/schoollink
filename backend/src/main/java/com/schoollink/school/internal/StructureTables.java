@@ -5,6 +5,7 @@ import com.schoollink.school.internal.Structure.BlockView;
 import com.schoollink.school.internal.Structure.HolidayView;
 import com.schoollink.school.internal.Structure.PeriodView;
 import com.schoollink.school.internal.Structure.SchoolClassView;
+import com.schoollink.school.internal.Structure.SequenceView;
 import com.schoollink.school.internal.Structure.TermView;
 import com.schoollink.school.internal.Structure.TimetableSlotView;
 import com.schoollink.shared.error.ApiException;
@@ -32,6 +33,8 @@ class StructureTables {
 
 	final StructureTable<HolidayView> holidays;
 
+	final StructureTable<SequenceView> sequences;
+
 	final StructureTable<PeriodView> periods;
 
 	final StructureTable<BlockView> blocks;
@@ -50,6 +53,8 @@ class StructureTables {
 				"term.duplicate", this::checkTerm);
 		holidays = new StructureTable<>("holiday", "id, term_id, label, start_date, end_date", HolidayView.class, null,
 				"holiday.duplicate", this::checkHoliday);
+		sequences = new StructureTable<>("term_sequence", "id, term_id, number, label, start_date, end_date",
+				SequenceView.class, null, "sequence.duplicate", this::checkSequence);
 		periods = new StructureTable<>("period", "id, number, start_time, end_time", PeriodView.class, null,
 				"period.duplicate", this::checkPeriod);
 		// D5: a DM sees the block they are in charge of; a teacher the blocks of the classes they teach
@@ -88,6 +93,34 @@ class StructureTables {
 				SELECT 1 FROM holiday WHERE term_id = :id AND (start_date < :start OR end_date > :end)""",
 				params(school).addValue("id", id).addValue("start", start).addValue("end", end))) {
 			throw ApiException.conflict("term.holidays_outside");
+		}
+		if (id != null && exists("""
+				SELECT 1 FROM term_sequence WHERE term_id = :id AND (start_date < :start OR end_date > :end)""",
+				params(school).addValue("id", id).addValue("start", start).addValue("end", end))) {
+			throw ApiException.conflict("term.sequences_outside");
+		}
+	}
+
+	/** D44: a sequence lies within its term, and sequence 1 ends before sequence 2 starts. */
+	private void checkSequence(UUID school, UUID id, Map<String, Object> v) {
+		LocalDate start = (LocalDate) v.get("start_date");
+		LocalDate end = (LocalDate) v.get("end_date");
+		requireOrder(start.isBefore(end), "endDate");
+		UUID term = (UUID) v.get("term_id");
+		requireReference("term", term, school, "termId");
+		MapSqlParameterSource p = params(school).addValue("term", term)
+			.addValue("start", start)
+			.addValue("end", end)
+			.addValue("number", v.get("number"));
+		if (exists("SELECT 1 FROM term WHERE id = :term AND (:start < start_date OR :end > end_date)", p)) {
+			throw ApiException.invalid("sequence.outside_term", "startDate");
+		}
+		// the same number again is left to the unique constraint (sequence.duplicate)
+		if (exists("""
+				SELECT 1 FROM term_sequence
+				WHERE term_id = :term AND school_id = :school
+				  AND (number < :number AND end_date >= :start OR number > :number AND start_date <= :end)""", p)) {
+			throw ApiException.conflict("sequence.overlap");
 		}
 	}
 

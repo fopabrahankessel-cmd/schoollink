@@ -6,6 +6,8 @@ import com.schoollink.school.internal.Structure.BlockRequest;
 import com.schoollink.school.internal.Structure.BlockView;
 import com.schoollink.school.internal.Structure.HolidayRequest;
 import com.schoollink.school.internal.Structure.HolidayView;
+import com.schoollink.school.internal.Structure.SequenceRequest;
+import com.schoollink.school.internal.Structure.SequenceView;
 import com.schoollink.school.internal.Structure.PeriodRequest;
 import com.schoollink.school.internal.Structure.PeriodView;
 import com.schoollink.school.internal.Structure.SchoolClassRequest;
@@ -123,6 +125,31 @@ class SchoolStructureController {
 	@ResponseStatus(HttpStatus.NO_CONTENT)
 	void deleteHoliday(@AuthenticationPrincipal CurrentUser user, @PathVariable UUID id) {
 		store.delete(user, tables.holidays, id);
+	}
+
+	// Sequences (D44): the two halves of a term
+
+	@GetMapping("/sequences")
+	List<SequenceView> sequences(@AuthenticationPrincipal CurrentUser user, @RequestParam(required = false) UUID termId) {
+		return store.list(user, tables.sequences, filter("term_id", termId), "start_date");
+	}
+
+	@PostMapping("/sequences")
+	@ResponseStatus(HttpStatus.CREATED)
+	SequenceView createSequence(@AuthenticationPrincipal CurrentUser user, @Valid @RequestBody SequenceRequest body) {
+		return store.create(user, tables.sequences, body);
+	}
+
+	@PutMapping("/sequences/{id}")
+	SequenceView updateSequence(@AuthenticationPrincipal CurrentUser user, @PathVariable UUID id,
+			@Valid @RequestBody SequenceRequest body) {
+		return store.update(user, tables.sequences, id, body);
+	}
+
+	@DeleteMapping("/sequences/{id}")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	void deleteSequence(@AuthenticationPrincipal CurrentUser user, @PathVariable UUID id) {
+		store.delete(user, tables.sequences, id);
 	}
 
 	// Periods

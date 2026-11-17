@@ -65,6 +65,22 @@ final class Structure {
 	record HolidayView(UUID id, UUID termId, String label, LocalDate startDate, LocalDate endDate) {
 	}
 
+	/** D44: one of the two sequences of a term. */
+	record SequenceView(UUID id, UUID termId, int number, String label, LocalDate startDate, LocalDate endDate) {
+	}
+
+	record SequenceRequest(@NotNull UUID termId, @NotNull @Min(1) @Max(2) Integer number,
+			@NotBlank @Size(max = 80) String label, @NotNull LocalDate startDate, @NotNull LocalDate endDate)
+			implements Columns {
+
+		@Override
+		public Map<String, Object> columns() {
+			return Structure.columns("term_id", termId, "number", number, "label", label.strip(), "start_date",
+					startDate, "end_date", endDate);
+		}
+
+	}
+
 	record HolidayRequest(@NotNull UUID termId, @NotBlank @Size(max = 80) String label, @NotNull LocalDate startDate,
 			@NotNull LocalDate endDate) implements Columns {
 
