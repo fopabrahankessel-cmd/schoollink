@@ -1,7 +1,6 @@
 # School settings in one place, and sequences (D44)
 
 Status: **scope agreed with the user on 2026-11-17, built the same day (D44 in PLAN.md)**. The first draft of this note also designed a reset of the school's data; that part was dropped, see the end.
-also designed a reset of the school's data; that part was dropped, see the end.
 
 ## Why
 
