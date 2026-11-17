@@ -63,6 +63,13 @@ class GuardianController {
 		return guardians.updateLink(user, studentId, guardianId, body);
 	}
 
+	/** D46: the guardian's parent account may reset its password by SMS again. */
+	@PostMapping("/api/v1/guardians/{id}/password-resets")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	void allowPasswordResets(@AuthenticationPrincipal CurrentUser user, @PathVariable UUID id) {
+		guardians.allowPasswordResets(user, id);
+	}
+
 	/** {@code primary}: the guardian who becomes the primary, when the one removed was. */
 	@DeleteMapping("/api/v1/students/{studentId}/guardians/{guardianId}")
 	StudentView remove(@AuthenticationPrincipal CurrentUser user, @PathVariable UUID studentId,

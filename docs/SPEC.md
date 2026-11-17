@@ -326,6 +326,7 @@ One REST API under `/api/v1`, secured by JWT; the server derives the school and 
 | Counselling | `GET /cases`, `POST /cases`, `POST /cases/{id}/notes` | Counsellor | Case management |
 | People | `GET/POST /students`, `GET/PUT /students/{id}`, `PUT /students/{id}/class`, `POST /students/move`, `POST /students/{id}/leave`, `POST /students/{id}/return` | Admin | Students kept up to date after the import (UC-A8, D43) |
 | People | `PUT /guardians/{id}`, `POST /students/{id}/guardians`, `PUT/DELETE /students/{id}/guardians/{guardianId}` | Admin | Guardians and their links; a new phone signs the parent out (UC-A8, D43, D24) |
+| People | `POST /guardians/{id}/password-resets` | Admin | The parent may reset a forgotten password by SMS again after using up the 3 of the school year (D46) |
 | Parent | `GET /me/children`, `GET /children/{id}/history` | Parent | Children and history |
 | Parent | `GET /me/children/{id}/contacts` | Parent | The child's class, teachers and the block's DMs, with names, subjects, roles and phones (UC-P5, D39) |
 | Parent | `GET /me/notifications`, `POST /notifications/{id}/opened` | Parent | Inbox + open receipt for the research metrics |

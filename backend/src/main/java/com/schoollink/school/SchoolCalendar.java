@@ -44,6 +44,12 @@ public interface SchoolCalendar {
 	 */
 	List<Slot> slotsOf(UUID schoolId, UUID classId, LocalDate date);
 
+	/**
+	 * D46: the start of the school year that holds the date, or of the latest one begun before it (its
+	 * summer holidays belong to it); empty when no year has begun.
+	 */
+	Optional<LocalDate> yearStart(UUID schoolId, LocalDate date);
+
 	/** The term holding the date, its holidays included; empty between terms. */
 	Optional<Term> termOf(UUID schoolId, LocalDate date);
 

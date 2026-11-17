@@ -11,9 +11,9 @@ const CLASS_B = { id: 'c2', academicYearId: 'y1', blockId: 'b1', name: '5e B', l
 const AWA: StudentRow = { id: 's1', matricule: 'TW-0001', firstName: 'Awa', lastName: 'Fictif', classId: 'c1', className: '6e A', leftOn: null, guardians: 1 }
 const BEN: StudentRow = { id: 's2', matricule: 'TW-0002', firstName: 'Ben', lastName: 'Inventé', classId: 'c1', className: '6e A', leftOn: null, guardians: 2 }
 const GONE: StudentRow = { id: 's3', matricule: 'TW-0003', firstName: 'Carl', lastName: 'Imaginaire', classId: 'c1', className: '6e A', leftOn: '2026-11-02', guardians: 1 }
-const MOTHER: StudentGuardian = { id: 'g1', name: 'Parent Fictif', phone: '+237690000001', language: 'FR', relation: 'MOTHER', primary: true, hasAccount: true, children: 2 }
-const FATHER: StudentGuardian = { id: 'g2', name: 'Père Fictif', phone: '+237690000002', language: 'FR', relation: 'FATHER', primary: false, hasAccount: false, children: 1 }
-const UNCLE: StudentGuardian = { id: 'g3', name: 'Oncle Fictif', phone: '+237690000003', language: 'EN', relation: 'OTHER', primary: false, hasAccount: false, children: 1 }
+const MOTHER: StudentGuardian = { id: 'g1', name: 'Parent Fictif', phone: '+237690000001', language: 'FR', relation: 'MOTHER', primary: true, hasAccount: true, children: 2, resetsLocked: false }
+const FATHER: StudentGuardian = { id: 'g2', name: 'Père Fictif', phone: '+237690000002', language: 'FR', relation: 'FATHER', primary: false, hasAccount: false, children: 1, resetsLocked: false }
+const UNCLE: StudentGuardian = { id: 'g3', name: 'Oncle Fictif', phone: '+237690000003', language: 'EN', relation: 'OTHER', primary: false, hasAccount: false, children: 1, resetsLocked: false }
 const STUDENT: Student = { id: 's1', matricule: 'TW-0001', firstName: 'Awa', lastName: 'Fictif', sex: 'F', birthYear: 2014, classId: 'c1', className: '6e A', leftOn: null, guardians: [MOTHER, FATHER] }
 
 function signedIn(script: Parameters<typeof fakeFetch>[0], roles: ('ADMIN' | 'DM')[] = ['ADMIN']) {
@@ -160,6 +160,27 @@ describe('admin student screens (D43)', () => {
     expect(within(rows[0]).getByText('Tuteur principal')).toBeInTheDocument()
     expect(within(rows[0]).getByText("Utilise l'application")).toBeInTheDocument()
     expect(within(rows[1]).getByText('Prévenu par SMS')).toBeInTheDocument()
+  })
+
+  it('lets a parent who used up their password resets reset it again (D46)', async () => {
+    const locked: Student = { ...STUDENT, guardians: [{ ...MOTHER, resetsLocked: true }, FATHER] }
+    const { api, client } = signedIn({
+      'GET /students/s1': [json(200, locked), json(200, STUDENT)],
+      'POST /guardians/g1/password-resets': () => new Response(null, { status: 204 }),
+    })
+    renderApp(client, '/school/students/s1')
+
+    const guardians = await screen.findByRole('region', { name: 'Tuteurs' })
+    const mother = (await within(guardians).findByText('Parent Fictif')).closest('li')!
+    expect(within(mother).getByText('Mot de passe réinitialisé 3 fois cette année')).toBeInTheDocument()
+    // only the parent who is locked gets the button
+    expect(within(guardians).getAllByRole('button', { name: /réinitialiser son mot de passe/ })).toHaveLength(1)
+
+    const user = userEvent.setup()
+    await user.click(within(mother).getByRole('button', { name: 'Permettre à Parent Fictif de réinitialiser son mot de passe' }))
+
+    await waitFor(() => expect(screen.queryByText('Mot de passe réinitialisé 3 fois cette année')).not.toBeInTheDocument())
+    expect(api.calls.filter((c) => c.method === 'POST').map((c) => c.path)).toEqual(['/guardians/g1/password-resets'])
   })
 
   it('warns that a new phone signs the guardian out, then saves it in a body', async () => {

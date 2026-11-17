@@ -30,6 +30,8 @@ export interface StudentGuardian {
   primary: boolean
   hasAccount: boolean
   children: number
+  /** D46: the parent reset a forgotten password 3 times this school year; the admin may allow it again. */
+  resetsLocked: boolean
 }
 
 /** The guardians: the primary first. */
@@ -82,6 +84,8 @@ export const studentGuardianPath = (studentId: string, guardianId: string) =>
   `${studentPath(studentId)}/guardians/${encodeURIComponent(guardianId)}`
 
 export const guardianPath = (id: string) => `/guardians/${encodeURIComponent(id)}`
+/** D46: lets the guardian's parent account reset its password by SMS again. */
+export const passwordResetsPath = (id: string) => `${guardianPath(id)}/password-resets`
 
 /** The students of a class, or those found by name or matricule; those who left only when asked. */
 export function studentsPath(filter: { classId?: string; q?: string; left?: boolean }): string {

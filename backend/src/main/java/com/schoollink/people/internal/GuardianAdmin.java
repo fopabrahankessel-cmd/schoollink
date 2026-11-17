@@ -4,6 +4,7 @@ import com.schoollink.audit.AuditAction;
 import com.schoollink.audit.AuditEntry;
 import com.schoollink.audit.AuditLog;
 import com.schoollink.people.GuardianPhoneChanged;
+import com.schoollink.people.ParentPasswordResets;
 import com.schoollink.people.internal.StudentAdmin.GuardianRequest;
 import com.schoollink.people.internal.StudentAdmin.StudentView;
 import com.schoollink.shared.error.ApiException;
@@ -56,19 +57,40 @@ class GuardianAdmin {
 
 	private final StudentAdmin students;
 
+	private final ParentPasswordResets resets;
+
 	private final AuditLog audit;
 
 	private final ConstraintGuard guard;
 
 	private final ApplicationEventPublisher events;
 
-	GuardianAdmin(NamedParameterJdbcTemplate jdbc, StudentAdmin students, AuditLog audit, ConstraintGuard guard,
-			ApplicationEventPublisher events) {
+	GuardianAdmin(NamedParameterJdbcTemplate jdbc, StudentAdmin students, ParentPasswordResets resets, AuditLog audit,
+			ConstraintGuard guard, ApplicationEventPublisher events) {
 		this.jdbc = jdbc;
 		this.students = students;
+		this.resets = resets;
 		this.audit = audit;
 		this.guard = guard;
 		this.events = events;
+	}
+
+	/**
+	 * D46: the parent of this guardian may reset a forgotten password by SMS again (audited, NFR-11);
+	 * 404 for another school's guardian (NFR-8), 409 when the guardian has no app account.
+	 */
+	@Transactional
+	void allowPasswordResets(CurrentUser user, UUID id) {
+		UUID school = students.requireAdmin(user);
+		List<UUID> account = jdbc.query("SELECT user_id FROM guardian WHERE id = :id AND school_id = :school",
+				school(school).addValue("id", id), (rs, n) -> rs.getObject("user_id", UUID.class));
+		if (account.isEmpty()) {
+			throw ApiException.notFound("not_found");
+		}
+		if (account.getFirst() == null) {
+			throw ApiException.conflict("guardians.no_account");
+		}
+		resets.allowAgain(school, account.getFirst(), user.userId());
 	}
 
 	@Transactional

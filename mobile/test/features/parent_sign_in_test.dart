@@ -199,6 +199,19 @@ void main() {
       expect(find.text('Étape 1 sur 2'), findsOneWidget);
     });
 
+    testWidgets('after 3 password resets this year, the parent is sent to the school (D46)', (tester) async {
+      const message =
+          "Vous avez déjà réinitialisé votre mot de passe 3 fois cette année scolaire. Contactez l'administration de l'école.";
+      server.on('POST /auth/parent/sign-in', (_) => Reply.error(403, 'auth.password_reset_locked', message));
+      await openSignIn(tester);
+
+      await enterPhone(tester);
+
+      expect(find.text(message), findsOneWidget);
+      expect(find.text('Étape 1 sur 2'), findsOneWidget);
+      expect(find.byType(ParentSignInScreen), findsOneWidget);
+    });
+
     testWidgets('a wrong one-time code says so; a new code replaces it', (tester) async {
       const message = 'Ce code de vérification est incorrect ou a expiré. Vérifiez le SMS ou demandez un nouveau code.';
       server.on('POST /auth/parent/sign-in/verify', (_) => Reply.error(400, 'auth.invalid_otp', message, field: 'otp'));

@@ -121,6 +121,13 @@ class JdbcSchoolCalendar implements SchoolCalendar {
 			.findFirst();
 	}
 
+	@Override
+	public Optional<LocalDate> yearStart(UUID schoolId, LocalDate date) {
+		return Optional.ofNullable(jdbc.queryForObject("""
+				SELECT max(start_date) FROM academic_year WHERE school_id = :school AND start_date <= :date""",
+				params(schoolId, date), LocalDate.class));
+	}
+
 	/** D3: Monday to Friday; timetable weekdays are ISO (1 = Monday). */
 	private static boolean isWeekday(LocalDate date) {
 		return date.getDayOfWeek().getValue() <= 5;

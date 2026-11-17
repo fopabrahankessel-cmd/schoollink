@@ -136,6 +136,7 @@ An SMS code is sent only **the first time** and when the parent **has forgotten 
    - It sets the password (audited, NFR-11) and ends the account's other sessions.
    - It returns the token pair. From here the parent's session works like a staff session (refresh, logout).
 4. Asking for a new code makes the previous one stop working. The limits are in section 1.6; when one is reached the answer is 429 and no SMS is sent.
+5. **Forgotten passwords (D46):** a parent replaces a password they already had at most 3 times per school year. The 4th request answers 403 `auth.password_reset_locked` ("contact the school administration") and sends no SMS; the password still signs in. Only completed resets count (code entered, new password set), so asking for codes uses nothing up; the first sign-in is not a reset. The year starts with the school's latest academic year begun, summer included. The admin allows resets again with `POST /guardians/{id}/password-resets` (204, audited; 409 `guardians.no_account` without an app account); the student's guardians show `resetsLocked`.
 
 In development there is no SMS gateway: the code is written to the server log (`SMS (not delivered, dev): …`).
 
@@ -456,6 +457,7 @@ Request: `{reason, note?, absenceIds?, latenessIds?}`. Response: `{id, reason, n
 | `PUT /students/{id}/guardians/{guardianId}` | Admin | Change the relation, or make primary |
 | `DELETE /students/{id}/guardians/{guardianId}?primary=` | Admin | Remove the guardian from the student |
 | `PUT /guardians/{id}` | Admin | Change a guardian's name, language or phone |
+| `POST /guardians/{id}/password-resets` | Admin | Let the parent reset a forgotten password by SMS again (D46) |
 | `GET /guardians?classId=` | Admin | Guardians of a class and their app status |
 | `GET /me/classes` | Teacher | Own classes with their students |
 | `GET /me/children` | Parent | Own children |

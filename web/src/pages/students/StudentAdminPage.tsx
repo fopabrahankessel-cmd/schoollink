@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router'
 import { errorMessage } from '../../api/errors'
-import { guardianPath, listName, studentGuardianPath, studentPath, type Student, type StudentGuardian } from '../../api/students'
+import { guardianPath, passwordResetsPath, listName, studentGuardianPath, studentPath, type Student, type StudentGuardian } from '../../api/students'
 import { useAuth } from '../../auth/useAuth'
 import { PersonAvatar } from '../../components/PersonAvatar'
 import { Pill } from '../../components/Pill'
@@ -53,6 +53,7 @@ export function StudentAdminPage() {
   const [open, setOpen] = useState<Open>(null)
   const [editing, setEditing] = useState<StudentGuardian | null>(null)
   const [removing, setRemoving] = useState<StudentGuardian | null>(null)
+  const [allowError, setAllowError] = useState<unknown>(null)
   // Only the latest request may set the page: a slow answer for another id is dropped.
   const latest = useRef(0)
 
@@ -87,6 +88,17 @@ export function StudentAdminPage() {
     await load()
   }
   const closeOpen = () => setOpen(null)
+
+  /** D46: the parent used up their password resets this school year; they may reset it again. */
+  async function allowResets(guardian: StudentGuardian) {
+    setAllowError(null)
+    try {
+      await client.request(passwordResetsPath(guardian.id), { method: 'POST' })
+      await load()
+    } catch (e) {
+      setAllowError(e)
+    }
+  }
 
   async function saveGuardian(guardian: StudentGuardian, edit: GuardianEdit) {
     const g = edit.guardian
@@ -155,6 +167,7 @@ export function StudentAdminPage() {
         </Stack>
       </Paper>
 
+      {allowError !== null && <Alert severity="error">{errorMessage(allowError, t)}</Alert>}
       <Paper variant="outlined" component="section" aria-label={t('roster.guardians')} sx={{ overflow: 'hidden' }}>
         <Stack direction="row" sx={{ px: 2.5, py: 2, gap: 1.5, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
           <Stack direction="row" sx={{ alignItems: 'center', gap: 1.5 }}>
@@ -195,9 +208,15 @@ export function StudentAdminPage() {
                     {t(`language.${g.language.toLowerCase()}`)}
                   </Stack>
                   <Pill tone={g.hasAccount ? 'positive' : 'neutral'}>{g.hasAccount ? t('roster.hasAccount') : t('roster.noAccount')}</Pill>
+                  {g.resetsLocked && <Pill tone="warning">{t('roster.resetsLocked')}</Pill>}
                 </Stack>
               </Box>
-              <Stack direction="row" spacing={0.5} sx={{ flex: 'none' }}>
+              <Stack direction="row" spacing={0.5} sx={{ flex: 'none', flexWrap: 'wrap' }}>
+                {g.resetsLocked && (
+                  <Button size="small" aria-label={t('roster.allowResetsOf', { name: g.name })} onClick={() => void allowResets(g)}>
+                    {t('roster.allowResets')}
+                  </Button>
+                )}
                 <Button size="small" aria-label={t('roster.editGuardianOf', { name: g.name })} onClick={() => setEditing(g)}>
                   {t('crud.edit')}
                 </Button>

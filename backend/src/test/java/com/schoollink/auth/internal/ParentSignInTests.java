@@ -36,6 +36,7 @@ import tools.jackson.databind.json.JsonMapper;
 
 import static com.schoollink.testsupport.Actor.TEACHER_A;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -197,6 +198,54 @@ class ParentSignInTests {
 
 		// a refused password does not use up the code
 		verify(signInId, otp).andExpect(status().isOk());
+	}
+
+	@Test
+	void aForgottenPasswordIsResetThreeTimesAYearThenTheSchoolIsAsked() throws Exception { // D46
+		guardianOfStudentA("Parent Nouveau", FIRST_PHONE, "FR");
+		// the first sign-in chooses a password: it is not a reset
+		resetOnDay(0, FIRST_PHONE);
+		// asking for a code and not using it costs nothing: anyone who knows the number can ask
+		clock.set(NOW.plus(Duration.ofDays(1)));
+		limiter.clear();
+		signIn(world.schoolX, FIRST_PHONE).andExpect(status().isOk());
+		signIn(world.schoolX, FIRST_PHONE).andExpect(status().isOk());
+		for (int day = 2; day <= 4; day++) {
+			resetOnDay(day, FIRST_PHONE);
+		}
+		int sent = sms.sent.size();
+
+		clock.set(NOW.plus(Duration.ofDays(5)));
+		limiter.clear();
+		signIn(world.schoolX, FIRST_PHONE).andExpect(status().isForbidden())
+			.andExpect(jsonPath("$.code").value("auth.password_reset_locked"))
+			.andExpect(jsonPath("$.message").value(containsString("administration")));
+
+		assertThat(sms.sent).hasSize(sent); // no SMS
+		// only the reset is locked: the password still signs in
+		login(FIRST_PHONE, PASSWORD).andExpect(status().isOk());
+	}
+
+	@Test
+	void theResetsCountAgainFromTheNextSchoolYear() throws Exception { // D46
+		jdbc.update("UPDATE app_user SET password_hash = ? WHERE id = ?", passwords.encode("ancien-mot-de-passe"), parent);
+		for (int day = 0; day < 3; day++) {
+			resetOnDay(day, PHONE);
+		}
+		clock.set(NOW.plus(Duration.ofDays(3)));
+		limiter.clear();
+		signIn(world.schoolX, PHONE).andExpect(status().isForbidden());
+
+		jdbc.update("""
+				INSERT INTO academic_year (school_id, label, start_date, end_date)
+				VALUES (?, '2027-2028', '2027-09-06', '2028-06-30')""", world.schoolX);
+		// the summer holidays still belong to the year that ends
+		clock.set(Instant.parse("2027-08-20T08:00:00Z"));
+		limiter.clear();
+		signIn(world.schoolX, PHONE).andExpect(status().isForbidden());
+		clock.set(Instant.parse("2027-09-06T08:00:00Z"));
+		limiter.clear();
+		signIn(world.schoolX, PHONE).andExpect(status().isOk());
 	}
 
 	@Test
@@ -463,6 +512,14 @@ class ParentSignInTests {
 	private ResultActions verify(String signInId, String otp, String password) throws Exception {
 		return send(Map.of("activationId", signInId, "otp", otp, "password", password),
 				"/api/v1/auth/parent/sign-in/verify");
+	}
+
+	/** A code asked for and used on that day, with {@link #PASSWORD}. */
+	private void resetOnDay(int day, String phone) throws Exception {
+		clock.set(NOW.plus(Duration.ofDays(day)));
+		limiter.clear();
+		String id = body(signIn(world.schoolX, phone).andExpect(status().isOk())).get("activationId").asString();
+		verify(id, sms.sent.getLast().code()).andExpect(status().isOk());
 	}
 
 	private ResultActions login(String phone, String password) throws Exception {

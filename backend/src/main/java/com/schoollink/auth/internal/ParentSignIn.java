@@ -35,7 +35,9 @@ import org.springframework.transaction.support.TransactionTemplate;
  * phone is a guardian's in the school (D15) and the account is made when the code is right: the code
  * proves they hold the number the school gave. A code never opens an account with staff rights, so
  * staff who are also parents sign in with their own password and are linked then (D21). Choosing a
- * password ends the account's other sessions. NFR-7:
+ * password ends the account's other sessions. D46: a forgotten password is reset at most 3 times
+ * per school year ({@link PasswordResetLimit}); after that no code is sent and the parent is told to
+ * contact the school (403 {@code auth.password_reset_locked}). NFR-7:
  * <ul>
  * <li>step 1 answers the same whether or not the phone is known, so nothing tells which numbers
  * are registered: no SMS is sent then, and step 2 can never succeed;</li>
@@ -75,7 +77,7 @@ class ParentSignIn {
 	}
 
 	/** Who the code is for: an account, or a guardian who has none yet. */
-	private record Target(UUID schoolId, UUID userId, UUID guardianId, String language) {
+	private record Target(UUID schoolId, UUID userId, UUID guardianId, String language, boolean hasPassword) {
 
 		UUID key() {
 			return userId != null ? userId : guardianId;
@@ -103,6 +105,8 @@ class ParentSignIn {
 
 	private final RateLimiter limiter;
 
+	private final PasswordResetLimit resets;
+
 	private final NamedParameterJdbcTemplate jdbc;
 
 	private final TransactionTemplate transactions;
@@ -113,7 +117,8 @@ class ParentSignIn {
 
 	ParentSignIn(UserAccounts accounts, Guardians guardians, ParentAccounts parentAccounts, ActivationSms sms,
 			PasswordEncoder hashes, AccessTokens accessTokens, RefreshTokens refreshTokens, RateLimiter limiter,
-			NamedParameterJdbcTemplate jdbc, PlatformTransactionManager transactionManager, Clock clock) {
+			PasswordResetLimit resets, NamedParameterJdbcTemplate jdbc, PlatformTransactionManager transactionManager,
+			Clock clock) {
 		this.accounts = accounts;
 		this.guardians = guardians;
 		this.parentAccounts = parentAccounts;
@@ -122,6 +127,7 @@ class ParentSignIn {
 		this.accessTokens = accessTokens;
 		this.refreshTokens = refreshTokens;
 		this.limiter = limiter;
+		this.resets = resets;
 		this.jdbc = jdbc;
 		this.transactions = new TransactionTemplate(transactionManager);
 		this.clock = clock;
@@ -143,6 +149,10 @@ class ParentSignIn {
 			return new Started(id, expiresAt);
 		}
 		Target target = found.get();
+		// D46: the number is the school's, so saying so here is the price of telling the parent why
+		if (target.hasPassword() && resets.isLocked(target.schoolId(), target.userId())) {
+			throw new ApiException(HttpStatus.FORBIDDEN, "auth.password_reset_locked", null);
+		}
 		transactions.executeWithoutResult(tx -> {
 			MapSqlParameterSource p = new MapSqlParameterSource("id", id).addValue("school", target.schoolId())
 				.addValue("user", target.userId(), Types.OTHER)
@@ -187,10 +197,11 @@ class ParentSignIn {
 			return existing.stream()
 				.filter(ParentSignIn::isParentOnly)
 				.findFirst()
-				.map(account -> new Target(account.schoolId(), account.id(), null, account.language()));
+				.map(account -> new Target(account.schoolId(), account.id(), null, account.language(),
+						account.passwordHash() != null));
 		}
 		return guardians.withoutAccount(schoolId, phone)
-			.map(guardian -> new Target(schoolId, null, guardian.guardianId(), guardian.language()));
+			.map(guardian -> new Target(schoolId, null, guardian.guardianId(), guardian.language(), false));
 	}
 
 	/**
@@ -238,7 +249,11 @@ class ParentSignIn {
 			UserAccount account = accounts.findById(userId)
 				.filter(ParentSignIn::isParentOnly)
 				.orElseThrow(ParentSignIn::invalidOtp);
-			// D45: the parent's password from now on (audited, NFR-11); other sessions end
+			// D45: the parent's password from now on (audited, NFR-11); other sessions end. D46: replacing
+			// one they had is a reset, and counts
+			if (account.passwordHash() != null) {
+				jdbc.update("UPDATE parent_sign_in SET password_reset = true WHERE id = :id", p);
+			}
 			accounts.changePassword(account.id(), passwordHash);
 			refreshTokens.revokeAll(account.id());
 			account = accounts.findById(account.id()).orElseThrow();

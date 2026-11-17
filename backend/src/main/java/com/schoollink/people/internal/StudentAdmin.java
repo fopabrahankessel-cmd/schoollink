@@ -3,6 +3,7 @@ package com.schoollink.people.internal;
 import com.schoollink.audit.AuditAction;
 import com.schoollink.audit.AuditEntry;
 import com.schoollink.audit.AuditLog;
+import com.schoollink.people.ParentPasswordResets;
 import com.schoollink.school.SchoolCalendar;
 import com.schoollink.school.SchoolClasses;
 import com.schoollink.shared.error.ApiException;
@@ -56,7 +57,7 @@ class StudentAdmin {
 
 	/** {@code children}: the guardian's children in the school, so a change is known to touch them all. */
 	record GuardianView(UUID id, String name, String phone, String language, String relation, boolean primary,
-			boolean hasAccount, int children) {
+			boolean hasAccount, int children, boolean resetsLocked) {
 	}
 
 	/** The guardians: the primary first, then by name. */
@@ -106,6 +107,8 @@ class StudentAdmin {
 	private record Current(UUID classId, LocalDate leftOn) {
 	}
 
+	private final ParentPasswordResets resets;
+
 	private final NamedParameterJdbcTemplate jdbc;
 
 	private final SchoolClasses schoolClasses;
@@ -119,8 +122,9 @@ class StudentAdmin {
 	private final Clock clock;
 
 	StudentAdmin(NamedParameterJdbcTemplate jdbc, SchoolClasses schoolClasses, SchoolCalendar calendar, AuditLog audit,
-			ConstraintGuard guard, Clock clock) {
+			ConstraintGuard guard, ParentPasswordResets resets, Clock clock) {
 		this.jdbc = jdbc;
+		this.resets = resets;
 		this.schoolClasses = schoolClasses;
 		this.calendar = calendar;
 		this.audit = audit;
@@ -307,8 +311,13 @@ class StudentAdmin {
 	/** The student with their guardians; 404 for another school's (NFR-8, D17). */
 	StudentView view(UUID school, UUID id) {
 		MapSqlParameterSource p = school(school).addValue("id", id);
+		// D46: the parents who used up their password resets this school year
+		Set<UUID> locked = resets.locked(school, jdbc.queryForList("""
+				SELECT g.user_id FROM student_guardian sg JOIN guardian g ON g.id = sg.guardian_id
+				WHERE sg.school_id = :school AND sg.student_id = :id AND g.user_id IS NOT NULL""", p, UUID.class));
 		List<GuardianView> guardians = jdbc.query("""
 				SELECT g.id, g.name, g.phone, g.language, sg.relation, sg.is_primary, g.user_id IS NOT NULL AS has_account,
+				       g.user_id,
 				       (SELECT count(*) FROM student_guardian o
 				        WHERE o.guardian_id = g.id AND o.school_id = g.school_id) AS children
 				FROM student_guardian sg
@@ -317,7 +326,8 @@ class StudentAdmin {
 				ORDER BY sg.is_primary DESC, lower(g.name), g.id""", p,
 				(rs, n) -> new GuardianView(rs.getObject("id", UUID.class), rs.getString("name"), rs.getString("phone"),
 						rs.getString("language"), rs.getString("relation"), rs.getBoolean("is_primary"),
-						rs.getBoolean("has_account"), rs.getInt("children")));
+						rs.getBoolean("has_account"), rs.getInt("children"),
+						locked.contains(rs.getObject("user_id", UUID.class))));
 		return jdbc.query("""
 				SELECT matricule, first_name, last_name, sex, birth_year, class_id, left_on
 				FROM student WHERE id = :id AND school_id = :school""", p, (rs, n) -> {

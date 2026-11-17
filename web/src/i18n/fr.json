@@ -428,7 +428,10 @@
     "removeTitle": "Retirer {{name}} ?",
     "removeText": "Ce tuteur ne recevra plus rien au sujet de {{student}}. Ses autres enfants ne changent pas.",
     "newPrimary": "Qui devient le tuteur principal ?",
-    "remove": "Retirer"
+    "remove": "Retirer",
+    "resetsLocked": "Mot de passe réinitialisé 3 fois cette année",
+    "allowResets": "Autoriser une nouvelle réinitialisation",
+    "allowResetsOf": "Permettre à {{name}} de réinitialiser son mot de passe"
   },
   "guardians": {
     "title": "Tuteurs",

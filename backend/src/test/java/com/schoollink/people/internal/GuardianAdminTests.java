@@ -37,6 +37,7 @@ import static com.schoollink.testsupport.Actor.RESEARCHER;
 import static com.schoollink.testsupport.Actor.TEACHER_A;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -104,8 +105,39 @@ class GuardianAdminTests {
 					.expect(404, ADMIN_Y),
 				PermissionMatrix.row("DELETE link", w -> delete("/api/v1/students/{id}/guardians/{g}", w.studentA, father))
 					.expect(200, ADMIN_X)
+					.expect(404, ADMIN_Y),
+				PermissionMatrix.row("POST password resets", w -> post("/api/v1/guardians/{id}/password-resets", mother))
+					.expect(204, ADMIN_X)
 					.expect(404, ADMIN_Y))
 			.flatMap(row -> row.expect(403, others).expect(401, ANONYMOUS).tests(mockMvc, world));
+	}
+
+	@Test
+	void theAdminLetsAParentResetTheirPasswordAgain() throws Exception { // D46
+		UUID parent = world.user(PARENT_A);
+		for (int i = 0; i < 3; i++) {
+			jdbc.update("""
+					INSERT INTO parent_sign_in (id, school_id, user_id, otp_hash, created_at, expires_at, verified_at,
+					                            password_reset)
+					VALUES (gen_random_uuid(), ?, ?, 'fake-otp-hash', now() - interval '1 hour', now() + interval '1 hour',
+					        now() - interval '1 hour', true)""", world.schoolX, parent);
+		}
+		String motherLocked = "$.guardians[?(@.id == '%s')].resetsLocked".formatted(mother);
+		perform(get("/api/v1/students/{id}", world.studentA)).andExpect(status().isOk())
+			.andExpect(jsonPath(motherLocked).value(true))
+			.andExpect(jsonPath("$.guardians[?(@.id == '%s')].resetsLocked".formatted(father)).value(false));
+
+		perform(post("/api/v1/guardians/{id}/password-resets", mother)).andExpect(status().isNoContent());
+
+		perform(get("/api/v1/students/{id}", world.studentA)).andExpect(jsonPath(motherLocked).value(false));
+		// NFR-11: who allowed it, for which account
+		assertThat(jdbc.queryForList("""
+				SELECT actor_id::text || ' ' || entity_id FROM audit_log
+				WHERE entity = 'password_reset_allowance' AND action = 'CREATE'""", String.class))
+			.containsExactly(world.user(ADMIN_X) + " " + parent);
+		// a guardian without the app has no password to reset
+		perform(post("/api/v1/guardians/{id}/password-resets", father)).andExpect(status().isConflict())
+			.andExpect(jsonPath("$.code").value("guardians.no_account"));
 	}
 
 	@Test

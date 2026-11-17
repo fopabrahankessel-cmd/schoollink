@@ -428,7 +428,10 @@
     "removeTitle": "Remove {{name}}?",
     "removeText": "This guardian will get nothing more about {{student}}. Their other children do not change.",
     "newPrimary": "Who becomes the primary guardian?",
-    "remove": "Remove"
+    "remove": "Remove",
+    "resetsLocked": "Password reset 3 times this year",
+    "allowResets": "Allow another reset",
+    "allowResetsOf": "Let {{name}} reset their password again"
   },
   "guardians": {
     "title": "Guardians",
