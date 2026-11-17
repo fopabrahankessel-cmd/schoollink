@@ -80,12 +80,12 @@ Each feature keeps its models, its repository (the API calls), its providers and
 - Calls: `GET /auth/schools`, `POST /auth/login`.
 - If the account has a temporary password, the router goes to `ChangePasswordScreen` (D18), which calls `POST /me/password`. Nothing else is reachable until it is done.
 
-### 2.3 Parent sign-in (`ParentSignInScreen`, UC-P1, D24)
+### 2.3 Parent sign-in (`ParentSignInScreen`, UC-P1, D24, D45)
 
-Opened from "Me connecter avec un code par SMS" on the sign-in screen.
+A parent signs in on the sign-in screen with their phone and password, like staff; no SMS. This screen is for the first time and a forgotten password, opened from "Première connexion ou mot de passe oublié".
 
 - **Step 1:** school and phone. The number is checked on the phone first (a 9-digit Cameroon number, with or without `+237`). `POST /auth/parent/sign-in`.
-- **Step 2:** the 6-digit code. `POST /auth/parent/sign-in/verify`. The parent then lands on their children.
+- **Step 2:** the 6-digit code, with "Send a new code" and "Change the number" right under it, then the new password typed twice (8 to 72 characters). `POST /auth/parent/sign-in/verify`. The parent then lands on their children.
 - The screen says "if the school knows this number, a code was sent", because the server never says whether a number is registered (NFR-7).
 - "Send a new code" asks again; "Change the number" returns to step 1 with what was typed.
 - When the server refuses (too many codes, SMS not sent), its message is shown under the field, and the line above keeps the validity time of the last code actually sent.
@@ -96,7 +96,7 @@ Opened from "Me connecter avec un code par SMS" on the sign-in screen.
 From the account menu (top right) or the DM's More tab. `signOutChecked` asks first in two cases:
 
 - records are still waiting to be sent (D22): they stay on the phone for this user's next sign-in;
-- the user is a parent (D24): coming back takes a new SMS code.
+- the user is a parent (D45): they are told to come back with their phone and password.
 
 Signing out calls `POST /auth/logout`, removes the push token and clears the session.
 

@@ -6,8 +6,9 @@ import 'package:schoollink/features/auth/parent_sign_in_screen.dart';
 import '../support/fake_server.dart';
 import '../support/harness.dart';
 
-/// UC-P1, D24: a parent signs in with their school, phone and an SMS one-time code, the first time
-/// too. The phone goes in request bodies only (NFR-9).
+/// UC-P1, D24, D45: a parent signs in with their school, phone and password. An SMS code is asked
+/// for only the first time or when the password is forgotten, and with it the parent chooses their
+/// password. The phone goes in request bodies only (NFR-9).
 void main() {
   late FakeServer server;
   late MemoryDeviceStore store;
@@ -36,7 +37,9 @@ void main() {
       ..devicePixelRatio = 2.75;
     addTearDown(tester.view.reset);
     await pumpApp(tester, server: server, store: store, language: language);
-    await tester.tap(find.text(language == 'fr' ? 'Me connecter avec un code par SMS' : 'Sign in with a code by SMS'));
+    await tester.tap(
+      find.text(language == 'fr' ? 'Première connexion ou mot de passe oublié' : 'First sign-in or forgotten password'),
+    );
     await tester.pumpAndSettle();
     expect(find.byType(ParentSignInScreen), findsOneWidget);
   }
@@ -54,7 +57,46 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('a parent signs in with their school, phone and SMS code (UC-P1, D24)', (tester) async {
+  Future<void> enterCodeAndPassword(
+    WidgetTester tester, {
+    String otp = '123456',
+    String password = 'mot-de-passe-parent',
+    String? confirm,
+  }) async {
+    await tester.enterText(find.byKey(const ValueKey('otp')), otp);
+    await tester.enterText(find.byKey(const ValueKey('newPassword')), password);
+    await tester.enterText(find.byKey(const ValueKey('confirmPassword')), confirm ?? password);
+    await tester.ensureVisible(find.widgetWithText(FilledButton, 'Se connecter'));
+    await tester.tap(find.widgetWithText(FilledButton, 'Se connecter'));
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('a parent signs in on the sign-in screen with their phone and password, no SMS (D45)', (tester) async {
+    server
+      ..on(
+        'GET /auth/schools',
+        (_) => const Reply.ok([
+          {'id': 'school-1', 'name': 'Lycée Démo A (fictif)'},
+        ]),
+      )
+      ..on('POST /auth/login', (_) => Reply.ok(tokensJson('access-p', 'refresh-p', user: parent)));
+    await pumpApp(tester, server: server, store: store);
+
+    await tester.enterText(find.byType(TextFormField).at(0), '+237699000001');
+    await tester.enterText(find.byType(TextFormField).at(1), 'mot-de-passe-parent');
+    await tester.tap(find.widgetWithText(FilledButton, 'Se connecter'));
+    await tester.pumpAndSettle();
+
+    expect(server.sent('POST /auth/login').single.body, {
+      'schoolId': 'school-1',
+      'login': '+237699000001',
+      'password': 'mot-de-passe-parent',
+    });
+    expect(server.sent('POST /auth/parent/sign-in'), isEmpty);
+    expect(find.widgetWithText(AppBar, 'Enfants'), findsOneWidget);
+  });
+
+  testWidgets('the first time, a parent chooses their password with the SMS code (UC-P1, D45)', (tester) async {
     await openSignIn(tester);
     expect(find.text('Connexion parent'), findsOneWidget);
 
@@ -68,11 +110,14 @@ void main() {
       findsOneWidget,
     );
 
-    await tester.enterText(find.byKey(const ValueKey('otp')), '123456');
-    await tester.tap(find.byType(FilledButton));
-    await tester.pumpAndSettle();
+    expect(find.text('Saisissez le code et choisissez votre mot de passe'), findsOneWidget);
+    await enterCodeAndPassword(tester);
 
-    expect(server.sent('POST /auth/parent/sign-in/verify').single.body, {'activationId': 'sign-1', 'otp': '123456'});
+    expect(server.sent('POST /auth/parent/sign-in/verify').single.body, {
+      'activationId': 'sign-1',
+      'otp': '123456',
+      'password': 'mot-de-passe-parent',
+    });
     expect(find.widgetWithText(AppBar, 'Enfants'), findsOneWidget);
     expect(await store.read('session.refresh'), 'refresh-p');
     expect(server.requests.every((r) => !r.path.contains('699')), isTrue, reason: 'no phone in a URL (NFR-9)');
@@ -111,11 +156,19 @@ void main() {
       );
     });
 
-    Future<void> enterOtp(WidgetTester tester, String otp) async {
-      await tester.enterText(find.byKey(const ValueKey('otp')), otp);
-      await tester.tap(find.widgetWithText(FilledButton, 'Se connecter'));
-      await tester.pumpAndSettle();
-    }
+    Future<void> enterOtp(WidgetTester tester, String otp) => enterCodeAndPassword(tester, otp: otp);
+
+    testWidgets('the password has at least 8 characters and is typed twice the same', (tester) async {
+      await openSignIn(tester);
+      await enterPhone(tester);
+
+      await enterCodeAndPassword(tester, password: 'court');
+      expect(find.text('Utilisez au moins 8 caractères.'), findsOneWidget);
+
+      await enterCodeAndPassword(tester, password: 'mot-de-passe-parent', confirm: 'autre-mot-de-passe');
+      expect(find.text('Les deux mots de passe ne correspondent pas.'), findsOneWidget);
+      expect(server.sent('POST /auth/parent/sign-in/verify'), isEmpty);
+    });
 
     testWidgets('a number that is not a Cameroon mobile number is refused before sending', (tester) async {
       await openSignIn(tester);

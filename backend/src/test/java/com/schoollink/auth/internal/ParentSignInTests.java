@@ -43,8 +43,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * UC-P1, D24: a parent signs in with their school, phone and one SMS code, the first time and every
- * time after; the first sign-in makes the account (NFR-7, NFR-9, NFR-11). Phones are made up.
+ * UC-P1, D24, D45: a parent signs in with their school, phone and password. An SMS code is sent only
+ * the first time, which makes the account, and when the password is forgotten; with it the parent
+ * chooses their password (NFR-7, NFR-9, NFR-11). Phones and passwords are made up.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -58,6 +59,8 @@ class ParentSignInTests {
 	static final String PHONE = "+237690000401";
 
 	static final String FIRST_PHONE = "+237690000450";
+
+	static final String PASSWORD = "mot-de-passe-parent";
 
 	static final String AUDITS = "SELECT entity || ' ' || action FROM audit_log WHERE entity_id IN (?, ?)";
 
@@ -104,7 +107,11 @@ class ParentSignInTests {
 	}
 
 	@Test
-	void aParentSignsInAgainWithTheirPhoneAndAnSmsCode(CapturedOutput output) throws Exception {
+	void aParentWhoForgotTheirPasswordChoosesANewOneWithAnSmsCode(CapturedOutput output) throws Exception { // D45
+		jdbc.update("UPDATE app_user SET password_hash = ? WHERE id = ?", passwords.encode("ancien-mot-de-passe"), parent);
+		String oldRefresh = body(login(PHONE, "ancien-mot-de-passe").andExpect(status().isOk())).get("refreshToken")
+			.asString();
+
 		JsonNode started = body(signIn(world.schoolX, "690 00 04 01").andExpect(status().isOk())
 			.andExpect(jsonPath("$.expiresAt").value("2026-11-02T07:50:00Z")));
 		assertThat(sms.sent).singleElement().satisfies(sent -> {
@@ -124,8 +131,13 @@ class ParentSignInTests {
 		assertThat(tokens.get("refreshToken").asString()).isNotBlank();
 		// the code works once
 		verify(started.get("activationId").asString(), otp).andExpect(status().isBadRequest());
-		// NFR-9
-		assertThat(output.getAll()).doesNotContain("690000401", "690 00 04 01", otp);
+		// the new password replaces the old one, and the other sessions end
+		login(PHONE, "ancien-mot-de-passe").andExpect(status().isUnauthorized());
+		login(PHONE, PASSWORD).andExpect(status().isOk());
+		send(Map.of("refreshToken", oldRefresh), "/api/v1/auth/refresh").andExpect(status().isUnauthorized());
+		// NFR-9, NFR-11: audited, and neither the phone, the code nor the password is written anywhere
+		assertThat(jdbc.queryForList(AUDITS, String.class, parent.toString(), parent.toString())).contains("app_user UPDATE");
+		assertThat(output.getAll()).doesNotContain("690000401", "690 00 04 01", otp, PASSWORD);
 
 		// NFR-7: the access token's 15 minutes (and 1 minute of skew) run on the clock it was issued with
 		clock.set(NOW.plus(Duration.ofMinutes(17)));
@@ -156,17 +168,35 @@ class ParentSignInTests {
 		assertThat(jdbc.queryForMap("SELECT first_name, last_name, language, password_hash FROM app_user WHERE id = ?", user))
 			.containsEntry("first_name", "Parent")
 			.containsEntry("last_name", "Nouveau")
-			.containsEntry("language", "EN")
-			.containsEntry("password_hash", null);
-		// NFR-11, NFR-9: audited, without the phone
-		assertThat(audits(user, guardian)).containsExactlyInAnyOrder("app_user CREATE", "guardian UPDATE");
-		assertThat(output.getAll()).doesNotContain("690000450", otp);
+			.containsEntry("language", "EN");
+		// D45: the password the parent chose, hashed
+		String hash = jdbc.queryForObject("SELECT password_hash FROM app_user WHERE id = ?", String.class, user);
+		assertThat(passwords.matches(PASSWORD, hash)).isTrue();
+		// NFR-11, NFR-9: audited, without the phone or the password
+		assertThat(audits(user, guardian)).containsExactlyInAnyOrder("app_user CREATE", "app_user UPDATE",
+				"guardian UPDATE");
+		assertThat(output.getAll()).doesNotContain("690000450", otp, PASSWORD);
 
-		// from now on the same account signs in, and no second one is made
-		String again = body(signIn(world.schoolX, FIRST_PHONE)).get("activationId").asString();
-		assertThat(body(verify(again, sms.sent.get(1).code()).andExpect(status().isOk())).get("user").get("id").asString())
-			.isEqualTo(user.toString());
+		// D45: from now on the parent signs in with phone and password, without an SMS
+		JsonNode again = body(login("690 00 04 50", PASSWORD).andExpect(status().isOk()));
+		assertThat(again.get("user").get("id").asString()).isEqualTo(user.toString());
+		assertThat(again.get("user").get("roles").toString()).isEqualTo("[\"PARENT\"]");
+		assertThat(sms.sent).hasSize(1);
 		assertThat(accountsWith(FIRST_PHONE)).isOne();
+	}
+
+	@Test
+	void aPasswordIsChosenWithTheCode() throws Exception { // D45
+		String signInId = body(signIn(world.schoolX, PHONE)).get("activationId").asString();
+		String otp = sms.sent.getFirst().code();
+
+		send(Map.of("activationId", signInId, "otp", otp), "/api/v1/auth/parent/sign-in/verify")
+			.andExpect(status().isBadRequest());
+		verify(signInId, otp, "court").andExpect(status().isBadRequest())
+			.andExpect(jsonPath("$.field").value("password"));
+
+		// a refused password does not use up the code
+		verify(signInId, otp).andExpect(status().isOk());
 	}
 
 	@Test
@@ -427,7 +457,17 @@ class ParentSignInTests {
 	}
 
 	private ResultActions verify(String signInId, String otp) throws Exception {
-		return send(Map.of("activationId", signInId, "otp", otp), "/api/v1/auth/parent/sign-in/verify");
+		return verify(signInId, otp, PASSWORD);
+	}
+
+	private ResultActions verify(String signInId, String otp, String password) throws Exception {
+		return send(Map.of("activationId", signInId, "otp", otp, "password", password),
+				"/api/v1/auth/parent/sign-in/verify");
+	}
+
+	private ResultActions login(String phone, String password) throws Exception {
+		return send(Map.of("schoolId", world.schoolX.toString(), "login", phone, "password", password),
+				"/api/v1/auth/login");
 	}
 
 	private ResultActions send(Map<String, Object> body, String path) throws Exception {

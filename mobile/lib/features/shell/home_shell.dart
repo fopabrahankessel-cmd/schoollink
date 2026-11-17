@@ -93,8 +93,8 @@ class HomeShell extends ConsumerWidget {
   }
 }
 
-/// D22: records not yet sent stay on the phone for this user's next sign-in; say so first. D24: a
-/// parent is told that coming back takes a new SMS code. From
+/// D22: records not yet sent stay on the phone for this user's next sign-in; say so first. D45: a
+/// parent is asked first and told to come back with their phone and password. From
 /// the account menu and from the DM's More tab (D41).
 Future<void> signOutChecked(BuildContext context, WidgetRef ref) async {
   final pending = ref.read(pendingSyncProvider).value ?? 0;
@@ -116,14 +116,14 @@ Future<void> signOutChecked(BuildContext context, WidgetRef ref) async {
       return;
     }
   }
-  // D24: a parent has no password, so coming back costs an SMS code; say so first
+  // D45: a parent comes back with their phone and password; asked first all the same
   final roles = ref.read(authControllerProvider).value?.roles;
   if (pending == 0 && roles != null && roles.length == 1 && roles.contains(Role.parent) && context.mounted) {
     final l = AppLocalizations.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        icon: const Icon(Icons.sms_outlined),
+        icon: const Icon(Icons.logout_rounded),
         title: Text(l.signOutParentTitle),
         content: Text(l.signOutParentBody),
         actions: [

@@ -43,16 +43,23 @@ class AuthController {
 		return auth.login(request.schoolId(), request.login(), request.password(), http.getRemoteAddr());
 	}
 
-	/** UC-P1, D24 step 1: a parent's school + phone; sends a one-time code by SMS if the school knows the number. */
+	/**
+	 * UC-P1, D24, D45 step 1, the first time or when the password is forgotten: a parent's school +
+	 * phone; sends a one-time code by SMS if the school knows the number. Afterwards parents sign in
+	 * with {@code /auth/login}, phone and password, and no SMS is sent.
+	 */
 	@PostMapping("/api/v1/auth/parent/sign-in")
 	ParentSignIn.Started parentSignIn(@Valid @RequestBody ParentSignInRequest request, HttpServletRequest http) {
 		return parentSignIn.start(request.schoolId(), request.phone(), http.getRemoteAddr());
 	}
 
-	/** UC-P1, D24 step 2: the one-time code; makes the account the first time and returns the parent's tokens. */
+	/**
+	 * UC-P1, D24, D45 step 2: the one-time code and the password the parent chooses; makes the
+	 * account the first time, sets the password and returns the parent's tokens.
+	 */
 	@PostMapping("/api/v1/auth/parent/sign-in/verify")
 	TokenResponse parentSignInVerify(@Valid @RequestBody VerifyRequest request, HttpServletRequest http) {
-		return parentSignIn.verify(request.activationId(), request.otp(), http.getRemoteAddr());
+		return parentSignIn.verify(request.activationId(), request.otp(), request.password(), http.getRemoteAddr());
 	}
 
 	@PostMapping("/api/v1/auth/refresh")
@@ -100,7 +107,9 @@ class AuthController {
 	record ParentSignInRequest(@NotNull UUID schoolId, @NotBlank @Size(max = 20) String phone) {
 	}
 
-	record VerifyRequest(@NotNull UUID activationId, @NotBlank @Size(max = 10) String otp) {
+	/** {@code password}: the parent's new password, with the same length rules as staff (D18). */
+	record VerifyRequest(@NotNull UUID activationId, @NotBlank @Size(max = 10) String otp,
+			@NotBlank @Size(min = 8, max = 72) String password) {
 	}
 
 }

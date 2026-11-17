@@ -516,7 +516,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get sendSmsCode => 'Recevoir un code par SMS';
 
   @override
-  String get otpTitle => 'Saisissez le code reçu';
+  String get otpTitle => 'Saisissez le code et choisissez votre mot de passe';
 
   @override
   String get otpLabel => 'Code de vérification';
@@ -541,7 +541,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get changeNumber => 'Changer de numéro';
 
   @override
-  String get parentSignInWithSms => 'Me connecter avec un code par SMS';
+  String get parentSignInWithSms => 'Première connexion ou mot de passe oublié';
 
   @override
   String get parentSignInTitle => 'Connexion parent';
@@ -551,7 +551,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get parentSignInIntro =>
-      'Choisissez votre établissement et saisissez le numéro que vous lui avez donné. Nous vous enverrons un code par SMS.';
+      'Choisissez votre établissement et saisissez le numéro que vous lui avez donné. Nous vous enverrons un code par SMS pour choisir votre mot de passe.';
 
   @override
   String otpSentIfKnown(String phone) {
@@ -1629,5 +1629,5 @@ class AppLocalizationsFr extends AppLocalizations {
   String get signOutParentTitle => 'Se déconnecter ?';
 
   @override
-  String get signOutParentBody => 'Pour revenir, il faudra un nouveau code par SMS.';
+  String get signOutParentBody => 'Pour revenir, connectez-vous avec votre numéro et votre mot de passe.';
 }

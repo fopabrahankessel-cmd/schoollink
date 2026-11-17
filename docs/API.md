@@ -120,17 +120,20 @@ Staff sign in with a password. The admin created the account and gave a temporar
 5. When a call answers 401, the client calls `POST /auth/refresh` once and replays the call. The mobile interceptor shares one refresh between calls that fail together.
 6. `POST /auth/logout` with the refresh token ends the session on the server.
 
-### 2.2 Parent sign-in by SMS code (UC-P1, D24)
+### 2.2 Parent sign-in (UC-P1, D24, D45)
 
-Parents have no password. The phone number the school holds is their identity.
+A parent signs in like staff: `POST /auth/login` with their school, phone and password (section 2.1). No SMS is sent then.
+
+An SMS code is sent only **the first time** and when the parent **has forgotten their password**. It proves they hold the number the school holds, and with it they choose their password:
 
 1. `GET /auth/schools`, then `POST /auth/parent/sign-in` with `{schoolId, phone}`.
 2. The server answers `{activationId, expiresAt}` **whether or not it knows the number**, so nobody can learn which numbers are registered (NFR-7).
    - If the number is a guardian's (or a parent-only account's) in that school, it stores a hashed 6-digit code valid for 10 minutes and sends it by SMS, straight to the provider.
    - Otherwise it sends nothing, and step 3 can never succeed.
    - A number that belongs to a staff account gets no code: staff use their password (D21).
-3. `POST /auth/parent/sign-in/verify` with `{activationId, otp}`.
+3. `POST /auth/parent/sign-in/verify` with `{activationId, otp, password}`; the password has 8 to 72 characters, like staff passwords. A refused password does not use up the code.
    - The first time, the server creates the parent account and links it to the guardian's children.
+   - It sets the password (audited, NFR-11) and ends the account's other sessions.
    - It returns the token pair. From here the parent's session works like a staff session (refresh, logout).
 4. Asking for a new code makes the previous one stop working. The limits are in section 1.6; when one is reached the answer is 429 and no SMS is sent.
 
@@ -289,7 +292,7 @@ The import fills the school once; after it the admin keeps the lists right, one 
 - **The end of the year:** `POST /students/move` moves up to 300 students to one class in a single step. The admin leaves out those who repeat the year.
 - **A student leaves:** `POST /students/{id}/leave` with the date (today when left out, never in the future). From that date the student is in no roll call, cannot be recorded late or summoned, and the guardians get nothing new. Nothing is deleted: the history stays, for the school and for the parents, whose `GET /me/children` gives `leftOn`. `POST /students/{id}/return` brings the student back, into the given class or the last one.
 - **Guardians:** `PUT /guardians/{id}` changes the name, language or phone for all the guardian's children. `POST /students/{id}/guardians` adds one, `PUT /students/{id}/guardians/{guardianId}` changes the relation or hands over the primary, `DELETE` removes the link. A student always keeps one guardian, and exactly one primary: removing the primary names the next one (`?primary=`) unless a single guardian is left.
-- **A new phone** signs the parent out everywhere: refresh tokens, push tokens and SMS codes not yet used are dropped in the same transaction, and the parent signs in again with the new number (D24). A phone already used by another guardian of the school (`guardians.phone_taken`) or by a staff account (`guardians.phone_staff`) is refused.
+- **A new phone** signs the parent out everywhere: refresh tokens, push tokens and SMS codes not yet used are dropped in the same transaction, and the parent signs in again with the new number and their password (D24, D45). A phone already used by another guardian of the school (`guardians.phone_taken`) or by a staff account (`guardians.phone_staff`) is refused.
 
 Phones are in bodies only (NFR-9). Every write is audited, without names or phones (NFR-11).
 
@@ -305,8 +308,8 @@ Paths are given without the `/api/v1` prefix. "Scope" means the caller's classes
 | --- | --- | --- |
 | `GET /auth/schools` | Public | Schools for the picker: `[{id, name}]` |
 | `POST /auth/login` | Public | Staff sign-in |
-| `POST /auth/parent/sign-in` | Public | Parent step 1: send an SMS code |
-| `POST /auth/parent/sign-in/verify` | Public | Parent step 2: check the code, sign in |
+| `POST /auth/parent/sign-in` | Public | Parent, first time or forgotten password: send an SMS code |
+| `POST /auth/parent/sign-in/verify` | Public | Parent: check the code, set the password, sign in |
 | `POST /auth/refresh` | Public | Exchange a refresh token for a new pair |
 | `POST /auth/logout` | Public | Revoke the session of a refresh token (204) |
 | `GET /me` | Any signed-in user | The signed-in user |

@@ -76,7 +76,7 @@ void main() {
     expect(server.sent('POST /auth/logout').single.body, {'refreshToken': 'refresh-0'});
   });
 
-  testWidgets('a parent is told that coming back takes a new SMS code before signing out (D24)', (tester) async {
+  testWidgets('a parent is asked before signing out and told how to come back (D45)', (tester) async {
     final server = await signedInAs(tester, ['PARENT']);
     server
       ..on('GET /me/children', (_) => const Reply.ok([]))
@@ -90,7 +90,8 @@ void main() {
     }
 
     await signOut();
-    expect(find.text('Pour revenir, il faudra un nouveau code par SMS.'), findsOneWidget);
+    // D45: no SMS to come back, the parent's phone and password
+    expect(find.text('Pour revenir, connectez-vous avec votre numéro et votre mot de passe.'), findsOneWidget);
     await tester.tap(find.widgetWithText(TextButton, 'Annuler'));
     await tester.pumpAndSettle();
     expect(find.byType(LoginScreen), findsNothing);

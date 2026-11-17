@@ -33,7 +33,7 @@ String? redirectFor(AsyncValue<UserInfo?> auth, String location) {
   }
   final user = auth.value;
   if (user == null) {
-    // UC-P1, D24: parents sign in by SMS instead of a password
+    // UC-P1, D45: a parent's first sign-in or forgotten password, by SMS code
     return location == '/parent-sign-in' ? null : goTo('/login');
   }
   if (user.passwordChangeRequired) {

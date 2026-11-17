@@ -510,7 +510,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sendSmsCode => 'Receive a code by SMS';
 
   @override
-  String get otpTitle => 'Enter the code received';
+  String get otpTitle => 'Enter the code and choose your password';
 
   @override
   String get otpLabel => 'Verification code';
@@ -535,7 +535,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get changeNumber => 'Change the number';
 
   @override
-  String get parentSignInWithSms => 'Sign in with a code by SMS';
+  String get parentSignInWithSms => 'First sign-in or forgotten password';
 
   @override
   String get parentSignInTitle => 'Parent sign-in';
@@ -545,7 +545,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get parentSignInIntro =>
-      'Choose your school and enter the number you gave it. We will send you a code by SMS.';
+      'Choose your school and enter the number you gave it. We will send you a code by SMS to choose your password.';
 
   @override
   String otpSentIfKnown(String phone) {
@@ -1597,5 +1597,5 @@ class AppLocalizationsEn extends AppLocalizations {
   String get signOutParentTitle => 'Sign out?';
 
   @override
-  String get signOutParentBody => 'To come back, you will need a new code by SMS.';
+  String get signOutParentBody => 'To come back, sign in with your phone number and password.';
 }

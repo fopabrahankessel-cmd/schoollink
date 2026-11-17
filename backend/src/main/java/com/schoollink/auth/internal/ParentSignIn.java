@@ -29,11 +29,13 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /**
- * UC-P1, D24: a parent signs in with their school, their phone and a 6-digit one-time code sent to
- * that phone, the first time and every time after. The first time, the phone is a guardian's in the
- * school (D15) and the account is made when the code is right: the code proves they hold the number
- * the school gave. Parents have no password; an SMS code never opens an account that has one, so
- * staff who are also parents sign in with theirs and are linked then (D21). NFR-7:
+ * UC-P1, D24, D45: a parent signs in with their school, phone and password ({@code /auth/login}). A
+ * 6-digit one-time code is sent to that phone only the first time and when the password is
+ * forgotten (D45: SMS cost), and with it the parent chooses their password. The first time, the
+ * phone is a guardian's in the school (D15) and the account is made when the code is right: the code
+ * proves they hold the number the school gave. A code never opens an account with staff rights, so
+ * staff who are also parents sign in with their own password and are linked then (D21). Choosing a
+ * password ends the account's other sessions. NFR-7:
  * <ul>
  * <li>step 1 answers the same whether or not the phone is known, so nothing tells which numbers
  * are registered: no SMS is sent then, and step 2 can never succeed;</li>
@@ -43,8 +45,8 @@ import org.springframework.transaction.support.TransactionTemplate;
  * database, so nobody can flood a phone with SMS;</li>
  * <li>per IP address, 10 sign-in and 30 verification requests per 15 minutes.</li>
  * </ul>
- * NFR-9: the phone travels in the request body only and is never logged; the codes are never
- * logged.
+ * NFR-9: the phone travels in the request body only and is never logged; the codes and passwords
+ * are never logged.
  */
 @Service
 class ParentSignIn {
@@ -191,9 +193,14 @@ class ParentSignIn {
 			.map(guardian -> new Target(schoolId, null, guardian.guardianId(), guardian.language()));
 	}
 
-	/** Step 2: checks the one-time code, makes the account the first time and signs the parent in. */
-	TokenResponse verify(UUID signInId, String otp, String clientIp) {
+	/**
+	 * Step 2: checks the one-time code, makes the account the first time, sets the password the
+	 * parent chose and signs them in.
+	 */
+	TokenResponse verify(UUID signInId, String otp, String password, String clientIp) {
 		checkRate(limiter.tryConsume(VERIFY_PER_IP, clientIp));
+		// hashed before the row is locked: BCrypt is slow on purpose
+		String passwordHash = hashes.encode(password);
 		MapSqlParameterSource p = new MapSqlParameterSource("id", signInId);
 		Optional<TokenResponse> tokens = transactions.execute(tx -> {
 			// locked: concurrent tries on one request are counted one after the other
@@ -231,15 +238,19 @@ class ParentSignIn {
 			UserAccount account = accounts.findById(userId)
 				.filter(ParentSignIn::isParentOnly)
 				.orElseThrow(ParentSignIn::invalidOtp);
+			// D45: the parent's password from now on (audited, NFR-11); other sessions end
+			accounts.changePassword(account.id(), passwordHash);
+			refreshTokens.revokeAll(account.id());
+			account = accounts.findById(account.id()).orElseThrow();
 			return Optional.of(new TokenResponse("Bearer", accessTokens.issue(account), accessTokens.ttlSeconds(),
 					refreshTokens.create(account.id(), UUID.randomUUID()), UserInfo.of(account)));
 		});
 		return tokens.orElseThrow(ParentSignIn::invalidOtp);
 	}
 
-	/** An active account with the parent role only and no password; staff sign in with theirs (D21). */
+	/** An active account with the parent role only; staff sign in with their password (D21). */
 	private static boolean isParentOnly(UserAccount account) {
-		return account.isActive() && account.passwordHash() == null && account.roles().equals(Set.of("PARENT"));
+		return account.isActive() && account.roles().equals(Set.of("PARENT"));
 	}
 
 	private static void checkRate(Duration wait) {

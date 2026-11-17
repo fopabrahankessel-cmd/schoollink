@@ -857,7 +857,7 @@ abstract class AppLocalizations {
   /// No description provided for @otpTitle.
   ///
   /// In en, this message translates to:
-  /// **'Enter the code received'**
+  /// **'Enter the code and choose your password'**
   String get otpTitle;
 
   /// No description provided for @otpLabel.
@@ -896,10 +896,10 @@ abstract class AppLocalizations {
   /// **'Change the number'**
   String get changeNumber;
 
-  /// UC-P1, D24: how a parent signs in, the first time too.
+  /// UC-P1, D45: a parent's first sign-in or forgotten password, by SMS code; otherwise phone and password.
   ///
   /// In en, this message translates to:
-  /// **'Sign in with a code by SMS'**
+  /// **'First sign-in or forgotten password'**
   String get parentSignInWithSms;
 
   /// No description provided for @parentSignInTitle.
@@ -917,7 +917,7 @@ abstract class AppLocalizations {
   /// No description provided for @parentSignInIntro.
   ///
   /// In en, this message translates to:
-  /// **'Choose your school and enter the number you gave it. We will send you a code by SMS.'**
+  /// **'Choose your school and enter the number you gave it. We will send you a code by SMS to choose your password.'**
   String get parentSignInIntro;
 
   /// D24, NFR-7: the server does not say whether the school knows the number.
@@ -2531,7 +2531,7 @@ abstract class AppLocalizations {
   /// D24: a parent has no password; signing back in sends an SMS code
   ///
   /// In en, this message translates to:
-  /// **'To come back, you will need a new code by SMS.'**
+  /// **'To come back, sign in with your phone number and password.'**
   String get signOutParentBody;
 }
 

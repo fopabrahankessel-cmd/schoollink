@@ -42,9 +42,10 @@ class AuthController extends AsyncNotifier<UserInfo?> {
     state = AsyncData(tokens.user);
   }
 
-  /// UC-P1, D24 step 2: the one-time code; signs the parent in. Throws an [ApiFailure].
-  Future<void> verifyParent({required String signInId, required String otp}) async {
-    final tokens = await ref.read(authApiProvider).verifyParentSignIn(signInId: signInId, otp: otp);
+  /// UC-P1, D24, D45 step 2: the one-time code and the chosen password; signs the parent in.
+  /// Throws an [ApiFailure].
+  Future<void> verifyParent({required String signInId, required String otp, required String password}) async {
+    final tokens = await ref.read(authApiProvider).verifyParentSignIn(signInId: signInId, otp: otp, password: password);
     await ref.read(sessionStoreProvider).save(tokens);
     state = AsyncData(tokens.user);
   }

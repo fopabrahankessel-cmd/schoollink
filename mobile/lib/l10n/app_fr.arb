@@ -127,17 +127,17 @@
   "phoneHelp": "Le numéro donné à l'établissement",
   "phoneInvalid": "Saisissez un numéro camerounais à 9 chiffres, par exemple 6 99 00 00 01.",
   "sendSmsCode": "Recevoir un code par SMS",
-  "otpTitle": "Saisissez le code reçu",
+  "otpTitle": "Saisissez le code et choisissez votre mot de passe",
   "otpLabel": "Code de vérification",
   "otpInvalid": "Saisissez les 6 chiffres du code.",
   "otpValidUntil": "Le code est valable jusqu'à {time}.",
   "otpResent": "Un nouveau code a été envoyé. Il est valable jusqu'à {time}.",
   "resendCode": "Renvoyer un code",
   "changeNumber": "Changer de numéro",
-  "parentSignInWithSms": "Me connecter avec un code par SMS",
+  "parentSignInWithSms": "Première connexion ou mot de passe oublié",
   "parentSignInTitle": "Connexion parent",
   "parentSignInHeadline": "Votre numéro de téléphone",
-  "parentSignInIntro": "Choisissez votre établissement et saisissez le numéro que vous lui avez donné. Nous vous enverrons un code par SMS.",
+  "parentSignInIntro": "Choisissez votre établissement et saisissez le numéro que vous lui avez donné. Nous vous enverrons un code par SMS pour choisir votre mot de passe.",
   "otpSentIfKnown": "Si l'établissement connaît le {phone}, un code à 6 chiffres lui a été envoyé par SMS.",
   "loading": "Chargement…",
   "today": "Aujourd'hui",
@@ -406,5 +406,5 @@
   "studentNoMessagesBody": "Pour leur écrire, touchez « Agir ».",
   "todayNoLessons": "Pas de cours aujourd'hui : rien à saisir.",
   "signOutParentTitle": "Se déconnecter ?",
-  "signOutParentBody": "Pour revenir, il faudra un nouveau code par SMS."
+  "signOutParentBody": "Pour revenir, connectez-vous avec votre numéro et votre mot de passe."
 }

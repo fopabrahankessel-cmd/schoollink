@@ -179,7 +179,7 @@ The use cases are numbered by actor; the MVP column says which ones the first pi
 | UC-C1 | Counsellor | See referrals from DMs and open a case | Wave 2 |
 | UC-C2 | Counsellor | Study a student's attendance pattern (by day of week, period, subject) | Wave 2 |
 | UC-C3 | Counsellor | Write private case notes, set follow-up dates, close a case | Wave 2 |
-| UC-P1 | Parent | Sign in with the school, the phone number the school holds and an SMS one-time code; the first sign-in creates the account | Yes |
+| UC-P1 | Parent | Sign in with the school, the phone number the school holds and a password. The first time, and when the password is forgotten, an SMS one-time code proves the phone and the parent chooses the password; the first sign-in creates the account (D45) | Yes |
 | UC-P2 | Parent | Receive absence, lateness, summons and correction alerts | Yes |
 | UC-P3 | Parent | Consult each child's attendance history | Yes |
 | UC-P4 | Parent | Read DM messages and announcements (D38) | Pilot |
@@ -294,8 +294,8 @@ One REST API under `/api/v1`, secured by JWT; the server derives the school and 
 | Module | Method and path | Used by | Purpose |
 | --- | --- | --- | --- |
 | Auth | `POST /auth/login` | Staff | Phone or email + password, returns access + refresh tokens |
-| Auth | `POST /auth/parent/sign-in` | Parent | School + phone of a guardian or parent, sends an SMS one-time code; same answer for an unknown number (D24) |
-| Auth | `POST /auth/parent/sign-in/verify` | Parent | One-time code, creates the account at the first sign-in, returns tokens (D24) |
+| Auth | `POST /auth/parent/sign-in` | Parent | First sign-in or forgotten password: school + phone of a guardian or parent, sends an SMS one-time code; same answer for an unknown number (D24, D45) |
+| Auth | `POST /auth/parent/sign-in/verify` | Parent | One-time code and the chosen password; creates the account at the first sign-in, sets the password, returns tokens (D24, D45) |
 | Auth | `POST /auth/refresh` | All | New access token |
 | School | `GET/POST /classes`, `/periods`, `/terms` | Admin | School structure |
 | School | `GET/POST /sequences`, `PUT/DELETE /sequences/{id}` | Admin (write), staff (read) | The two sequences of each term (D44) |

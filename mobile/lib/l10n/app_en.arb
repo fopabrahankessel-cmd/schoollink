@@ -376,7 +376,7 @@
   "phoneHelp": "The number you gave the school",
   "phoneInvalid": "Enter a Cameroon number with 9 digits, for example 6 99 00 00 01.",
   "sendSmsCode": "Receive a code by SMS",
-  "otpTitle": "Enter the code received",
+  "otpTitle": "Enter the code and choose your password",
   "otpLabel": "Verification code",
   "otpInvalid": "Enter the 6 digits of the code.",
   "otpValidUntil": "The code works until {time}.",
@@ -397,13 +397,13 @@
   },
   "resendCode": "Send a new code",
   "changeNumber": "Change the number",
-  "parentSignInWithSms": "Sign in with a code by SMS",
+  "parentSignInWithSms": "First sign-in or forgotten password",
   "@parentSignInWithSms": {
-    "description": "UC-P1, D24: how a parent signs in, the first time too."
+    "description": "UC-P1, D45: a parent's first sign-in or forgotten password, by SMS code; otherwise phone and password."
   },
   "parentSignInTitle": "Parent sign-in",
   "parentSignInHeadline": "Your phone number",
-  "parentSignInIntro": "Choose your school and enter the number you gave it. We will send you a code by SMS.",
+  "parentSignInIntro": "Choose your school and enter the number you gave it. We will send you a code by SMS to choose your password.",
   "otpSentIfKnown": "If the school knows {phone}, a 6-digit code was sent to it by SMS.",
   "@otpSentIfKnown": {
     "description": "D24, NFR-7: the server does not say whether the school knows the number.",
@@ -1458,7 +1458,7 @@
   "@signOutParentTitle": {
     "description": "D24: confirmation before a parent signs out"
   },
-  "signOutParentBody": "To come back, you will need a new code by SMS.",
+  "signOutParentBody": "To come back, sign in with your phone number and password.",
   "@signOutParentBody": {
     "description": "D24: a parent has no password; signing back in sends an SMS code"
   }

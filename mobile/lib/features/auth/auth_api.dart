@@ -40,7 +40,7 @@ class AuthApi {
     ];
   });
 
-  /// Staff only; parents sign in with an SMS code (UC-P1). The phone travels in the body,
+  /// Staff, and parents once they have chosen a password (D45). The phone travels in the body,
   /// never in the URL (NFR-9).
   Future<TokenResponse> login({String? schoolId, required String login, required String password}) =>
       _tokens('/auth/login', {'schoolId': schoolId, 'login': login, 'password': password}, _public);
@@ -59,9 +59,10 @@ class AuthApi {
     );
   });
 
-  /// UC-P1, D24 step 2: the one-time code; the parent is signed in, and has an account from now on.
-  Future<TokenResponse> verifyParentSignIn({required String signInId, required String otp}) =>
-      _tokens('/auth/parent/sign-in/verify', {'activationId': signInId, 'otp': otp}, _public);
+  /// UC-P1, D24, D45 step 2: the one-time code and the password the parent chooses; the parent is
+  /// signed in, has an account from now on and signs in with that password next time.
+  Future<TokenResponse> verifyParentSignIn({required String signInId, required String otp, required String password}) =>
+      _tokens('/auth/parent/sign-in/verify', {'activationId': signInId, 'otp': otp, 'password': password}, _public);
 
   Future<UserInfo> me() => _call(() async {
     final response = await _dio.get<Map<String, dynamic>>('/me');

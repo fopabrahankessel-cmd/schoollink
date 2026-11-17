@@ -25,9 +25,10 @@ String? cameroonDigits(String typed) {
   return RegExp(r'^\d{9}$').hasMatch(digits) ? digits : null;
 }
 
-/// UC-P1, D24: a parent signs in, the first time and every time after. Step 1, their school and
-/// phone; step 2, the one-time code sent to that phone. Then they land on their children. The phone
-/// stays in request bodies, never in a URL (NFR-9).
+/// UC-P1, D24, D45: a parent's first sign-in, or a forgotten password; other times they sign in
+/// with phone and password on the sign-in screen, without an SMS. Step 1, their school and phone;
+/// step 2, the one-time code sent to that phone and the password they choose. Then they land on
+/// their children. The phone stays in request bodies, never in a URL (NFR-9).
 class ParentSignInScreen extends ConsumerStatefulWidget {
   const ParentSignInScreen({super.key});
 
@@ -40,6 +41,8 @@ class _ParentSignInScreenState extends ConsumerState<ParentSignInScreen> {
   final _otpForm = GlobalKey<FormState>();
   final _phone = TextEditingController();
   final _otp = TextEditingController();
+  final _password = TextEditingController();
+  final _confirm = TextEditingController();
 
   /// Set once the one-time code is sent: step 2.
   ParentSignInStarted? _started;
@@ -55,6 +58,8 @@ class _ParentSignInScreenState extends ConsumerState<ParentSignInScreen> {
   void dispose() {
     _phone.dispose();
     _otp.dispose();
+    _password.dispose();
+    _confirm.dispose();
     super.dispose();
   }
 
@@ -105,7 +110,9 @@ class _ParentSignInScreenState extends ConsumerState<ParentSignInScreen> {
     }
     // signed in: the router takes the parent to their children
     await _run(
-      () => ref.read(authControllerProvider.notifier).verifyParent(signInId: _started!.signInId, otp: _otp.text),
+      () => ref
+          .read(authControllerProvider.notifier)
+          .verifyParent(signInId: _started!.signInId, otp: _otp.text, password: _password.text),
     );
   }
 
@@ -240,7 +247,7 @@ class _ParentSignInScreenState extends ConsumerState<ParentSignInScreen> {
             inputFormatters: [FilteringTextInputFormatter.digitsOnly, LengthLimitingTextInputFormatter(6)],
             style: theme.textTheme.headlineMedium?.copyWith(letterSpacing: 12, fontFeatures: tabular),
             decoration: InputDecoration(labelText: l.otpLabel, hintText: '000000', counterText: ''),
-            onFieldSubmitted: (_) => _busy ? null : _verify(),
+            textInputAction: TextInputAction.next,
             validator: (value) => value == null || value.length != 6 ? l.otpInvalid : null,
           ),
           const SizedBox(height: Gap.s),
@@ -250,15 +257,7 @@ class _ParentSignInScreenState extends ConsumerState<ParentSignInScreen> {
                 : l.otpValidUntil(DateFormat.Hm(locale).format(_started!.expiresAt)),
             style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
           ),
-          if (_error != null) _errorText(context),
-          const SizedBox(height: Gap.xl),
-          FilledButton(
-            onPressed: _busy ? null : _verify,
-            child: _busy
-                ? const SizedBox.square(dimension: 22, child: CircularProgressIndicator(strokeWidth: 2.5))
-                : Text(l.signIn),
-          ),
-          const SizedBox(height: Gap.m),
+          const SizedBox(height: Gap.xs),
           Row(
             children: [
               Expanded(
@@ -279,6 +278,47 @@ class _ParentSignInScreenState extends ConsumerState<ParentSignInScreen> {
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: Gap.l),
+          // D45: the password the parent signs in with from now on, the same rules as staff (D18)
+          TextFormField(
+            key: const ValueKey('newPassword'),
+            controller: _password,
+            obscureText: true,
+            autofillHints: const [AutofillHints.newPassword],
+            textInputAction: TextInputAction.next,
+            decoration: InputDecoration(
+              labelText: l.newPasswordLabel,
+              helperText: l.newPasswordHelp,
+              prefixIcon: const Icon(Icons.lock_outline_rounded),
+            ),
+            validator: (value) => value == null || value.length < 8
+                ? l.passwordTooShort
+                : value.length > 72
+                ? l.passwordTooLong
+                : null,
+          ),
+          const SizedBox(height: Gap.l),
+          TextFormField(
+            key: const ValueKey('confirmPassword'),
+            controller: _confirm,
+            obscureText: true,
+            autofillHints: const [AutofillHints.newPassword],
+            textInputAction: TextInputAction.done,
+            decoration: InputDecoration(
+              labelText: l.confirmPasswordLabel,
+              prefixIcon: const Icon(Icons.lock_outline_rounded),
+            ),
+            onFieldSubmitted: (_) => _busy ? null : _verify(),
+            validator: (value) => value != _password.text ? l.passwordsDoNotMatch : null,
+          ),
+          if (_error != null) _errorText(context),
+          const SizedBox(height: Gap.xl),
+          FilledButton(
+            onPressed: _busy ? null : _verify,
+            child: _busy
+                ? const SizedBox.square(dimension: 22, child: CircularProgressIndicator(strokeWidth: 2.5))
+                : Text(l.signIn),
           ),
         ],
       ),
