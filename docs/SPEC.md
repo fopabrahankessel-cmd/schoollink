@@ -13,7 +13,7 @@ SchoolLink turns one daily event, a student marked absent or late, into a same-d
 1. Give parents a direct, same-day channel from the school about absences and lateness.
 2. Detect truancy risk early from attendance patterns, with a human (the DM) deciding at every step.
 3. Record and follow up interventions, so truancy management is documented.
-4. Pilot the platform in two schools and evaluate it: technical tests, usability, acceptance, and the effect on communication and case handling.
+4. Pilot the platform in one school and evaluate it (D47): technical tests, usability, acceptance, and the effect on communication and case handling.
 
 **Design principle.** The platform never replaces human judgement. Rules only raise alerts or send notifications; the DM decides. This keeps the project ethically defensible and the detection logic simple enough to explain.
 
@@ -24,7 +24,7 @@ SchoolLink turns one daily event, a student marked absent or late, into a same-d
 - Attendance per period, lateness at the gate, notifications (push and SMS), risk detection, DM decisions, counsellor case management.
 - French and English throughout, including SMS.
 - Anonymised research export.
-- Pilot in two schools.
+- Pilot in one school (D47; the platform still holds several schools apart, NFR-8).
 
 **Out of scope**
 
@@ -219,7 +219,7 @@ The counsellor never sees a student until the DM refers them. Case notes stay pr
 
 ## 7. Data model
 
-The model has about 25 tables in PostgreSQL; every school-owned row carries a `school_id`, so two pilot schools share one database safely.
+The model has about 25 tables in PostgreSQL; every school-owned row carries a `school_id`, so several schools can share one database safely; the pilot has one (D47).
 
 | Area | Entity | Key fields | Notes |
 | --- | --- | --- | --- |
@@ -258,7 +258,7 @@ The model has about 25 tables in PostgreSQL; every school-owned row carries a `s
 
 ## 8. Architecture and stack
 
-SchoolLink is one Spring Boot modular monolith behind one REST API, used by a Flutter Android app and a React web dashboard; two pilot schools do not justify microservices.
+SchoolLink is one Spring Boot modular monolith behind one REST API, used by a Flutter Android app and a React web dashboard; a pilot in one school does not justify microservices.
 
 &#91;embedded content: architecture · 2 clients, 1 backend, 3 services\]
 
@@ -404,7 +404,7 @@ The evaluation compares each pilot school before and after deployment, on the fo
 - Unit tests on business rules BR-1 to BR-25.
 - Integration tests with Testcontainers (PostgreSQL) on permissions per role and scope.
 - Offline and sync tests on a low-end Android phone.
-- Load test: 2 schools × 40 classes × 8 periods synced within the same 10 minutes.
+- Load test: 2 schools × 40 classes × 8 periods synced within the same 10 minutes (sized before D47; twice the pilot school, kept as a margin).
 
 ## 12. MVP scope and delivery plan
 
@@ -420,11 +420,11 @@ The MVP is the loop from attendance to parent notification to DM decision; couns
 
 | Phase | Content | Exit criterion | Estimate |
 | --- | --- | --- | --- |
-| 0. Preparation | School authorisations, consent forms, baseline data, SMS gateway account, VPS | Both schools agree in writing; baseline collected | 2–3 weeks, in parallel with phase 1 |
+| 0. Preparation | School authorisations, consent forms, baseline data, SMS gateway account, VPS | The school agrees in writing; baseline collected | 2–3 weeks, in parallel with phase 1 |
 | 1. Foundations | Spring Boot project, PostgreSQL schema, auth, roles and scopes, school structure, CSV import, admin web screens | Admin can set up a school and import students | 3 weeks |
 | 2. Attendance loop | Flutter app shell, teacher attendance with double confirmation, offline sync, lateness at the gate, outbox, FCM push, parent sign-in and inbox | A teacher's confirmation reaches a parent's phone | 4 weeks |
 | 3. DM and detection | Justification, cancel with correction, threshold rules and alerts, decisions, summons, SMS digest, dashboards | A full test day produces correct alerts and one digest per student | 3 weeks |
-| 4. Pilot wave 1 | Training staff, issuing parent codes, live use in 2 schools, bug fixes | 80% of expected sessions recorded daily for 2 weeks | 4–6 weeks |
+| 4. Pilot wave 1 | Training staff, issuing parent codes, live use in the pilot school (D47), bug fixes | 80% of expected sessions recorded daily for 2 weeks | 4–6 weeks |
 | 5. Wave 2 | Counsellor cases, research view and export (DM messages, disciplinary records and announcements moved to the pilot: D37, D38) | Counsellor opens a real case from a referral | 3 weeks |
 | 6. Evaluation | Questionnaires, interviews, data analysis, report | Results chapter written | 3 weeks |
 

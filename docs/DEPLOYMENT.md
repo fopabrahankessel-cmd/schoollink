@@ -1,6 +1,6 @@
 # Deploying SchoolLink for the pilot
 
-This guide takes SchoolLink from your laptop to a real server that the two pilot schools use every day. It assumes you have never deployed anything. Follow the parts in order. Every command is given in full, and each part ends with a check so you know it worked before moving on.
+This guide takes SchoolLink from your laptop to a real server that the pilot school uses every day. It assumes you have never deployed anything. Follow the parts in order. Every command is given in full, and each part ends with a check so you know it worked before moving on.
 
 Prices were checked in November 2026. They change, so confirm them on each provider's site before you pay.
 
@@ -16,7 +16,7 @@ Prices were checked in November 2026. They change, so confirm them on each provi
 8. [Prepare the server](#8-prepare-the-server)
 9. [Set up Twilio for SMS](#9-set-up-twilio-for-sms)
 10. [Put SchoolLink on the server](#10-put-schoollink-on-the-server)
-11. [Create the two schools](#11-create-the-two-schools)
+11. [Create the school](#11-create-the-school)
 12. [Build the Android app for production](#12-build-the-android-app-for-production)
 13. [Get the app onto phones](#13-get-the-app-onto-phones)
 14. [Backups](#14-backups)
@@ -79,7 +79,7 @@ Approximate exchange rates: 1 € = 656 FCFA (fixed rate), 1 US$ ≈ 570 FCFA.
 | --- | --- | --- |
 | Domain name (`.org`, `.com`) | about US$ 10–15 per year | Paid yearly. A `.cm` domain costs more and is sold by local registrars |
 | Google Play developer account | US$ 25, once | Only if you publish on Google Play (part 13). A direct APK download is free |
-| Parent sign-in | about US$ 0.32 (≈ 181 FCFA) per parent | A parent receives one SMS code each time they sign in, normally once per phone. Nothing is sent to the parents who never sign in |
+| Parent sign-in | about US$ 0.32 (≈ 181 FCFA) per parent | One SMS code at the first sign-in, then the parent signs in with a password (D45). A forgotten password costs one more, at most 3 per school year (D46). Nothing is sent to the parents who never sign in |
 
 ### Monthly costs
 
@@ -88,7 +88,7 @@ Approximate exchange rates: 1 € = 656 FCFA (fixed rate), 1 US$ ≈ 570 FCFA.
 | Server: Hetzner Cloud CX23 (2 vCPU, 4 GB RAM, 40 GB disk) | about € 4.50 (≈ 3,000 FCFA) | Includes the public IPv4 address. Hetzner raised prices twice in 2026, so check [hetzner.com/cloud](https://www.hetzner.com/cloud) |
 | Hetzner automatic backups | + 20 % of the server price, about € 1 | Recommended. A full image of the server, 7 days kept |
 | HTTPS certificate | free | Let's Encrypt, through Caddy |
-| Push notifications (Firebase Cloud Messaging) | free | No limit that matters for two schools |
+| Push notifications (Firebase Cloud Messaging) | free | No limit that matters for one school |
 | Uptime monitor (UptimeRobot) | free | Part 15 |
 | **SMS (Twilio)** | **US$ 0.317 per SMS segment to Cameroon** | **The biggest cost by far.** See below |
 
@@ -112,12 +112,12 @@ Everything except SMS costs less than US$ 10 a month. SMS can cost hundreds.
 | 50 % | about 1,000 | about US$ 320 |
 | 80 % | about 400 | about US$ 130 |
 
-**Example total for a 3-month pilot in 2 schools**, with half the parents on the app and 300 parents per school signing in:
+**Example total for a 3-month pilot in one school**, with half the parents on the app and 300 parents signing in:
 - server: 4 months × about US$ 6 = **US$ 24**
 - domain: **US$ 12**
-- parent sign-ins: 600 × US$ 0.317 = **US$ 190**
-- digests: 2 schools × 3 months × US$ 320 = **US$ 1,920**
-- **Total: about US$ 2,150 (≈ 1.2 million FCFA)**
+- parent first sign-ins: 300 × US$ 0.317 = **US$ 95** (D45: after that a parent signs in with a password; only a forgotten password costs another SMS, at most 3 per year, D46)
+- digests: 3 months × US$ 320 = **US$ 960**
+- **Total: about US$ 1,090 (≈ 620,000 FCFA)**
 
 **Ways to spend less:**
 - **Get parents onto the app.** Every parent who uses the app and opens pushes costs almost nothing. Push adoption is the biggest saving.
@@ -375,11 +375,11 @@ If the page does not load, see part 17.
 
 ---
 
-## 11. Create the two schools
+## 11. Create the school
 
 SchoolLink creates a school and its first administrator when it starts, from the `BOOTSTRAP_…` settings. It does this once: a school whose name already exists is left alone.
 
-1. On the server, run `nano .env` and fill in the first school:
+1. On the server, run `nano .env` and fill in the school:
    ```
    BOOTSTRAP_SCHOOL_NAME=Lycee Bilingue de Exemple
    BOOTSTRAP_SCHOOL_LANGUAGE=FR
@@ -393,10 +393,9 @@ SchoolLink creates a school and its first administrator when it starts, from the
    docker compose logs backend | grep Bootstrap
    ```
    It should say `Bootstrap: created the school '…' and its administrator …`.
-3. Repeat steps 1 and 2 with the second school's name and administrator.
-4. **Empty the four `BOOTSTRAP_` lines** in `.env`, so the temporary password does not stay in the file, and run `docker compose up -d backend` again.
+3. **Empty the four `BOOTSTRAP_` lines** in `.env`, so the temporary password does not stay in the file, and run `docker compose up -d backend` again.
 
-Then, for each school, its administrator signs in at `https://YOUR_DOMAIN`. They must choose a new password at the first sign-in. Then they follow the setup checklist on the home page, in this order:
+Then the school's administrator signs in at `https://YOUR_DOMAIN`. They must choose a new password at the first sign-in. Then they follow the setup checklist on the home page, in this order:
 1. Calendar: the school year, terms and holidays.
 2. Periods.
 3. Blocks and classes.
@@ -538,7 +537,7 @@ docker compose exec -T db psql -U schoollink -d restore_check -c "select name fr
 docker compose exec -T db sh -c 'dropdb -U "$POSTGRES_USER" restore_check'
 ```
 
-✔ **Check:** the third command lists your two schools. Note the date of the test: it is the evidence for NFR-13.
+✔ **Check:** the third command lists your school, and only it. Note the date of the test: it is the evidence for NFR-13.
 
 **A real restore** replaces the live data, so only do it after a disaster:
 
@@ -621,21 +620,21 @@ All commands run in `/opt/schoollink/deploy` on the server.
 | `docker compose` says `set DB_PASSWORD in .env` | That line in `.env` is empty. |
 | Parents get no push | The app was built on a machine without `mobile\android\app\google-services.json`, or with the wrong `API_BASE_URL` (part 12). The parent may also have refused notifications in the phone's settings. |
 | Parents get no SMS | Check, in this order: Twilio credit, Geo permissions for Cameroon, sender ID registration, the school's monthly limit, and Console → Monitor → Logs → Messaging for the error code. |
-| Server slow or out of memory | `free -h` and `docker stats`. Two schools fit easily in 4 GB. If not, resize the server in Hetzner (CX33): a reboot, nothing to reinstall. |
+| Server slow or out of memory | `free -h` and `docker stats`. One school fits easily in 4 GB. If not, resize the server in Hetzner (CX33): a reboot, nothing to reinstall. |
 
 ---
 
 ## 18. Go-live checklist
 
 **Before the first day:**
-- [ ] Written authorisation from both head teachers; ethics approval if required (SPEC §11)
+- [ ] Written authorisation from the head teacher; ethics approval if required (SPEC §11)
 - [ ] Parent information notice and consent form, in French and English, handed out
 - [ ] `https://YOUR_DOMAIN` loads with a padlock; `/actuator/health` shows `UP`
 - [ ] Twilio upgraded, Cameroon allowed, sender ID approved, spending triggers set
 - [ ] A test SMS reached a real MTN number and a real Orange number (add yourself as a guardian, then sign in as a parent)
 - [ ] A test push reached a real phone with the production app
-- [ ] Both schools: calendar, periods, classes, timetable, staff, students and letterhead in place
-- [ ] Each school's SMS limit set to what you can afford
+- [ ] The school: calendar with its sequences, periods, classes, timetable, staff, students and letterhead in place
+- [ ] The school's SMS limit set to what you can afford
 - [ ] Nightly backup running (`backups/backup.log` shows recent lines) and a restore tested
 - [ ] UptimeRobot monitoring and alerting you
 - [ ] `.env`, the Firebase key and the upload key backed up off the server

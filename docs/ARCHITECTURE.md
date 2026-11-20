@@ -26,7 +26,7 @@ The three parts:
 - **One Android app** for every role. The screens change with the user's role.
 - **One web dashboard** for administration, the DM's desk work and research.
 
-They share one PostgreSQL database. Two schools live side by side in it, with every row tagged with its `school_id`.
+They share one PostgreSQL database. Every row is tagged with its `school_id`, so schools live side by side in it; the pilot has one (D47).
 
 ## 2. Overall architecture: a modular monolith
 
@@ -51,7 +51,7 @@ The backend is **one deployable application**, divided into 12 modules, one Java
 - **Each module hides its internals.** Its `internal` sub-package is private to it. Other modules reach it only through its public Java interfaces or through the events it publishes, never over HTTP.
 - **A test enforces the boundaries.** `ModularityTests` uses Spring Modulith to verify them, so a module that reaches into another one's internals fails the build.
 
-**Why a monolith and not microservices:** the pilot has two schools. Microservices would add network calls, separate deployments and distributed failures without any benefit at this size. The project rules forbid them, and also forbid message brokers. Clear module boundaries keep the option to split one module out later if SchoolLink ever grows.
+**Why a monolith and not microservices:** the pilot has one school (D47). Microservices would add network calls, separate deployments and distributed failures without any benefit at this size. The project rules forbid them, and also forbid message brokers. Clear module boundaries keep the option to split one module out later if SchoolLink ever grows.
 
 ## 3. Backend patterns
 
