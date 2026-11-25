@@ -424,7 +424,7 @@ The MVP is the loop from attendance to parent notification to DM decision; couns
 | 1. Foundations | Spring Boot project, PostgreSQL schema, auth, roles and scopes, school structure, CSV import, admin web screens | Admin can set up a school and import students | 3 weeks |
 | 2. Attendance loop | Flutter app shell, teacher attendance with double confirmation, offline sync, lateness at the gate, outbox, FCM push, parent sign-in and inbox | A teacher's confirmation reaches a parent's phone | 4 weeks |
 | 3. DM and detection | Justification, cancel with correction, threshold rules and alerts, decisions, summons, SMS digest, dashboards | A full test day produces correct alerts and one digest per student | 3 weeks |
-| 4. Pilot wave 1 | Training staff, issuing parent codes, live use in the pilot school (D47), bug fixes | 80% of expected sessions recorded daily for 2 weeks | 4–6 weeks |
+| 4. Pilot wave 1 | Training staff, issuing parent codes, live use in two classes of the pilot school for two months (D47, D48), bug fixes | 80% of expected sessions recorded daily for 2 weeks | 4–6 weeks |
 | 5. Wave 2 | Counsellor cases, research view and export (DM messages, disciplinary records and announcements moved to the pilot: D37, D38) | Counsellor opens a real case from a referral | 3 weeks |
 | 6. Evaluation | Questionnaires, interviews, data analysis, report | Results chapter written | 3 weeks |
 

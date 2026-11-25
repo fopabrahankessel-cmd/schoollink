@@ -8,7 +8,7 @@ Prices were checked in November 2026. They change, so confirm them on each provi
 
 1. [What you will end up with](#1-what-you-will-end-up-with)
 2. [What it costs](#2-what-it-costs)
-3. [Timeline: start the slow things first](#3-timeline-start-the-slow-things-first)
+3. [Timeline: from the day before to the parents](#3-timeline-from-the-day-before-to-the-parents)
 4. [Accounts to open](#4-accounts-to-open)
 5. [Buy a domain name](#5-buy-a-domain-name)
 6. [Rent the server](#6-rent-the-server)
@@ -112,12 +112,43 @@ Everything except SMS costs less than US$ 10 a month. SMS can cost hundreds.
 | 50 % | about 1,000 | about US$ 320 |
 | 80 % | about 400 | about US$ 130 |
 
-**Example total for a 3-month pilot in one school**, with half the parents on the app and 300 parents signing in:
-- server: 4 months × about US$ 6 = **US$ 24**
-- domain: **US$ 12**
-- parent first sign-ins: 300 × US$ 0.317 = **US$ 95** (D45: after that a parent signs in with a password; only a forgotten password costs another SMS, at most 3 per year, D46)
-- digests: 3 months × US$ 320 = **US$ 960**
-- **Total: about US$ 1,090 (≈ 620,000 FCFA)**
+### The pilot's budget: two classes, two months (D48)
+
+The pilot runs in two classes of 45 students for two months. The school expects 40 to 50 absences per class per month.
+
+**Assumptions:**
+- At most **100 absences a month** for the two classes, each one a student absent on one day.
+- About **1.5 guardians per student**, so about 135 parents. Each guardian without the app gets their own SMS (BR-20).
+- The digest runs at 13:00 and 17:00, so a student absent all day can cost 2 SMS per guardian.
+
+**Fixed costs:**
+
+| Item | 2 months |
+| --- | --- |
+| Server CX23 + Hetzner backups (about € 5.50 a month) | about US$ 13 (≈ 7,500 FCFA) |
+| Domain name (one year) | about US$ 12 (≈ 7,000 FCFA) |
+
+**Digest SMS:**
+
+| Case | SMS per month | 2 months |
+| --- | --- | --- |
+| Worst: no parent uses the app, every absence lasts all day | 300 | US$ 190 |
+| Likely: no parent uses the app, one digest per absence | 150 | US$ 95 |
+| Good: half the parents use the app and open their pushes | 75 | US$ 48 |
+
+**Other SMS:**
+- **First sign-in codes:** one per parent who installs the app, at most 135 × US$ 0.317 = **US$ 43**, once (D45). A forgotten password costs one more, at most 3 per parent per school year (D46).
+- **Summons:** always by SMS (BR-23). At about 10 a month, that is about **US$ 10** for the two months.
+
+**Total for the two months: about US$ 120 to 270 (≈ 70,000 to 155,000 FCFA).**
+
+Not counted:
+- **Lateness:** each late student whose parents do not use the app adds about US$ 0.48.
+- **Rare accented letters in a name** (ç, ê, ô…): they can make one SMS cost two (see below).
+
+**Cap the cost from day 1:**
+- Set the school's monthly SMS limit to **400** (part 17). That caps the digests at about US$ 127 a month.
+- In Twilio, set a spending trigger at **US$ 150** and load about US$ 150 of credit.
 
 **Ways to spend less:**
 - **Get parents onto the app.** Every parent who uses the app and opens pushes costs almost nothing. Push adoption is the biggest saving.
@@ -129,18 +160,73 @@ Everything except SMS costs less than US$ 10 a month. SMS can cost hundreds.
 
 ---
 
-## 3. Timeline: start the slow things first
+## 3. Timeline: from the day before to the parents
 
-Some steps take days or weeks and you cannot speed them up. Start them on day 1, in parallel with everything else.
+The pilot starts in **two stages** (D48):
+- **Staff first.** Teachers, the DM and the assistant DM record attendance from day 1. That needs no SMS.
+- **Parents next.** A parent's first sign-in needs an SMS code (D45), so parents join once SMS reaches Cameroonian phones. The sender ID approval can take days, or weeks for MTN.
 
-| When | What | Why it is slow |
-| --- | --- | --- |
-| Day 1 | Ask the head teachers for their written authorisation, and prepare the parent information notice and consent form (SPEC §11) | Needs signatures and meetings |
-| Day 1 | Open the Twilio account and **register the "SchoolLink" sender ID for Cameroon** (part 9) | Operators must approve it. It can take several weeks, and MTN does not deliver without it |
-| Day 1 | If you want Google Play: open the developer account (part 13) | Identity checks take days. A new personal account must then run a 14-day closed test with at least 12 testers before it can publish publicly |
-| Week 1 | Domain, server, installation (parts 5–10) | About one day of work |
-| Week 1–2 | Create the schools, import students, set the timetable (part 11) | Depends on getting class lists from the schools |
-| Week 2–3 | Train staff, then help parents sign in | Part 18 |
+### The day before
+
+1. **Push the code to GitHub.** The server downloads it from there (part 10.1), so commits that exist only on your PC never reach it.
+2. **Get the written authorisation from the head teacher**, and prepare the parent information notice and consent form (SPEC §11). No real student data goes in before both exist.
+3. **Twilio (part 9):**
+   - Open the account, upgrade it and load about US$ 150.
+   - Allow Cameroon and **request the "SchoolLink" sender ID**. Do this first: operators must approve it, and MTN does not deliver without it.
+   - Test one MTN number and one Orange number.
+4. **Domain and server** (parts 5–7): buy the domain, rent the CX23 and point the domain at it.
+5. **Collect from the school:**
+   - the students of the two classes, with their guardians' phone numbers
+   - the teachers of those classes
+   - their timetable
+   - the dates of the terms and sequences
+
+   Keep the student file on your PC only. Never put it in the repository.
+6. **The Android app** (part 12): create the upload key and keep a backup copy off your PC; without it the installed apps can never be updated. Build the production APK pointing at `https://YOUR_DOMAIN/api/v1`.
+
+### Day 1: set up and train the staff
+
+1. **Morning: the server.**
+   - Install the server (parts 8–10) and create the school (part 11).
+   - Check that `https://YOUR_DOMAIN/actuator/health` shows `UP` and that the sign-in page lists only your school.
+2. **The administrator fills in School settings:**
+   - the calendar, with its terms and sequences
+   - the periods
+   - the two classes
+   - the staff: only the teachers of the two classes, the DM and the assistant DM
+   - the timetable
+   - the student import
+   - the letterhead
+
+   Then set the SMS limit to 400 (part 17).
+3. **Afternoon: the staff.**
+   - Install the app on the staff phones yourself and sign each person in (part 13).
+   - Uninstall any development build from those phones.
+   - Train the staff for about 30 minutes on a practice roll call.
+
+### Day 2: the first real roll call
+
+Teachers record attendance. In the evening, check that every expected session was recorded.
+
+Before day 2, **record the baseline**: how the school tells parents about absences today, and how long it takes. With one school and no comparison group (D47), the evaluation compares against it.
+
+### Week 1: the parents
+
+Once a test SMS has reached both an MTN and an Orange number, hold a parents' meeting:
+- Install the app on the parents' phones.
+- Each parent signs in with the SMS code and chooses a password.
+
+Every parent on the app lowers the SMS cost (part 2).
+
+### Every week during the pilot
+
+- Copy the backups to your PC (part 14).
+- Check the SMS counter on the dashboard and your Twilio spending.
+- Collect the bugs. Each fixed version means reinstalling the app on every phone, so group fixes into a few versions.
+
+### Only if you want Google Play
+
+Open the developer account early (part 13). Identity checks take days, and a new personal account must run a 14-day closed test with at least 12 testers before it can publish. Not needed for a two-month pilot with the app installed by hand.
 
 ---
 
@@ -634,7 +720,7 @@ All commands run in `/opt/schoollink/deploy` on the server.
 - [ ] A test SMS reached a real MTN number and a real Orange number (add yourself as a guardian, then sign in as a parent)
 - [ ] A test push reached a real phone with the production app
 - [ ] The school: calendar with its sequences, periods, classes, timetable, staff, students and letterhead in place
-- [ ] The school's SMS limit set to what you can afford
+- [ ] The school's SMS limit set to what you can afford (400 for the two-class pilot, D48)
 - [ ] Nightly backup running (`backups/backup.log` shows recent lines) and a restore tested
 - [ ] UptimeRobot monitoring and alerting you
 - [ ] `.env`, the Firebase key and the upload key backed up off the server
