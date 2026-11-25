@@ -2,7 +2,11 @@ package com.schoollink.auth.internal;
 
 import com.schoollink.TestcontainersConfiguration;
 import com.schoollink.shared.ratelimit.RateLimiter;
+import com.schoollink.testsupport.TestClock;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.UUID;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /** NFR-7: rate limits on login. 5 failures per login, 30 requests per minute per IP. Fake data only. */
 @SpringBootTest
 @AutoConfigureMockMvc
-@Import(TestcontainersConfiguration.class)
+@Import({ TestcontainersConfiguration.class, TestClock.Config.class })
 @Transactional
 class LoginRateLimitTests {
 
@@ -46,6 +50,14 @@ class LoginRateLimitTests {
 
 	@Autowired
 	JsonMapper json;
+
+	@Autowired
+	TestClock clock;
+
+	@AfterEach
+	void followTheRealTimeAgain() {
+		clock.reset();
+	}
 
 	@BeforeEach
 	void setUp() {
@@ -134,19 +146,22 @@ class LoginRateLimitTests {
 
 	@Test
 	void oneIpGetsABurstOfThirtyThenIsRejected() throws Exception {
+		// The clock stands still during the burst: on a slow machine 30 BCrypt checks take several
+		// seconds, and with the real time the bucket would refill while they run.
+		Instant start = Instant.now();
+		clock.set(start);
 		for (int i = 0; i < 30; i++) {
 			login(String.format("+2376994%05d", i), "x", "10.9.9.9").andExpect(status().isUnauthorized());
 		}
 
-		// The bucket refills by one request every 2 s, so a request or two may still get through
-		// while the burst runs; the next ones are rejected.
-		int extraAllowed = 0;
-		while (login("+237699300002", "Right-Pass1", "10.9.9.9").andReturn().getResponse().getStatus() != 429) {
-			assertThat(++extraAllowed).as("requests allowed after the burst of 30").isLessThanOrEqualTo(3);
-		}
 		login("+237699300002", "Right-Pass1", "10.9.9.9").andExpect(status().isTooManyRequests())
 			.andExpect(header().exists("Retry-After"));
 		login("+237699300002", "Right-Pass1", "10.9.9.10").andExpect(status().isOk());
+
+		// one request every 2 s comes back
+		clock.set(start.plus(Duration.ofSeconds(2)));
+		login("+237699300002", "Right-Pass1", "10.9.9.9").andExpect(status().isOk());
+		login("+237699300002", "Right-Pass1", "10.9.9.9").andExpect(status().isTooManyRequests());
 	}
 
 	private ResultActions login(String login, String password, String ip) throws Exception {
