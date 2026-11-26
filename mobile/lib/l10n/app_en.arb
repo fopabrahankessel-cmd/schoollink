@@ -1033,7 +1033,7 @@
   "@messageBody": {
     "description": "Composer: the text field."
   },
-  "messageSms": "Also by SMS for parents without the app",
+  "messageSms": "Also by SMS, to every parent",
   "@messageSms": {
     "description": "Composer: SMS switch."
   },

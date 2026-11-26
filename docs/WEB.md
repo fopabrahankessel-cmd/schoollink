@@ -255,7 +255,7 @@ The alert rules (count and on/off, within each rule's bounds), the start of scho
 - `MessagesPage`: the messages the DM sent, in `SentMessagesTable`, with delivery counts. `GET /messages`.
 - `ComposeMessagePage`: writes to the parents of one student (`?studentId=`) or one class.
 - `MessageComposer` is shared with announcements:
-  - the form on the left; on the right, what parents will see (the app notification, and the SMS for those without the app), who gets it and what it costs;
+  - the form on the left; on the right, what parents will see (the app notification, and the SMS, which goes to every parent when ticked, D49), who gets it and what it costs;
   - the preview is asked once the author pauses typing;
   - sending asks for confirmation;
   - the message id is made once, so a double click or a retry sends once.

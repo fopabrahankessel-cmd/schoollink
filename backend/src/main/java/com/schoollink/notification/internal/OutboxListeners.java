@@ -101,19 +101,21 @@ class OutboxListeners {
 	}
 
 	/**
-	 * BR-23, D12: a summons goes at once to every guardian of the student, by push with the app and
-	 * by SMS without, never held for the digest.
+	 * BR-23, D12, D49: a summons goes at once by SMS to every guardian of the student, and by push too
+	 * to those with the app, never held for the digest. The SMS reaches a parent whose app is gone.
 	 */
 	@EventListener
 	@Transactional(propagation = Propagation.MANDATORY)
 	void on(SummonsIssued event) {
-		List<Row> rows = guardians.ofStudents(event.schoolId(), Set.of(event.studentId())).stream().map(guardian -> {
+		List<Row> rows = guardians.ofStudents(event.schoolId(), Set.of(event.studentId())).stream().flatMap(guardian -> {
 			Map<String, Object> payload = Map.of("studentId", guardian.studentId(), "firstName",
 					guardian.studentFirstName(), "meetingDate", event.meetingDate().toString(), "meetingTime",
 					event.meetingTime().toString());
-			return new Row(event.schoolId(), guardian.guardianId(), guardian.studentId(), EventType.SUMMONS,
-					event.summonsId(), guardian.hasAccount() ? Channel.PUSH : Channel.SMS, guardian.language(), payload,
-					Status.QUEUED);
+			Row sms = new Row(event.schoolId(), guardian.guardianId(), guardian.studentId(), EventType.SUMMONS,
+					event.summonsId(), Channel.SMS, guardian.language(), payload, Status.QUEUED);
+			return guardian.hasAccount() ? java.util.stream.Stream.of(new Row(event.schoolId(), guardian.guardianId(),
+					guardian.studentId(), EventType.SUMMONS, event.summonsId(), Channel.PUSH, guardian.language(),
+					payload, Status.QUEUED), sms) : java.util.stream.Stream.of(sms);
 		}).toList();
 		outbox.write(rows);
 	}

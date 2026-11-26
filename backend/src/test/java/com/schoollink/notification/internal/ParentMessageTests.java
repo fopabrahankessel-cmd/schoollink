@@ -188,7 +188,8 @@ class ParentMessageTests {
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.recipients").value(4))
 			.andExpect(jsonPath("$.byApp").value(2))
-			.andExpect(jsonPath("$.bySms").value(2))
+			// D49: the SMS goes to every guardian, app users too
+			.andExpect(jsonPath("$.bySms").value(4))
 			.andExpect(jsonPath("$.unreached").value(0))
 			.andExpect(jsonPath("$.smsLeft").value(10))
 			.andExpect(jsonPath("$.overCap").value(false));
@@ -208,7 +209,7 @@ class ParentMessageTests {
 		perform(DM_1, dmPreview(Map.of("classId", world.classA, "sms", true)))
 			.andExpect(jsonPath("$.smsUnits").value(1))
 			.andExpect(jsonPath("$.smsUnicode").value(false))
-			.andExpect(jsonPath("$.estimatedCost").value(2 * 181))
+			.andExpect(jsonPath("$.estimatedCost").value(4 * 181))
 			.andExpect(jsonPath("$.smsSample").value("SchoolLink - SG Lycée Fictif X : " + TEXT));
 	}
 
@@ -239,7 +240,7 @@ class ParentMessageTests {
 		assertThat(jdbc.queryForList("""
 				SELECT channel || ' ' || status FROM notification_outbox
 				WHERE event_type = 'DM_MESSAGE' AND event_id = ? AND student_id IS NULL ORDER BY 1""", String.class, id))
-			.containsExactly("PUSH QUEUED", "PUSH QUEUED", "SMS QUEUED", "SMS QUEUED");
+			.containsExactly("PUSH QUEUED", "PUSH QUEUED", "SMS QUEUED", "SMS QUEUED", "SMS QUEUED", "SMS QUEUED");
 		assertThat(jdbc.queryForObject("""
 				SELECT count(*) FROM audit_log WHERE entity = 'parent_message' AND entity_id = ? AND action = 'CREATE'""",
 				Integer.class, id.toString())).isOne();
@@ -252,9 +253,9 @@ class ParentMessageTests {
 
 		assertThat(jdbc.queryForList("""
 				SELECT channel FROM notification_outbox WHERE event_id = ? AND student_id = ? ORDER BY 1""", String.class,
-				id, studentA2)).containsExactly("PUSH", "SMS");
+				id, studentA2)).containsExactly("PUSH", "SMS", "SMS");
 		assertThat(jdbc.queryForObject("SELECT count(*) FROM notification_outbox WHERE event_id = ?", Integer.class, id))
-			.isEqualTo(2);
+			.isEqualTo(3);
 	}
 
 	@Test
@@ -282,10 +283,10 @@ class ParentMessageTests {
 
 	@Test
 	void smsLeftCountsQueuedSms() throws Exception {
-		jdbc.update("UPDATE school SET sms_monthly_cap = 3 WHERE id = ?", world.schoolX);
+		jdbc.update("UPDATE school SET sms_monthly_cap = 5 WHERE id = ?", world.schoolX);
 		perform(DM_1, dmSend(Map.of("classId", world.classA, "sms", true))).andExpect(status().isCreated());
 
-		// the two SMS of the first message are queued, not sent yet: one left, the class needs two
+		// the four SMS of the first message are queued, not sent yet: one left, the class needs four
 		perform(DM_1, dmPreview(Map.of("classId", world.classA, "sms", true)))
 			.andExpect(jsonPath("$.smsLeft").value(1))
 			.andExpect(jsonPath("$.overCap").value(true));
@@ -336,10 +337,10 @@ class ParentMessageTests {
 		assertThat(jdbc.queryForMap("SELECT kind, audience FROM parent_message WHERE id = ?", id))
 			.containsEntry("kind", "ANNOUNCEMENT")
 			.containsEntry("audience", "SCHOOL");
-		// PARENT_A, G2 by push; G3, G4, G5 by SMS: each guardian once
+		// PARENT_A, G2 by push; all five by SMS (D49): each guardian once per channel
 		assertThat(jdbc.queryForList("""
 				SELECT channel FROM notification_outbox WHERE event_type = 'ANNOUNCEMENT' AND event_id = ? ORDER BY 1""",
-				String.class, id)).containsExactly("PUSH", "PUSH", "SMS", "SMS", "SMS");
+				String.class, id)).containsExactly("PUSH", "PUSH", "SMS", "SMS", "SMS", "SMS", "SMS");
 	}
 
 	@Test
@@ -387,14 +388,30 @@ class ParentMessageTests {
 
 		UUID push = jdbc.queryForObject(
 				"SELECT id FROM notification_outbox WHERE event_id = ? AND channel = 'PUSH' LIMIT 1", UUID.class, id);
-		UUID sms = jdbc.queryForObject(
-				"SELECT id FROM notification_outbox WHERE event_id = ? AND channel = 'SMS' LIMIT 1", UUID.class, id);
+		UUID sms = jdbc.queryForObject("""
+				SELECT o.id FROM notification_outbox o JOIN guardian g ON g.id = o.guardian_id
+				WHERE o.event_id = ? AND o.channel = 'SMS' AND g.user_id IS NULL LIMIT 1""", UUID.class, id);
 		jdbc.update("UPDATE notification_outbox SET status = 'OPENED', sent_at = now(), opened_at = now() WHERE id = ?",
 				push);
 		jdbc.update("UPDATE notification_outbox SET status = 'FAILED' WHERE id = ?", sms);
-		perform(DM_1, get("/api/v1/messages")).andExpect(jsonPath("$[0].delivery.opened").value(1))
+		// D49: one count per guardian, by the best of their push and SMS
+		perform(DM_1, get("/api/v1/messages")).andExpect(jsonPath("$[0].delivery.recipients").value(4))
+			.andExpect(jsonPath("$[0].delivery.opened").value(1))
 			.andExpect(jsonPath("$[0].delivery.failed").value(1))
 			.andExpect(jsonPath("$[0].delivery.pending").value(2));
+	}
+
+	@Test
+	void aFailedPushIsNotAFailureWhileTheSmsCanStillArrive() throws Exception { // D49
+		UUID id = UUID.randomUUID();
+		perform(DM_1, dmSend(id, Map.of("studentId", studentA2, "sms", true))).andExpect(status().isCreated());
+		jdbc.update("UPDATE notification_outbox SET status = 'FAILED' WHERE event_id = ? AND channel = 'PUSH'", id);
+		jdbc.update("UPDATE notification_outbox SET status = 'SENT', sent_at = now() WHERE event_id = ? AND channel = 'SMS'",
+				id);
+
+		perform(DM_1, get("/api/v1/messages")).andExpect(jsonPath("$[0].delivery.recipients").value(2))
+			.andExpect(jsonPath("$[0].delivery.sent").value(2))
+			.andExpect(jsonPath("$[0].delivery.failed").value(0));
 	}
 
 	@Test

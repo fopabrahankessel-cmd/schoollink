@@ -795,7 +795,7 @@
     "student": "Élève",
     "body": "Votre message",
     "characters": "{{count}} / {{max}}",
-    "smsSwitch": "Aussi par SMS pour les parents sans l'application",
+    "smsSwitch": "Aussi par SMS, à tous les parents",
     "smsHint": "Payant, compté dans les SMS du mois.",
     "plainSwitch": "Remplacer les lettres spéciales",
     "plainHint": "Dans le SMS seulement ; l'application garde le texte exact.",

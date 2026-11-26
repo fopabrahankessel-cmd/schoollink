@@ -327,6 +327,6 @@ void main() {
     expect(find.text('4 recipients'), findsOneWidget);
     expect(find.text('1 opened'), findsOneWidget);
     await tapAndSettle(tester, find.widgetWithText(FloatingActionButton, 'New message'));
-    expect(find.text('Also by SMS for parents without the app'), findsOneWidget);
+    expect(find.text('Also by SMS, to every parent'), findsOneWidget);
   });
 }

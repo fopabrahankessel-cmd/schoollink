@@ -1991,7 +1991,7 @@ abstract class AppLocalizations {
   /// Composer: SMS switch.
   ///
   /// In en, this message translates to:
-  /// **'Also by SMS for parents without the app'**
+  /// **'Also by SMS, to every parent'**
   String get messageSms;
 
   /// Composer: under the SMS switch.

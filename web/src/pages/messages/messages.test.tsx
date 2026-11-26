@@ -138,7 +138,7 @@ describe('Messages to parents (UC-D4, D38)', () => {
     const user = userEvent.setup()
 
     await writeToClass(user, '  Réunion des parents vendredi à 15 h. ')
-    expect(screen.getByRole('switch', { name: "Aussi par SMS pour les parents sans l'application" })).not.toBeChecked()
+    expect(screen.getByRole('switch', { name: "Aussi par SMS, à tous les parents" })).not.toBeChecked()
     expect(await screen.findByText("4 parents : 2 par l'app, 2 sans l'app")).toBeInTheDocument()
 
     await user.click(sendButton())
@@ -168,7 +168,7 @@ describe('Messages to parents (UC-D4, D38)', () => {
     await user.click(await screen.findByRole('link', { name: 'Écrire aux parents' }))
     expect(router.state.location.pathname + router.state.location.search).toBe('/messages/new?studentId=s1')
     expect(await screen.findByText('Exemple Awa', { selector: '.MuiChip-label' })).toBeInTheDocument()
-    expect(screen.getByRole('switch', { name: "Aussi par SMS pour les parents sans l'application" })).toBeChecked()
+    expect(screen.getByRole('switch', { name: "Aussi par SMS, à tous les parents" })).toBeChecked()
 
     await write(user, 'Merci de passer au bureau.')
     expect(await screen.findByText("4 parents : 2 par l'app, 2 par SMS")).toBeInTheDocument()
@@ -192,7 +192,7 @@ describe('Messages to parents (UC-D4, D38)', () => {
     const user = userEvent.setup()
 
     await writeToClass(user, 'Réunion vendredi.')
-    await user.click(screen.getByRole('switch', { name: "Aussi par SMS pour les parents sans l'application" }))
+    await user.click(screen.getByRole('switch', { name: "Aussi par SMS, à tous les parents" }))
 
     expect(await screen.findByText(/Plus assez de SMS ce mois-ci/)).toBeInTheDocument()
     expect(sendButton()).toBeDisabled()
@@ -204,7 +204,7 @@ describe('Messages to parents (UC-D4, D38)', () => {
     const user = userEvent.setup()
 
     await writeToClass(user, 'Fête de fin d’année')
-    await user.click(screen.getByRole('switch', { name: "Aussi par SMS pour les parents sans l'application" }))
+    await user.click(screen.getByRole('switch', { name: "Aussi par SMS, à tous les parents" }))
     await user.click(await screen.findByRole('switch', { name: 'Remplacer les lettres spéciales' }))
 
     await waitFor(() => expect(posted(api, '/messages/preview').at(-1)?.plainSms).toBe(true))

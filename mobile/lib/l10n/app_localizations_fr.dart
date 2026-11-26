@@ -1256,7 +1256,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get messageBody => 'Votre message';
 
   @override
-  String get messageSms => 'Aussi par SMS pour les parents sans l\'application';
+  String get messageSms => 'Aussi par SMS, à tous les parents';
 
   @override
   String get messageSmsHint => 'Payant, compté dans les SMS du mois.';

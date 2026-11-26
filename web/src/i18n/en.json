@@ -795,7 +795,7 @@
     "student": "Student",
     "body": "Your message",
     "characters": "{{count}} / {{max}}",
-    "smsSwitch": "Also by SMS for parents without the app",
+    "smsSwitch": "Also by SMS, to every parent",
     "smsHint": "Paid, counted in the month's SMS.",
     "plainSwitch": "Replace special letters",
     "plainHint": "In the SMS only; the app keeps the exact text.",

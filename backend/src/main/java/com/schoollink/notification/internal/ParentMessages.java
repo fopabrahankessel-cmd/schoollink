@@ -41,8 +41,8 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * UC-D4, UC-A5, D38: messages to parents. A DM writes to the guardians of one student or one class
  * of their blocks; an administrator to those of the whole school or one class (NFR-8: the scope comes
- * from the signed-in user). Each guardian gets it once, by push with the app (D7) or, if the author
- * asks for it, by SMS without; the preview gives the counts and the SMS cost before sending (BR-25,
+ * from the signed-in user). Each guardian gets it once per channel: by push with the app (D7) and, if
+ * the author asks for it, by SMS, app users too (D49); the preview gives the counts and the SMS cost before sending (BR-25,
  * NFR-14). Sending writes the message, its outbox rows and an audit row in one transaction (BR-20,
  * NFR-6, NFR-11); the dispatcher sends them. Messages are never edited or deleted.
  */
@@ -180,7 +180,7 @@ class ParentMessages {
 		if (draft.sms()) {
 			// BR-25: one message at a time takes from this month's SMS
 			schools.lockSmsBudget(school);
-			int bySms = (int) recipients.stream().filter(r -> !r.hasAccount()).count();
+			int bySms = recipients.size(); // D49: every guardian, app users too
 			int left = usage.left(school);
 			if (bySms > left) {
 				throw ApiException.conflict("messages.sms_over_cap", bySms, left);
@@ -207,9 +207,6 @@ class ParentMessages {
 				: classes.names(school, Set.of(target.classId())).get(target.classId());
 		List<Row> rows = new ArrayList<>();
 		for (Recipient r : recipients) {
-			if (!r.hasAccount() && !draft.sms()) {
-				continue;
-			}
 			Map<String, Object> payload = new HashMap<>();
 			payload.put("body", body);
 			payload.put("plainSms", draft.plainSms());
@@ -220,8 +217,15 @@ class ParentMessages {
 			if (className != null) {
 				payload.put("className", className);
 			}
-			rows.add(new Row(school, r.guardianId(), target.studentId(), type, draft.id(),
-					r.hasAccount() ? Channel.PUSH : Channel.SMS, r.language(), payload, Status.QUEUED));
+			// D49: push to the app users; when the author asks for SMS, an SMS to every guardian
+			if (r.hasAccount()) {
+				rows.add(new Row(school, r.guardianId(), target.studentId(), type, draft.id(), Channel.PUSH,
+						r.language(), payload, Status.QUEUED));
+			}
+			if (draft.sms()) {
+				rows.add(new Row(school, r.guardianId(), target.studentId(), type, draft.id(), Channel.SMS,
+						r.language(), payload, Status.QUEUED));
+			}
 		}
 		outbox.write(rows);
 		Map<String, Object> after = new LinkedHashMap<>();
@@ -272,15 +276,21 @@ class ParentMessages {
 		List<SentMessage> rows = jdbc.query("""
 				SELECT m.id, m.kind, m.audience, m.student_id, m.class_id, m.body, m.sms, m.created_at,
 				       u.first_name || ' ' || u.last_name AS author_name,
-				       count(DISTINCT o.guardian_id) AS recipients,
-				       count(o.id) FILTER (WHERE o.status IN ('QUEUED', 'SENDING')) AS pending,
-				       count(o.id) FILTER (WHERE o.status = 'SENT') AS sent,
-				       count(o.id) FILTER (WHERE o.status = 'DELIVERED') AS delivered,
-				       count(o.id) FILTER (WHERE o.status = 'OPENED') AS opened,
-				       count(o.id) FILTER (WHERE o.status = 'FAILED') AS failed
+				       count(o.guardian_id) AS recipients,
+				       count(*) FILTER (WHERE o.best = 2) AS pending,
+				       count(*) FILTER (WHERE o.best = 3) AS sent,
+				       count(*) FILTER (WHERE o.best = 4) AS delivered,
+				       count(*) FILTER (WHERE o.best = 5) AS opened,
+				       count(*) FILTER (WHERE o.best = 1) AS failed
 				FROM parent_message m
 				JOIN app_user u ON u.id = m.author_id AND u.school_id = m.school_id
-				LEFT JOIN notification_outbox o ON o.school_id = m.school_id AND o.event_type = m.kind AND o.event_id = m.id
+				-- D49: one count per guardian, by the best of their push and SMS
+				LEFT JOIN (SELECT school_id, event_type, event_id, guardian_id,
+				                  max(CASE status WHEN 'OPENED' THEN 5 WHEN 'DELIVERED' THEN 4 WHEN 'SENT' THEN 3
+				                                  WHEN 'FAILED' THEN 1 ELSE 2 END) AS best
+				           FROM notification_outbox
+				           GROUP BY school_id, event_type, event_id, guardian_id) o
+				       ON o.school_id = m.school_id AND o.event_type = m.kind AND o.event_id = m.id
 				WHERE m.school_id = :school AND m.kind = :kind
 				  AND (CAST(:author AS uuid) IS NULL OR m.author_id = CAST(:author AS uuid))
 				  AND (CAST(:student AS uuid) IS NULL OR m.student_id = CAST(:student AS uuid))
@@ -392,7 +402,7 @@ class ParentMessages {
 			boolean sms, boolean plain) {
 		int byApp = (int) recipients.stream().filter(Recipient::hasAccount).count();
 		int withoutApp = recipients.size() - byApp;
-		int bySms = sms ? withoutApp : 0;
+		int bySms = sms ? recipients.size() : 0; // D49: every guardian, app users too
 		int left = usage.left(school);
 		String schoolName = schools.name(school);
 		EventType type = EventType.valueOf(kind.name());
@@ -403,9 +413,7 @@ class ParentMessages {
 		if (sms) {
 			int price = schools.smsUnitPrice(school);
 			for (Recipient r : recipients) {
-				if (!r.hasAccount()) {
-					cost += SmsText.units(templates.messageSms(type, r.language(), body, plain, schoolName)) * price;
-				}
+				cost += SmsText.units(templates.messageSms(type, r.language(), body, plain, schoolName)) * price;
 			}
 		}
 		return new Preview(recipients.size(), byApp, bySms, sms ? 0 : withoutApp, units,

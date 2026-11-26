@@ -54,8 +54,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * UC-D3, BR-23, D12, D31, task 3.6: the DM summons a parent, on their own or from an alert; the
- * summons goes at once by push to the app and by SMS to guardians without it. Tuesday 3 November
+ * UC-D3, BR-23, D12, D31, D49, task 3.6: the DM summons a parent, on their own or from an alert;
+ * the summons goes at once by SMS to every guardian, and by push too to those with the app. Tuesday 3 November
  * 2026, 10:00 in Douala. Student A has PARENT_A (the app) and a second guardian without it.
  * Generated data only.
  */
@@ -168,24 +168,28 @@ class SummonsTests {
 
 		List<Map<String, Object>> rows = jdbc.queryForList("""
 				SELECT guardian_id, event_type, channel, language, status, payload::text AS payload FROM notification_outbox
-				WHERE event_id = ? ORDER BY channel""", id);
-		assertThat(rows).hasSize(2);
+				WHERE event_id = ? ORDER BY channel, language DESC""", id);
+		assertThat(rows).hasSize(3);
 		assertThat(rows.get(0)).containsEntry("guardian_id", parentGuardian)
 			.containsEntry("event_type", "SUMMONS")
 			.containsEntry("channel", "PUSH")
 			.containsEntry("language", "FR")
 			.containsEntry("status", "QUEUED");
+		// D49: the parent with the app gets the SMS too, so a summons reaches a phone without the app
+		assertThat(rows.get(1)).containsEntry("guardian_id", parentGuardian)
+			.containsEntry("channel", "SMS")
+			.containsEntry("status", "QUEUED");
 		// D12: the SMS goes now, not in the evening digest
-		assertThat(rows.get(1)).containsEntry("guardian_id", smsGuardian)
+		assertThat(rows.get(2)).containsEntry("guardian_id", smsGuardian)
 			.containsEntry("channel", "SMS")
 			.containsEntry("language", "EN")
 			.containsEntry("status", "QUEUED");
-		JsonNode payload = json.readTree((String) rows.get(1).get("payload"));
+		JsonNode payload = json.readTree((String) rows.get(2).get("payload"));
 		assertThat(payload.get("firstName").asString()).isEqualTo("Élève");
 		assertThat(payload.get("meetingDate").asString()).isEqualTo("2026-11-04");
 		assertThat(payload.get("meetingTime").asString()).isEqualTo("14:00");
 		// D31: the reason stays with the DM
-		assertThat((String) rows.get(1).get("payload")).doesNotContain("Comportement");
+		assertThat((String) rows.get(2).get("payload")).doesNotContain("Comportement");
 	}
 
 	@Test
@@ -267,7 +271,7 @@ class SummonsTests {
 			.containsEntry("sent_by", world.user(DM_1));
 		assertThat(jdbc.queryForList("""
 				SELECT status FROM notification_outbox WHERE event_type = 'SUMMONS' AND event_id = ?::uuid""",
-				String.class, outcome)).containsExactly("QUEUED", "QUEUED");
+				String.class, outcome)).containsExactly("QUEUED", "QUEUED", "QUEUED");
 	}
 
 	@Test

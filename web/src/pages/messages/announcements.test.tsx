@@ -80,11 +80,11 @@ describe('Announcements (UC-A5, D38)', () => {
     const user = userEvent.setup()
 
     expect(await screen.findByRole('radio', { name: "Tous les parents de l'école" })).toBeChecked()
-    expect(screen.getByRole('switch', { name: "Aussi par SMS pour les parents sans l'application" })).not.toBeChecked()
+    expect(screen.getByRole('switch', { name: "Aussi par SMS, à tous les parents" })).not.toBeChecked()
     await write(user, 'Pas de cours lundi.')
     expect(await screen.findByText("120 parents : 80 par l'app, 40 sans l'app")).toBeInTheDocument()
 
-    await user.click(screen.getByRole('switch', { name: "Aussi par SMS pour les parents sans l'application" }))
+    await user.click(screen.getByRole('switch', { name: "Aussi par SMS, à tous les parents" }))
     expect(await screen.findByText("120 parents : 80 par l'app, 40 par SMS")).toBeInTheDocument()
     expect(screen.getByText(/≈ 7.240 FCFA/)).toBeInTheDocument()
 

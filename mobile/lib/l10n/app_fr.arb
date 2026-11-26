@@ -316,7 +316,7 @@
   "writeToParents": "Écrire aux parents",
   "messageClass": "Classe",
   "messageBody": "Votre message",
-  "messageSms": "Aussi par SMS pour les parents sans l'application",
+  "messageSms": "Aussi par SMS, à tous les parents",
   "messageSmsHint": "Payant, compté dans les SMS du mois.",
   "messageCounts": "{count, plural, =1{1 parent} other{{count} parents}} : {byApp} par l'app, {without} sans l'app",
   "messageCountsSms": "{count, plural, =1{1 parent} other{{count} parents}} : {byApp} par l'app, {bySms} par SMS",

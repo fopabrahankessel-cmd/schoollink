@@ -229,7 +229,7 @@ A DM writes to the guardians of one student or one class of their blocks. An adm
 
 1. `GET /messages/classes` lists the classes the author may write to, with their student counts.
 2. `POST /messages/preview` (or `/announcements/preview`) with the draft returns the counts before sending: recipients, how many by app, how many by SMS, how many unreachable, the SMS units, the estimated cost, and whether it would pass the monthly cap.
-3. `POST /messages` (or `/announcements`) with the same draft and an `id` sends it: the message, one outbox row per guardian and the audit row are written in one transaction. Each guardian gets it once: by push with the app, or by SMS without it if the author asked for SMS.
+3. `POST /messages` (or `/announcements`) with the same draft and an `id` sends it: the message, one outbox row per guardian and channel and the audit row are written in one transaction. Each guardian gets it by push with the app and, if the author asked for SMS, by SMS too, app users included (D49). The list of sent messages counts each guardian once, by the best of their push and SMS.
 4. `GET /messages` and `GET /announcements` list what was sent, newest first, with delivery counts (pending, sent, delivered, opened, failed). `GET /messages?studentId=` keeps one student's messages, for the student page (D41).
 
 Messages are never edited or deleted.
@@ -390,7 +390,7 @@ Request: `{reason, note?, absenceIds?, latenessIds?}`. Response: `{id, reason, n
   - `category`: `BEHAVIOUR`, `INSOLENCE`, `FIGHT`, `ABSENTEEISM`, `CHEATING`, `DRESS`, `PHONE`, `DAMAGE`, `OTHER`.
   - `measure`: `NONE`, `WARNING`, `DETENTION`, `SUSPENSION`, `OTHER`.
 - A record: `{id, studentId, alertId, category, measure, occurredOn, description, status, closeNote, recordedByName, recordedAt, closedAt}`.
-- Summons request: `{studentId, meetingDate?, meetingTime?, reason?}`. Response: `{id, studentId, alertId, meetingDate, meetingTime, reason, sentBy, sentAt}`. A summons goes by push and by SMS at once, outside the digest and the monthly cap (BR-23).
+- Summons request: `{studentId, meetingDate?, meetingTime?, reason?}`. Response: `{id, studentId, alertId, meetingDate, meetingTime, reason, sentBy, sentAt}`. A summons goes at once by SMS to every guardian, and by push too to those with the app, outside the digest and the monthly cap (BR-23, D49).
 
 ### 3.7 Notifications and messages (`notification`)
 
