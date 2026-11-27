@@ -2,6 +2,8 @@
 
 SchoolLink is a school attendance and parent-notification platform for secondary schools. Teachers record attendance per period and assistant DMs record lateness at the gate. Each absence or lateness reaches the guardians the same day, by push or by one daily SMS digest. Repeated patterns raise risk alerts, and the Discipline Master (DM) decides what to do with each one (dismiss, summon, disciplinary issue, refer to the counsellor). The first release is a pilot in one school (D47), with an anonymised research export used to evaluate it.
 
+**Taking over? Read [docs/HANDOFF.md](docs/HANDOFF.md) first:** current state, unpushed commits, blocked work and the next tasks in order.
+
 **The source of truth is [docs/SPEC.md](docs/SPEC.md).** Business rules are numbered BR-1…BR-25, use cases UC-xx and non-functional requirements NFR-x. Read the relevant sections before changing behaviour. The task breakdown and the open questions are in [docs/PLAN.md](docs/PLAN.md).
 
 ## Repository layout
