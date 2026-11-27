@@ -6,7 +6,7 @@ Read this first if you are taking over SchoolLink. It says what is done, what is
 
 - Phases 1–3 are done and passed their exit checks; the features added to the pilot (D36–D46, D49) are done. Wave 2 (counsellor screens UC-C1–C3, research view and export UC-R1–R3) is **not built**.
 - Tests on 27/11: mobile 246 pass and `flutter analyze` is clean; web 142 pass, lint and `tsc` clean; backend ~1,400 tests passed on 26/11 but **could not be run on 27/11** (Docker broken, see §3).
-- **4 commits are not pushed** (`git log origin/master..master`): `3b0ebe0` web test fix, `55b1738` CI workflow, `fe2e98a` SPEC/PLAN update (D50, D51), and the commit that adds this file. Only the owner pushes: `git push origin master`. The first push runs CI (`.github/workflows/ci.yml`) for the first time; watch it and fix whatever fails there (it has never run).
+- **6 commits are not pushed** (`git log origin/master..master`): `f4ecb17` NFR-7 test clock, `90d3b9a` D49, `3b0ebe0` web test fix, `55b1738` CI workflow, `fe2e98a` SPEC/PLAN update (D50, D51), and `7bdd25c` + the next commit that add this file. Only the owner pushes: `git push origin master`. The first push runs CI (`.github/workflows/ci.yml`) for the first time; watch it and fix whatever fails there (it has never run).
 - `backend/.run/SchoolLink (dev).run.xml` has a local change that must **never be committed**.
 - Commit `3b0ebe0` cites NFR-12 by mistake (it is a test-timing fix). Harmless; leave it.
 
