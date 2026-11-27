@@ -1,6 +1,8 @@
 # SchoolLink — Functional & Technical Specification
 
-Oct 28, 2026 · @Fops
+Oct 28, 2026 · @Fops · last brought in line with the code on Nov 27, 2026
+
+> The decisions D1–D49 in [PLAN.md](PLAN.md) refine this spec and are folded into it. When this document and a decision disagree, the decision is the newer one: fix this document in the same change.
 
 ## 1. Overview
 
@@ -142,10 +144,10 @@ These rules are the core of SchoolLink; each one has an identifier (BR-x) so tha
 
 - **BR-20.** Each event (absence for a period, lateness, summons, DM message, correction, announcement) creates a notification per guardian, written in that guardian's language.
 - **BR-21.** Push notifications (FCM) are sent **immediately**.
-- **BR-22.** SMS is sent as **one daily digest** per student, at a configurable time (default 13:00, second run at 17:00), only to guardians who have no app or did not open the related push. Example: *"SchoolLink: Paul absent P1–P3 and late (07:48) on 28/10. Collège X."*
-- **BR-23.** **Summons** are sent by push and SMS immediately, not in the digest.
+- **BR-22.** Every absence and lateness also holds an SMS for **every guardian**, app users included. At each digest time (default 13:00, then 17:00, school time zone) the held SMS whose push the guardian opened are skipped, and the rest become **one SMS per guardian, student and day** (D33). Example: *"SchoolLink: Paul absent P1–P3 and late (07:48) on 28/10. Collège X."*
+- **BR-23.** **Summons** go immediately, by SMS to **every** guardian and by push too to those with the app, not in the digest. A DM or admin message with "also by SMS" ticked also goes by SMS to every guardian (D49).
 - **BR-24.** Every notification stores its status: queued, sent, delivered (SMS report), opened (app), failed. Failed sends retry with backoff, up to 3 times.
-- **BR-25.** A per-school SMS counter and monthly limit appear on the admin dashboard; when the limit is reached, only summons go by SMS.
+- **BR-25.** A per-school SMS counter and monthly limit appear on the admin dashboard; when the limit is reached, only summons go by SMS (D33).
 
 ## 5. Use cases
 
@@ -219,13 +221,13 @@ The counsellor never sees a student until the DM refers them. Case notes stay pr
 
 ## 7. Data model
 
-The model has about 25 tables in PostgreSQL; every school-owned row carries a `school_id`, so several schools can share one database safely; the pilot has one (D47).
+The model has 35 tables in PostgreSQL, created by versioned Flyway migrations; the table below lists the main ones, [ARCHITECTURE.md](ARCHITECTURE.md) has the rest; every school-owned row carries a `school_id`, so several schools can share one database safely; the pilot has one (D47).
 
 | Area | Entity | Key fields | Notes |
 | --- | --- | --- | --- |
 | School | `School` | id, name, language, start\_time, timezone | One row per pilot school |
 | School | `AcademicYear`, `Term` | school\_id, label, start\_date, end\_date | Thresholds use the current term |
-| School | `Period` | school\_id, number, start\_time, end\_time | P1 to P8 of the timetable |
+| School | `Period` | school\_id, number, start\_time, end\_time | The numbered slots of the school day |
 | School | `SchoolClass` | school\_id, year\_id, name, level | e.g., 4e A, Tle C |
 | People | `User` | id, school\_id, phone, email, password\_hash, language, status | Staff and parents |
 | People | `RoleAssignment` | user\_id, role, scope\_type, scope\_id | Role + scope (class or block) |
@@ -241,7 +243,6 @@ The model has about 25 tables in PostgreSQL; every school-owned row carries a `s
 | Detection | `RiskAlert` | id, student\_id, rule\_id, raised\_at, status, decision, decided\_by, decided\_at, decision\_note | One open alert per student per rule |
 | Discipline | `Summons` | id, student\_id, alert\_id (nullable), reason, meeting\_date, sent\_by | Sent by push + SMS |
 | Discipline | `DisciplinaryRecord` | id, student\_id, alert\_id (nullable), category, measure, occurred\_on, description, status, close\_note, recorded\_by, cancelled\_at/by, cancel\_reason | Never edited or deleted; cancelled ones hidden (D37) |
-| Discipline | `DmMessage` | id, student\_id, author\_id, body | One-way, wave 2 |
 | Counselling | `CounsellingCase` | id, student\_id, referred\_by, alert\_id, counsellor\_id, status, opened\_at, closed\_at | Status visible to DM |
 | Counselling | `CaseNote` | case\_id, author\_id, body\_encrypted, created\_at, follow\_up\_date | Readable by author only |
 | Messaging | `ParentMessage` | id (from the author's device), school\_id, author\_id, kind (DM\_MESSAGE, ANNOUNCEMENT), audience (student, class, school), student\_id, class\_id, body (1-480), sms, plain\_sms, created\_at | Never edited or deleted; one outbox row per guardian and channel (D38) |
@@ -274,18 +275,18 @@ Modules talk to each other through Java interfaces and events, not HTTP. An atte
 | Push (app) | firebase\_messaging + flutter\_local\_notifications | Receive and show alerts |
 | Secure storage | flutter\_secure\_storage | Tokens |
 | App i18n | flutter\_localizations + intl (ARB files) | French and English |
-| Crash reports | Firebase Crashlytics | Stability metrics for the evaluation |
-| Backend | Java 21 + Spring Boot 3 | REST API, business rules |
+| Crash reports | Sentry, off unless a DSN is configured; names, phones and request bodies stripped before sending | Stability metrics for the evaluation |
+| Backend | Java 21 + Spring Boot 4 (Spring Framework 7, Jakarta EE 11, Jackson 3), Spring Modulith (D14) | REST API, business rules, module boundaries checked by a test |
 | Security | Spring Security, JWT, BCrypt | Roles and scopes |
 | Database | PostgreSQL 16 + Flyway | Data and versioned schema |
-| Jobs | Spring `@Scheduled` (or db-scheduler) | Nightly rules, SMS digest, retries |
+| Jobs | Spring `@Scheduled` | Outbox dispatcher, SMS digest, nightly rules, import clean-up, data retention |
 | Push (server) | Firebase Admin SDK | Send FCM notifications |
-| SMS | Gateway behind an `SmsProvider` interface | Pick by price, delivery reports, MTN and Orange coverage |
+| SMS | Twilio behind the `SmsProvider` interface (D32) | Sending and signed delivery reports; a cheaper local gateway only needs another `SmsProvider` |
 | Import | Apache POI + OpenCSV | Student and guardian import |
 | Encryption | Jasypt or pgcrypto | Case notes at rest |
 | Web dashboard | React + Vite + TypeScript, MUI, Recharts, i18next | Admin, DM and researcher screens |
-| Tests | JUnit 5, Testcontainers, Flutter widget tests | Rules, permissions, offline |
-| Deployment | Docker Compose, Nginx, Let's Encrypt on a VPS | Hosting for the pilot |
+| Tests | JUnit 5, Testcontainers, Flutter widget tests, Vitest, k6; all run in CI on every push | Rules, permissions, offline, load |
+| Deployment | Docker Compose, Caddy (automatic Let's Encrypt HTTPS) on one Hetzner VPS ([DEPLOYMENT.md](DEPLOYMENT.md)) | Hosting for the pilot |
 
 ## 9. API outline
 
@@ -368,7 +369,7 @@ The four that decide whether the pilot succeeds are speed of entry, offline oper
 - An information notice and consent form for parents, in French and English, explaining what is collected, why, who sees it, and how long it is kept.
 - Approval from your academic supervisors and, if IAI has one, its ethics process before collecting research data.
 - Check obligations under Cameroon's personal data protection law (Law No. 2024/017 of December 2024) with your supervisors.
-- Data retention: attendance data kept for the academic year plus one year; research exports contain no names, phones or matricules.
+- Data retention: attendance data kept for the academic year plus one year, then deleted by a nightly job; the audit log keeps who did what and when, without the before and after values. Research exports contain no names, phones or matricules.
 
 ## 11. Research and evaluation plan
 
@@ -385,7 +386,7 @@ The evaluation compares each pilot school before and after deployment, on the fo
 
 | Dimension | Indicator | Source |
 | --- | --- | --- |
-| Technical | Push and SMS delivery rate; median time from confirmation to delivery; sync failures; crash-free sessions | `NotificationOutbox`, logs, Firebase Crashlytics |
+| Technical | Push and SMS delivery rate; median time from confirmation to delivery; sync failures; crash-free sessions | `NotificationOutbox`, logs, Sentry |
 | Adoption | Share of expected sessions actually recorded per day; active parents per week; share of parents signed in | Database counts |
 | Usability | System Usability Scale (SUS) for teachers, DMs and parents; time to record a class | Questionnaire, timed tests |
 | Acceptance | Perceived usefulness and ease of use (TAM-style questionnaire); semi-structured interviews with DMs and counsellors | Questionnaire, interviews |

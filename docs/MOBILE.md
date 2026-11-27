@@ -26,7 +26,7 @@ Related documents:
 ## 1. At a glance
 
 - **One app for every role.** A teacher, an assistant DM, a DM and a parent install the same app. The tabs depend on the roles of the account (SPEC §8).
-- **Flutter, Android only** (minimum Android 7, API 24).
+- **Flutter, Android only** (minimum Android 8.0, API 26: NFR-4).
 - **State and dependency injection:** Riverpod. Screens read providers; tests replace them with fakes.
 - **Navigation:** go_router, driven by who is signed in.
 - **HTTP:** dio, with one interceptor for tokens and language.
